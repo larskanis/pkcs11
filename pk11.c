@@ -1195,14 +1195,14 @@ ck_attr_value(VALUE self)
 ///////////////////////////////////////
 
 static VALUE
-get_string(VALUE obj, int offset, int size)
+get_string(VALUE obj, off_t offset, size_t size)
 {
   char *ptr = (char*)DATA_PTR(obj);
   return rb_str_new(ptr+offset, size);
 }
 
 static VALUE
-set_string(VALUE obj, VALUE value, int offset, int size)
+set_string(VALUE obj, VALUE value, off_t offset, size_t size)
 {
   char *ptr = (char*)DATA_PTR(obj);
   int len = size;
@@ -1214,14 +1214,14 @@ set_string(VALUE obj, VALUE value, int offset, int size)
 }
 
 static VALUE
-get_ulong(VALUE obj, int offset)
+get_ulong(VALUE obj, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   return ULONG2NUM(*(CK_ULONG_PTR)(ptr+offset));
 }
 
 static VALUE
-set_ulong(VALUE obj, VALUE value, int offset)
+set_ulong(VALUE obj, VALUE value, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   *(CK_ULONG_PTR)(ptr+offset) = NUM2ULONG(value);
@@ -1229,7 +1229,7 @@ set_ulong(VALUE obj, VALUE value, int offset)
 }
 
 static VALUE
-get_version(VALUE obj, int offset)
+get_version(VALUE obj, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   CK_VERSION_PTR v;
@@ -1240,14 +1240,14 @@ get_version(VALUE obj, int offset)
 }
 
 static VALUE
-set_version(VALUE obj, VALUE value, int offset)
+set_version(VALUE obj, VALUE value, off_t offset)
 {
   rb_notimplement();
   return Qnil;
 }
 
 static VALUE
-get_string_ptr(VALUE obj, char *name, int offset)
+get_string_ptr(VALUE obj, char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
@@ -1256,7 +1256,7 @@ get_string_ptr(VALUE obj, char *name, int offset)
 }
 
 static VALUE
-set_string_ptr(VALUE obj, VALUE value, char *name, int offset)
+set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   rb_iv_set(obj, name, value);
@@ -1270,7 +1270,7 @@ set_string_ptr(VALUE obj, VALUE value, char *name, int offset)
   return value;
 }
 
-#define OFFSET_OF(s, f) ((int)&(((s*)0)->f))
+#define OFFSET_OF(s, f) ((off_t)&(((s*)0)->f))
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
 
 #define PKCS11_IMPLEMENT_ALLOCATOR(s) \
