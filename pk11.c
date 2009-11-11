@@ -1185,6 +1185,7 @@ ck_attr_value(VALUE self)
       return (*(CK_BBOOL*)(attr->pValue)) == CK_TRUE ? Qtrue : Qfalse;
     break;
   case CKA_CLASS:
+  case CKA_KEY_TYPE:
     if (attr->ulValueLen == sizeof(CK_ULONG))
       return ULONG2NUM(*(CK_ULONG_PTR)(attr->pValue));
     break;
