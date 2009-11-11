@@ -1,17 +1,18 @@
 require "pkcs11"
 require "openssl"
 
-NSSCKBI_LIBS = [
-  "/usr/lib64/libnssckbi.so",
-  "/usr/lib/libnssckbi.so",
-  "/usr/lib64/xulrunner/libnssckbi.so",
-  "/usr/lib/xulrunner/libnssckbi.so",
-  "/usr/local/lib64/xulrunner/libnssckbi.so",
-  "/usr/local/lib/xulrunner/libnssckbi.so",
-]
-nssckbi = ARGV[0] || NSSCKBI_LIBS.find{|path| File.exist?(path) }
+LIBNSSCKBI_SO = "libnssckbi.so"
+LIBNSS_PATHS = %w(
+  /usr/lib64 /usr/lib /usr/lib64/nss /usr/lib/nss
+  /usr/lib64/xulrunner /usr/lib/xulrunner
+  /usr/local/lib64/xulrunner /usr/local/lib/xulrunner
+)
+unless so_name = ARGV[0]
+  paths = LIBNSS_PATHS.collect{|path| File.join(path, LIBNSSCKBI_SO) }
+  so_name = paths.find{|path| File.exist?(path) }
+end
 
-pkcs11 = PKCS11.new(nssckbi)
+pkcs11 = PKCS11.new(so_name)
 slot = pkcs11.C_GetSlotList(true).first
 session = pkcs11.C_OpenSession(slot, PKCS11::CKF_SERIAL_SESSION)
 

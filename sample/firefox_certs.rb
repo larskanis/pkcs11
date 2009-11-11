@@ -1,8 +1,14 @@
 require "pkcs11"
 require "openssl"
 
-paths = %w(/usr/lib64/libsoftokn3.so /usr/lib/libsoftokn3.so)
-so_path = ARGV.shift || paths.find{|path| File.exist?(path) }
+LIBSOFTOKEN3_SO = "libsoftokn3.so"
+LIBNSS_PATHS = %w(
+  /usr/lib64 /usr/lib/ /usr/lib64/nss /usr/lib/nss
+)
+unless so_path = ARGV.shift
+  paths = LIBNSS_PATHS.collect{|path| File.join(path, LIBSOFTOKEN3_SO) }
+  so_path = paths.find{|path| File.exist?(path) }
+end
 
 dir = Dir.glob(File.expand_path("~/.mozilla/firefox/*.default")).first
 NSS_INIT_ARGS = [
