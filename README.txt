@@ -1,30 +1,33 @@
 = PKCS #11/Ruby Interface
 
+* http://coderepos.org/share/log/lang/ruby/pkcs11-ruby
+
 This module allows Ruby programs to interface with "RSA Security Inc. 
 PKCS #11 Cryptographic Token Interface (Cryptoki)".
 You must have the PKCS #11 v2.20 implementation library installed in
 order to use this module.
 
-Right now, this module works on the Unix like operating systems.
+Right now, this module works on the Unix like operating systems and win32.
 
-== Compilation and Installation
+== Compilation
 
-Simply do the following.
+  rake native gem
 
-  shell> ruby extconf.rb
-  shell> make
-  shell> make install
+== Installation
+
+  gem install pkcs11
 
 == Usage
 
 PKCS11.new requires suitable PKCS #11 implementation for your smart-cards.
 
+  require "rubygems"
   require "pkcs11"
 
   pkcs11 = PKCS11.new("/path/to/pkcs11.so")
   slots = pkcs11.C_GetSlotList(true)
-  slot = slot.first
-  info = p11.C_GetSlotInfo(slot)
+  slot = slots.first
+  info = pkcs11.C_GetSlotInfo(slot)
   p [info.slotDescription, info.manufacturerID,
      info.flags, info.firmwareVersion, info.hardwareVersion]
   flags = PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION
@@ -42,7 +45,6 @@ Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133.
  * unit testing (with mozilla softoken)
  * implement all functions/structs
  * sample code
- * RubyGems package
 
 == Development Status
 

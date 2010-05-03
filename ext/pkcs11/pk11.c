@@ -1,5 +1,13 @@
 #include "pk11.h"
-#include <dlfcn.h>
+
+#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+  #include <winbase.h> /* for LoadLibrary() */
+  #define windows
+#else
+  #include <dlfcn.h>
+#endif
+
+static const char *VERSION = "0.1.0";
 
 static ID sNEW;
 static VALUE cPKCS11;
@@ -47,7 +55,11 @@ static void
 pkcs11_ctx_free(pkcs11_ctx *ctx) 
 {
   if(ctx->functions) ctx->functions->C_Finalize(NULL_PTR);
-  if(ctx->module) dlclose(ctx->module);  
+#ifdef windows
+  if(ctx->module) FreeLibrary(ctx->module);
+#else
+  if(ctx->module) dlclose(ctx->module);
+#endif
   free(ctx);
 }
 
@@ -81,11 +93,29 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
   args = NIL_P(init_args) ? NULL_PTR : DATA_PTR(init_args);
 
   Data_Get_Struct(self, pkcs11_ctx, ctx);
+#ifdef windows
+  if((ctx->module = LoadLibrary(so_path)) == NULL) {
+    char error_text[999] = "LoadLibrary() error";
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+                NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPTSTR)&error_text, sizeof(error_text), NULL);
+    rb_raise(ePKCS11Error, error_text);
+  }
+  func = (CK_C_GetFunctionList)GetProcAddress(ctx->module, "C_GetFunctionList");
+  if(!func){
+    char error_text[999] = "GetProcAddress() error";
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+                NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPTSTR)&error_text, sizeof(error_text), NULL);
+    rb_raise(ePKCS11Error, error_text);
+  }
+#else
   if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
     rb_raise(ePKCS11Error, dlerror());
   }
   func = (CK_C_GetFunctionList)dlsym(ctx->module, "C_GetFunctionList");
   if(!func) rb_raise(ePKCS11Error, dlerror());
+#endif
   if((rv = func(&(ctx->functions))) != CKR_OK) pkcs11_raise(rv);
   if ((rv = ctx->functions->C_Initialize(args)) != CKR_OK) pkcs11_raise(rv);
 
@@ -1433,6 +1463,10 @@ Init_pkcs11()
 {
   sNEW = rb_intern("new");
   cPKCS11 = rb_define_class("PKCS11", rb_cObject);
+  
+  /* Library version */
+  rb_define_const( cPKCS11, "VERSION", rb_str_new2(VERSION) );
+  
   ePKCS11Error = rb_define_class_under(cPKCS11, "Error", rb_eStandardError);
   rb_define_alloc_func(cPKCS11, pkcs11_s_alloc);
   rb_define_method(cPKCS11, "initialize", pkcs11_initialize, -1);
