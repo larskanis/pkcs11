@@ -9,8 +9,9 @@ hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
   developer('Lars Kanis', 'kanis@comcard.de')
-
-  require_paths = ['lib']
+  
+  self.readme_file = 'README.rdoc'
+  self.extra_rdoc_files << self.readme_file
 end
 
 Rake::ExtensionTask.new('pkcs11', hoe.spec) do |ext|

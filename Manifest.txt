@@ -2,7 +2,7 @@
 History.txt
 MIT-LICENSE
 Manifest.txt
-README.txt
+README.rdoc
 Rakefile
 ext/pkcs11/extconf.rb
 ext/pkcs11/include/cryptoki.h
