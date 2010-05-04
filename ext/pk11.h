@@ -19,7 +19,7 @@
 } while(0)
 #endif
 
-void Init_pkcs11();
+void Init_pkcs11_ext();
 void Init_pkcs11_const(VALUE);
 
 /* unix defns for pkcs11.h */

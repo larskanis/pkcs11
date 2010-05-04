@@ -63,7 +63,7 @@ Download and cross compile ruby for win32:
 
 Download and cross compile pkcs11 for win32:
 
-  rake cross native gem RUBY_CC_VERSION=1.8.6
+  rake cross native gem
 
 If everything works, there should be pkcs11-VERSION-x86-mswin32.gem in the pkg
 directory.

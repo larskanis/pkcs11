@@ -1459,7 +1459,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
   } while(0)
   
 void
-Init_pkcs11()
+Init_pkcs11_ext()
 {
   sNEW = rb_intern("new");
   cPKCS11 = rb_define_class("PKCS11", rb_cObject);

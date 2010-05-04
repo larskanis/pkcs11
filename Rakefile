@@ -12,9 +12,13 @@ hoe = Hoe.spec 'pkcs11' do
   
   self.readme_file = 'README.rdoc'
   self.extra_rdoc_files << self.readme_file
+  spec_extras[:extensions] = 'ext/extconf.rb'
 end
 
-Rake::ExtensionTask.new('pkcs11', hoe.spec) do |ext|
+ENV['RUBY_CC_VERSION'] = '1.8.6:1.9.1'
+
+Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
+  ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
   ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
 end
