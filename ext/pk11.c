@@ -1,8 +1,7 @@
 #include "pk11.h"
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
+#if defined(compile_for_windows)
   #include <winbase.h> /* for LoadLibrary() */
-  #define windows
 #else
   #include <dlfcn.h>
 #endif
@@ -55,7 +54,7 @@ static void
 pkcs11_ctx_free(pkcs11_ctx *ctx) 
 {
   if(ctx->functions) ctx->functions->C_Finalize(NULL_PTR);
-#ifdef windows
+#ifdef compile_for_windows
   if(ctx->module) FreeLibrary(ctx->module);
 #else
   if(ctx->module) dlclose(ctx->module);
@@ -93,7 +92,7 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
   args = NIL_P(init_args) ? NULL_PTR : DATA_PTR(init_args);
 
   Data_Get_Struct(self, pkcs11_ctx, ctx);
-#ifdef windows
+#ifdef compile_for_windows
   if((ctx->module = LoadLibrary(so_path)) == NULL) {
     char error_text[999] = "LoadLibrary() error";
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
