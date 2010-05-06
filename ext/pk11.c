@@ -21,8 +21,8 @@ static VALUE cCK_MECHANISM_INFO;
 static VALUE cCK_SESSION_INFO;
 static VALUE cCK_MECHANISM;
 
-#define HANDLE2NUM(n) ULONG2NUM(n)
-#define NUM2HANDLE(n) NUM2ULONG(n)
+#define HANDLE2NUM(n) LONG2NUM(n)
+#define NUM2HANDLE(n) NUM2LONG(n)
 #define pkcs11_new_struct(klass) rb_funcall(klass, sNEW, 0)
 
 VALUE pkcs11_return_value_to_name(CK_RV);

@@ -9,7 +9,7 @@ PKCS #11 is the de-facto standard to access cryptographic devices.
 You must have the PKCS #11 v2.20 implementation library installed in
 order to use this module.
 
-Right now, this module works on the Unix like operating systems and win32.
+This module works on the Unix like operating systems and win32.
 
 == Installation
 
@@ -24,17 +24,13 @@ PKCS11.new requires suitable PKCS #11 implementation for your smart-cards.
   require "pkcs11"
 
   pkcs11 = PKCS11.new("/path/to/pkcs11.so")
-  slots = pkcs11.C_GetSlotList(true)
-  slot = slots.first
-  info = pkcs11.C_GetSlotInfo(slot)
-  p [info.slotDescription, info.manufacturerID,
-     info.flags, info.firmwareVersion, info.hardwareVersion]
-  flags = PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION
-  session = pkcs11.C_OpenSession(slot, flags)
-  pkcs11.C_Login(session, PKCS11::CKU_USER, "1234")
+  slot = pkcs11.active_slots.first
+  p slot.info
+  session = slot.open(PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION)
+  session.login(PKCS11::CKU_USER, "1234")
   ...
-  pkcs11.C_Logout(session)
-  pkcs11.C_CloseSession(session)
+  session.logout
+  session.close
 
 Detail information for the API specification is provided by RSA Security Inc.
 Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133.

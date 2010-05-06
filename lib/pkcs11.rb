@@ -8,3 +8,5 @@ if RUBY_PLATFORM =~/(mswin|mingw)/i
 else
   require 'pkcs11_ext'
 end
+
+require 'pkcs11/extensions'
