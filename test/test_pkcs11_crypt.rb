@@ -45,15 +45,39 @@ class TestPkcs11Session < Test::Unit::TestCase
   end
 
   def test_sign_verify
-    signature = session.sign( :RSA_PKCS, rsa_priv_key, "important text")
+    signature = session.sign( :SHA1_RSA_PKCS, rsa_priv_key, "important text")
     assert 'The signature should contain some data', signature.length>10
     
-    valid = session.verify( :RSA_PKCS, rsa_pub_key, signature, "important text")
+    valid = session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "important text")
     assert 'The signature should be correct', valid
     
     assert_raise(PKCS11::Error) do
-      session.verify( :RSA_PKCS, rsa_pub_key, signature, "modified text")
+      session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "modified text")
     end
+  end
+
+  def create_openssl_cipher(pk11_key)
+    rsa = OpenSSL::PKey::RSA.new
+    rsa.n = OpenSSL::BN.new pk11_key[:MODULUS], 2
+    rsa.e = OpenSSL::BN.new pk11_key[:PUBLIC_EXPONENT], 2
+    rsa
+  end
+
+  def test_compare_sign_with_openssl
+    signature = session.sign( :SHA1_RSA_PKCS, rsa_priv_key, "important text")
+
+    osslc = create_openssl_cipher rsa_pub_key
+    valid = osslc.verify(OpenSSL::Digest::SHA1.new, signature, "important text")
+    assert 'The signature should be correct', valid
+  end
+
+  def test_compare_endecrypt_with_openssl
+    plaintext1 = "secret text"
+    osslc = create_openssl_cipher rsa_pub_key
+    cryptogram = osslc.public_encrypt(plaintext1)
+
+    plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
+    assert 'Decrypted plaintext should be the same', plaintext1==plaintext2
   end
 
 end
