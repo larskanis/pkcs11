@@ -655,6 +655,8 @@ typedef VALUE (*verify_func)
 typedef VALUE (*verify_final_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG);
 
+#define common_crypt(s, d, sz, f)            common_crypt_update(s, d, sz, f)
+
 static VALUE
 common_init(VALUE session, VALUE mechanism, VALUE key, init_func func)
 {
@@ -671,30 +673,23 @@ common_init(VALUE session, VALUE mechanism, VALUE key, init_func func)
 }
 
 static VALUE
-common_crypt(VALUE session, VALUE data, VALUE size, crypt_func func)
-{
-  CK_RV rv;
-  CK_ULONG sz = NUM2ULONG(size);
-  VALUE buf = rb_str_new(0, sz);
-
-  StringValue(data);
-  rv = func(NUM2HANDLE(session),
-            (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data),
-            (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
-  if(rv != CKR_OK) pkcs11_raise(rv);
-  rb_str_set_len(buf, sz);
-
-  return buf;
-}
-
-static VALUE
 common_crypt_update(VALUE session, VALUE data, VALUE size, crypt_update_func func)
 {
   CK_RV rv;
-  CK_ULONG sz = NUM2ULONG(size);
-  VALUE buf = rb_str_new(0, sz);
+  CK_ULONG sz = 0;
+  VALUE buf;
 
   StringValue(data);
+  if (NIL_P(size)){
+    rv = func(NUM2HANDLE(session),
+              (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data),
+              NULL_PTR, &sz);
+    if(rv != CKR_OK) pkcs11_raise(rv);
+  }else{
+    sz = NUM2ULONG(size);
+  }
+  buf = rb_str_new(0, sz);
+
   rv = func(NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data),
             (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
@@ -708,8 +703,16 @@ static VALUE
 common_crypt_final(VALUE session, VALUE size, crypt_final_func func)
 {
   CK_RV rv;
-  CK_ULONG sz = NUM2ULONG(size);
-  VALUE buf = rb_str_new(0, sz);
+  CK_ULONG sz = 0;
+  VALUE buf;
+
+  if (NIL_P(size)){
+    rv = func(NUM2HANDLE(session), NULL_PTR, &sz);
+    if(rv != CKR_OK) pkcs11_raise(rv);
+  }else{
+    sz = NUM2ULONG(size);
+  }
+  buf = rb_str_new(0, sz);
 
   rv = func(NUM2HANDLE(session), (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
   if(rv != CKR_OK) pkcs11_raise(rv);
