@@ -96,6 +96,8 @@ class PKCS11
 
     # Continues a search for token and session objects that match a template,
     # obtaining additional object handles.
+    #
+    # Returns an array of Object instances.
     def C_FindObjects(max_count)
       objs = @pk.C_FindObjects(@sess, max_count)
       objs.map{|obj| Object.new @pk, @sess, obj }
@@ -108,8 +110,8 @@ class PKCS11
 
     # Convenience method for the C_FindObjectsInit, C_FindObjects, C_FindObjectsFinal cycle.
     #
-    # If called with block, it iterates over all found objects.
-    # If called without block, it returns with an array of all found objects.
+    # * If called with block, it iterates over all found objects.
+    # * If called without block, it returns with an array of all found Object instances.
     #
     # Example (prints subject of all certificates stored in the token):
     #   session.find_objects(:CLASS => PKCS11::CKO_CERTIFICATE) do |obj|
@@ -135,7 +137,7 @@ class PKCS11
     end
 
 
-    # Creates a new object based on given template. Returns a new object’s handle.
+    # Creates a new Object based on given template. Returns a new object’s handle.
     # If C_CreateObject is used to create a key object, the key object will have its
     # CKA_LOCAL attribute set to false. If that key object is a secret or private key
     # then the new key will have the CKA_ALWAYS_SENSITIVE attribute set to
@@ -441,19 +443,19 @@ class PKCS11
       @pk.C_DecryptVerifyUpdate(@sess, data, out_size)
     end
 
-    # Generates a secret key or set of domain parameters, creating a new
-    # object.
+    # Generates a secret key Object or set of domain parameters, creating a new
+    # Object.
     #
-    # Returns key object of the new created key.
+    # Returns key Object of the new created key.
     def C_GenerateKey(mechanism, template={})
       obj = @pk.C_GenerateKey(@sess, Session.hash_to_mechanism(mechanism), Session.hash_to_attributes(template))
       Object.new @pk, @sess, obj
     end
     alias generate_key C_GenerateKey
 
-    # Generates a public/private key pair, creating new key objects.
+    # Generates a public/private key pair, creating new key Object instances.
     #
-    # Returns an two-items array of new created public and private key object.
+    # Returns an two-items array of new created public and private key Object.
     def C_GenerateKeyPair(mechanism, pubkey_template={}, privkey_template={})
       objs = @pk.C_GenerateKeyPair(@sess, Session.hash_to_mechanism(mechanism), Session.hash_to_attributes(pubkey_template), Session.hash_to_attributes(privkey_template))
       objs.map{|obj| Object.new @pk, @sess, obj }
@@ -471,7 +473,7 @@ class PKCS11
     # Unwraps (i.e. decrypts) a wrapped key, creating a new private key or
     # secret key object.
     #
-    # Returns key object of the new created key.
+    # Returns key Object of the new created key.
     def C_UnwrapKey(mechanism, wrapping_key, wrapped_key, template={})
       obj = @pk.C_UnwrapKey(@sess, Session.hash_to_mechanism(mechanism), wrapping_key, wrapped_key, Session.hash_to_attributes(template))
       Object.new @pk, @sess, obj
@@ -480,7 +482,7 @@ class PKCS11
 
     # Derives a key from a base key, creating a new key object.
     #
-    # Returns key object of the new created key.
+    # Returns key Object of the new created key.
     def C_DeriveKey(mechanism, base_key, template={})
       obj = @pk.C_DeriveKey(@sess, Session.hash_to_mechanism(mechanism), base_key, Session.hash_to_attributes(template))
       Object.new @pk, @sess, obj

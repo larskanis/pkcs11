@@ -132,7 +132,7 @@ class PKCS11
   alias unwrapped_C_GetSlotList C_GetSlotList
   private :unwrapped_C_GetSlotList
   
-  # Obtain a list of slots in the system. tokenPresent indicates
+  # Obtain an array of Slot objects in the system. tokenPresent indicates
   # whether the list obtained includes only those slots with a token present (true), or
   # all slots (false);
   def C_GetSlotList(tokenPresent=true)
@@ -143,11 +143,11 @@ class PKCS11
   end
   alias slots C_GetSlotList
   
-  # Obtain a list of slots in the system with a token present.
+  # Obtain an array of Slot objects in the system with a token present.
   def active_slots
     slots(true)
   end
-  # Obtain a list of slots in the system regardless if a token is present.
+  # Obtain an array of Slot objects in the system regardless if a token is present.
   def all_slots
     slots(false)
   end

@@ -55,7 +55,7 @@ class PKCS11
     end
     alias init_token C_InitToken
     
-    # Opens a session between an application and a token in a particular slot.
+    # Opens a Session between an application and a token in a particular slot.
     # flags indicates the type of session.
     #
     # If called with block, yields the block with the session and closes the session
