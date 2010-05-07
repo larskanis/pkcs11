@@ -10,8 +10,7 @@ def open_softokn
     so_path = paths.find{|path| File.exist?(path) }
   end
 
-  dir = Dir.glob(File.expand_path("~/.mozilla/firefox/*.default")).first
-  #dir = 'D:/kueche/.mozilla/firefox/08mlxvfo.default'
+  dir = File.join(File.dirname(__FILE__), 'fixtures/softokn')
   nNSS_INIT_ARGS = [
   "configDir='#{dir}'",
   "secmod='secmod.db'",
