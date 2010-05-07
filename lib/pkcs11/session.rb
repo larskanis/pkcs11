@@ -1,37 +1,39 @@
 class PKCS11
   class Session
-    def self.hash_to_attributes(template)
-      case template
-        when Array
-          template.map{|v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', v), nil) }
-        when Hash
-          template.map{|k,v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', k), v) }
-        else
-          template
+    class << self
+      def hash_to_attributes(template)
+        case template
+          when Array
+            template.map{|v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', v), nil) }
+          when Hash
+            template.map{|k,v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', k), v) }
+          else
+            template
+        end
       end
-    end
-    
-    def self.string_to_handle(prefix, attribute)
-      case attribute
-        when String, Symbol
-          PKCS11.const_get("#{prefix}#{attribute}")
-        else
-          attribute
-      end
-    end
-    
-    def self.hash_to_mechanism(hash)
-      case hash
-        when String, Symbol
-          PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', hash))
-        when Hash
-          raise "only one mechanism allowed" unless hash.length==1
-          PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', hash.keys.first), hash.values.first)
-        else
-          hash
-      end
-    end
 
+      def string_to_handle(prefix, attribute)
+        case attribute
+          when String, Symbol
+            PKCS11.const_get("#{prefix}#{attribute}")
+          else
+            attribute
+        end
+      end
+
+      def hash_to_mechanism(hash)
+        case hash
+          when String, Symbol
+            PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', hash))
+          when Hash
+            raise "only one mechanism allowed" unless hash.length==1
+            PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', hash.keys.first), hash.values.first)
+          else
+            hash.to_int
+        end
+      end
+    end
+    
     def initialize(pkcs11, session)
       @pk, @sess = pkcs11, session
     end
@@ -55,7 +57,7 @@ class PKCS11
     # it is called. Improper use of this user type will result in a return value
     # CKR_OPERATION_NOT_INITIALIZED.
     def C_Login(user_type, pin)
-      @pk.C_Login(@sess, user_type, pin)
+      @pk.C_Login(@sess, Session::string_to_handle('CKU_', user_type), pin)
     end
     alias login C_Login
 
@@ -75,25 +77,50 @@ class PKCS11
     end
     alias close C_CloseSession
 
-    def C_FindObjectsInit(find_template)
-      @pk.C_FindObjectsInit(@sess, find_template)
+    def C_GetSessionInfo()
+      @pk.C_GetSessionInfo(@sess)
     end
+    alias info C_GetSessionInfo
+    
+    # Initializes a search for token and session objects that match a
+    # template.
+    #
+    # * <tt>template</tt> : points to a search template that
+    #   specifies the attribute values to match
+    #   The matching criterion is an exact byte-for-byte match with all attributes in the
+    #   template. Use empty Hash to find all objects.
+
+    def C_FindObjectsInit(find_template={})
+      @pk.C_FindObjectsInit(@sess, Session.hash_to_attributes(find_template))
+    end
+
+    # Continues a search for token and session objects that match a template,
+    # obtaining additional object handles.
     def C_FindObjects(max_count)
       objs = @pk.C_FindObjects(@sess, max_count)
       objs.map{|obj| Object.new @pk, @sess, obj }
     end
+
+    # Terminates a search for token and session objects.
     def C_FindObjectsFinal
       @pk.C_FindObjectsFinal(@sess)
     end
 
+    # Convenience method for the C_FindObjectsInit, C_FindObjects, C_FindObjectsFinal cycle.
+    #
+    # If called with block, it iterates over all found objects.
+    # If called without block, it returns with an array of all found objects.
+    #
+    # Example (prints subject of all certificates stored in the token):
+    #   session.find_objects(:CLASS => PKCS11::CKO_CERTIFICATE) do |obj|
+    #     p OpenSSL::X509::Name.new(obj[:SUBJECT])
+    #   end
     def find_objects(template={})
-      template = Session.hash_to_attributes template
-
       all_objs = [] unless block_given?
       C_FindObjectsInit(template)
       begin
         loop do
-          objs = C_FindObjects(4)
+          objs = C_FindObjects(20)
           break if objs.empty?
           if block_given?
             objs.each{|obj| yield obj }
@@ -146,6 +173,17 @@ class PKCS11
       alias << update
     end
 
+    class DigestCipher < Cipher
+      def initialize(update_block, digest_key_block)
+        super(update_block)
+        @digest_key_block = digest_key_block
+      end
+      alias digest_update update
+      def digest_key(key)
+        @digest_key_block.call(key)
+      end
+    end
+
     def common_crypt( init, update, final, single, mechanism, key, data=nil)
       send(init, mechanism, key)
       if block_given?
@@ -173,20 +211,6 @@ class PKCS11
       end
     end
     private :common_verify
-
-    def common_digest( init, update, final, single, mechanism, data=nil )
-      send(init, mechanism)
-      if block_given?
-        raise "data not nil, but block given" if data
-        yield Cipher.new(proc{|data_|
-          send(update, data_)
-        })
-        send(final)
-      else
-        send(single, data)
-      end
-    end
-    private :common_digest
 
     # Initializes an encryption operation.
     #
@@ -217,7 +241,7 @@ class PKCS11
 
     # Convenience method for the C_EncryptInit, C_EncryptUpdate, C_EncryptFinal call flow.
     #
-    # Exsample:
+    # Example:
     #   iv = "12345678"
     #   cryptogram = ''
     #   cryptogram << session.encrypt( {:DES_CBC_PAD=>iv}, key ) do |cipher|
@@ -261,16 +285,40 @@ class PKCS11
     def C_DigestUpdate(data)
       @pk.C_DigestUpdate(@sess, data)
     end
+    # Continues a multiple-part message-digesting operation by digesting the
+    # value of a secret key.
+    #
+    # The message-digesting operation must have been initialized with C_DigestInit. Calls to
+    # this function and C_DigestUpdate may be interspersed any number of times in any
+    # order.
+    def C_DigestKey(key)
+      @pk.C_DigestKey(@sess, key)
+    end
     def C_DigestFinal(out_size=nil)
       @pk.C_DigestFinal(@sess, out_size)
     end
 
-    # Convenience method for the C_DigestInit, C_DigestUpdate, C_DigestFinal call flow.
+    # Convenience method for the C_DigestInit, C_DigestUpdate, C_DigestKey,
+    # C_DigestFinal call flow.
     #
-    # See encrypt()
+    # Example:
+    #   digest_string = session.encrypt( :SHA_1 ) do |cipher|
+    #     cipher.update("key prefix")
+    #     cipher.digest_key(some_key)
+    #   end
     def digest(mechanism, data=nil, &block)
-      common_digest(:C_DigestInit, :C_DigestUpdate, :C_DigestFinal, :C_Digest,
-                   mechanism, data, &block)
+      C_DigestInit(mechanism)
+      if block_given?
+        raise "data not nil, but block given" if data
+        yield DigestCipher.new(proc{|data_|
+          C_DigestUpdate(data_)
+        }, proc{|key_|
+          C_DigestKey(key_)
+        })
+        C_DigestFinal()
+      else
+        C_Digest(data)
+      end
     end
 
     # The same like C_EncryptInit() but for signing.
@@ -401,14 +449,16 @@ class PKCS11
       obj = @pk.C_GenerateKey(@sess, Session.hash_to_mechanism(mechanism), Session.hash_to_attributes(template))
       Object.new @pk, @sess, obj
     end
+    alias generate_key C_GenerateKey
 
     # Generates a public/private key pair, creating new key objects.
     #
-    # Returns key object of the new created key.
+    # Returns an two-items array of new created public and private key object.
     def C_GenerateKeyPair(mechanism, pubkey_template={}, privkey_template={})
-      obj = @pk.C_GenerateKeyPair(@sess, Session.hash_to_mechanism(mechanism), pubkey_template, privkey_template)
-      Object.new @pk, @sess, obj
+      objs = @pk.C_GenerateKeyPair(@sess, Session.hash_to_mechanism(mechanism), Session.hash_to_attributes(pubkey_template), Session.hash_to_attributes(privkey_template))
+      objs.map{|obj| Object.new @pk, @sess, obj }
     end
+    alias generate_key_pair C_GenerateKeyPair
 
     # Wraps (i.e., encrypts) a private or secret key.
     #
@@ -416,6 +466,7 @@ class PKCS11
     def C_WrapKey(mechanism, wrapping_key, wrapped_key, out_size=nil)
       @pk.C_WrapKey(@sess, Session.hash_to_mechanism(mechanism), wrapping_key, wrapped_key, out_size)
     end
+    alias wrap_key C_WrapKey
 
     # Unwraps (i.e. decrypts) a wrapped key, creating a new private key or
     # secret key object.
@@ -425,6 +476,7 @@ class PKCS11
       obj = @pk.C_UnwrapKey(@sess, Session.hash_to_mechanism(mechanism), wrapping_key, wrapped_key, Session.hash_to_attributes(template))
       Object.new @pk, @sess, obj
     end
+    alias unwrap_key C_UnwrapKey
 
     # Derives a key from a base key, creating a new key object.
     #
@@ -433,12 +485,14 @@ class PKCS11
       obj = @pk.C_DeriveKey(@sess, Session.hash_to_mechanism(mechanism), base_key, Session.hash_to_attributes(template))
       Object.new @pk, @sess, obj
     end
+    alias derive_key C_DeriveKey
 
     # Mixes additional seed material into the token’s random number
     # generator.
     def C_SeedRandom(data)
       @pk.C_SeedRandom(@sess, data)
     end
+    alias seed_random C_SeedRandom
     
     # Generates random or pseudo-random data.
     #
@@ -446,5 +500,6 @@ class PKCS11
     def C_GenerateRandom(out_size)
       @pk.C_GenerateRandom(@sess, out_size)
     end
+    alias generate_random C_GenerateRandom
   end
 end

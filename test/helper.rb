@@ -14,7 +14,7 @@ def open_softokn
   nNSS_INIT_ARGS = [
   "configDir='#{dir}'",
   "secmod='secmod.db'",
-  "flags='readOnly'",
+  "flags='readWrite'",
   ]
 
   pk11 = PKCS11.new(so_path, :flags=>0, :pReserved=>nNSS_INIT_ARGS.join(" "))

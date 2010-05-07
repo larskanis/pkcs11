@@ -13,21 +13,27 @@ class PKCS11
       "#<#{self.class} #{@slot.inspect}>"
     end
 
+    # Obtains information about a particular slot in the system.
     def C_GetSlotInfo
       @pk.C_GetSlotInfo(@slot)
     end
     alias info C_GetSlotInfo
-
+    
+    # Obtains information about a particular token in the system.
     def C_GetTokenInfo
       @pk.C_GetTokenInfo(@slot)
     end
     alias token_info C_GetTokenInfo
-
+    
+    # Waits for a slot event, such as token insertion or token removal, to
+    # occur. flags determines whether or not the C_WaitForSlotEvent call blocks (i.e., waits
+    # for a slot event to occur);
     def C_WaitForSlotEvent(flags)
       @pk.C_WaitForSlotEvent(@slot, flags)
     end
     alias wait_for_event C_WaitForSlotEvent
 
+    # C_GetMechanismList is used to obtain a list of mechanism types supported by a token.
     def C_GetMechanismList
       @pk.C_GetMechanismList(@slot).map{|mech|
         Mechanism.new MECHANISMS, mech
@@ -38,7 +44,7 @@ class PKCS11
     # Obtains information about a particular mechanism possibly
     # supported by a token.
     def C_GetMechanismInfo(mechanism)
-      @pk.C_GetMechanismInfo(@slot, mechanism.to_int)
+      @pk.C_GetMechanismInfo(@slot, Session.hash_to_mechanism(mechanism))
     end
     alias mechanism_info C_GetMechanismInfo
 
@@ -51,6 +57,10 @@ class PKCS11
     
     # Opens a session between an application and a token in a particular slot.
     # flags indicates the type of session.
+    #
+    # If called with block, yields the block with the session and closes the session
+    # when the is finished.
+    # If called without block, returns the session object.
     def C_OpenSession(flags)
       nr = @pk.C_OpenSession(@slot, flags)
       sess = Session.new @pk, nr

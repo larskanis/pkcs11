@@ -39,10 +39,12 @@ class TestPkcs11Slot < Test::Unit::TestCase
 
   def test_session
     flags = PKCS11::CKF_SERIAL_SESSION | PKCS11::CKF_RW_SESSION
-    session = slot.C_OpenSession(flags)
-    session.close
+    session = slot.open(flags){|session|
+      assert 'Session info should tell about it\'s state', session.info =~ /state=/
+    }
     
     session = slot.open(flags)
+    assert 'Session info should tell about it\'s flags', session.info =~ /flags=/
     session.close
   end
 end

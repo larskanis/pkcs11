@@ -16,8 +16,8 @@ class TestPkcs11Session < Test::Unit::TestCase
     @slot = slots.last
     
     flags = PKCS11::CKF_SERIAL_SESSION | PKCS11::CKF_RW_SESSION
-    @session = slot.C_OpenSession(flags)
-    session.login(PKCS11::CKU_USER, "")
+    @session = slot.open(flags)
+    session.login(:USER, "")
     
     @rsa_pub_key = session.find_objects(:CLASS => PKCS11::CKO_PUBLIC_KEY,
                         :KEY_TYPE => PKCS11::CKK_RSA).first
@@ -38,7 +38,7 @@ class TestPkcs11Session < Test::Unit::TestCase
     plaintext1 = "secret text"
     cryptogram = session.encrypt( :RSA_PKCS, rsa_pub_key, plaintext1)
     assert 'The cryptogram should contain some data', cryptogram.length>10
-    assert 'The cryptogram should be different to plaintext', cryptogram != plaintext1
+    assert_not_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
     
     plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
     assert 'Decrypted plaintext should be the same', plaintext1==plaintext2
@@ -98,6 +98,34 @@ class TestPkcs11Session < Test::Unit::TestCase
       c.update(plaintext[4..-1])
     }
     assert_equal digest1, digest3, 'Digests should be equal'
+  end
+
+  def test_wrap_key
+    secret_key = session.generate_key(:DES2_KEY_GEN,
+      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true})
+    
+    wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, secret_key)
+    assert_equal 16, wrapped_key_value.length, '112 bit 3DES key should have same size wrapped'
+
+    unwrapped_key = session.unwrap_key(:DES3_ECB, secret_key, wrapped_key_value, :CLASS=>PKCS11::CKO_SECRET_KEY, :KEY_TYPE=>PKCS11::CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true)
+
+    secret_key_kcv = session.encrypt( :DES3_ECB, secret_key, "\0"*8)
+    unwrapped_key_kcv = session.encrypt( :DES3_ECB, unwrapped_key, "\0"*8)
+    assert_equal secret_key_kcv, unwrapped_key_kcv, 'Key check values of original and wrapped/unwrapped key should be equal'
+    
+    wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, rsa_priv_key)
+    assert 'RSA private key should have bigger size wrapped', wrapped_key_value.length>100
+  end
+
+  def test_generate_key_pair
+    pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
+      {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>[3].pack("N")},
+      {:TOKEN=>true, :PRIVATE=>true,:SUBJECT=>'test', :ID=>[123].pack("n"),
+       :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true})
+
+    assert_equal priv_key[:CLASS], PKCS11::CKO_PRIVATE_KEY
+    assert_equal pub_key[:CLASS], PKCS11::CKO_PUBLIC_KEY
+    assert_equal [1].pack("C"), priv_key[:SENSITIVE], 'Private key should be sensitive'
   end
 
 end
