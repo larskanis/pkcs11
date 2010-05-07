@@ -1074,14 +1074,24 @@ pkcs11_C_WrapKey(VALUE self, VALUE session, VALUE mechanism, VALUE wrapping, VAL
 {
   CK_C_WrapKey func;
   CK_MECHANISM_PTR m;
-  CK_ULONG sz = NUM2ULONG(size);
-  VALUE buf = rb_str_new(0, sz);
+  CK_ULONG sz = 0;
+  VALUE buf;
   CK_RV rv;
 
   GetFunction(self, C_WrapKey, func);
   if (!rb_obj_is_kind_of(mechanism, cCK_MECHANISM))
       rb_raise(rb_eArgError, "2nd arg must be a PKCS11::CK_MECHANISM");
   m = DATA_PTR(mechanism);
+  if (NIL_P(size)){
+    rv = func(NUM2HANDLE(session), m,
+              NUM2HANDLE(wrapping), NUM2HANDLE(wrapped),
+              (CK_BYTE_PTR)NULL_PTR, &sz);
+    if(rv != CKR_OK) pkcs11_raise(rv);
+  }else{
+    sz = NUM2ULONG(size);
+  }
+  buf = rb_str_new(0, sz);
+
   rv = func(NUM2HANDLE(session), m,
             NUM2HANDLE(wrapping), NUM2HANDLE(wrapped),
             (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
