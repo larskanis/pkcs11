@@ -45,13 +45,21 @@ class TestPkcs11Session < Test::Unit::TestCase
   end
 
   def test_sign_verify
-    signature = session.sign( :SHA1_RSA_PKCS, rsa_priv_key, "important text")
+    plaintext = "important text"
+    signature = session.sign( :SHA1_RSA_PKCS, rsa_priv_key, plaintext)
     assert 'The signature should contain some data', signature.length>10
-    
-    valid = session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "important text")
+    assert 'The signature should contain some data', signature.length>10
+
+    signature2 = session.sign( :SHA1_RSA_PKCS, rsa_priv_key){|c|
+      c.update(plaintext[0..3])
+      c.update(plaintext[4..-1])
+    }
+    assert_equal signature, signature2, 'results of one-step and two-step signatures should be equal'
+
+    valid = session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, plaintext)
     assert 'The signature should be correct', valid
     
-    assert_raise(PKCS11::Error) do
+    assert_raise(PKCS11::Error, 'The signature should be invalid on different text') do
       session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "modified text")
     end
   end
@@ -77,7 +85,19 @@ class TestPkcs11Session < Test::Unit::TestCase
     cryptogram = osslc.public_encrypt(plaintext1)
 
     plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
-    assert 'Decrypted plaintext should be the same', plaintext1==plaintext2
+    assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
+  end
+
+  def test_digest
+    plaintext = "secret text"
+    digest1 = session.digest( :SHA_1, plaintext)
+    digest2 = OpenSSL::Digest::SHA1.new(plaintext).digest
+    assert_equal digest1, digest2, 'Digests should be equal'
+    digest3 = session.digest(:SHA_1){|c|
+      c.update(plaintext[0..3])
+      c.update(plaintext[4..-1])
+    }
+    assert_equal digest1, digest3, 'Digests should be equal'
   end
 
 end

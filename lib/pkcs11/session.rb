@@ -174,6 +174,20 @@ class PKCS11
     end
     private :common_verify
 
+    def common_digest( init, update, final, single, mechanism, data=nil )
+      send(init, mechanism)
+      if block_given?
+        raise "data not nil, but block given" if data
+        yield Cipher.new(proc{|data_|
+          send(update, data_)
+        })
+        send(final)
+      else
+        send(single, data)
+      end
+    end
+    private :common_digest
+
     # Initializes an encryption operation.
     #
     # * <tt>mechanism</tt> : the encryption mechanism, Hash, String or Integer
@@ -210,9 +224,9 @@ class PKCS11
     #     cryptogram << cipher.update("block 1")
     #     cryptogram << cipher.update("block 2")
     #   end
-    def encrypt(mechanism, key, data=nil)
+    def encrypt(mechanism, key, data=nil, &block)
       common_crypt(:C_EncryptInit, :C_EncryptUpdate, :C_EncryptFinal, :C_Encrypt,
-                   mechanism, key, data)
+                   mechanism, key, data, &block)
     end
 
     # The same like C_EncryptInit() but for decryption.
@@ -232,12 +246,34 @@ class PKCS11
     # Convenience method for the C_DecryptInit, C_DecryptUpdate, C_DecryptFinal call flow.
     #
     # See encrypt()
-    def decrypt(mechanism, key, data=nil)
+    def decrypt(mechanism, key, data=nil, &block)
       common_crypt(:C_DecryptInit, :C_DecryptUpdate, :C_DecryptFinal, :C_Decrypt,
-                   mechanism, key, data)
+                   mechanism, key, data, &block)
     end
 
-    # The same like C_EncryptInit() but for decryption.
+    # The same like C_EncryptInit() but for message-digesting.
+    def C_DigestInit(mechanism)
+      @pk.C_DigestInit(@sess, Session.hash_to_mechanism(mechanism))
+    end
+    def C_Digest(data, out_size=nil)
+      @pk.C_Digest(@sess, data, out_size)
+    end
+    def C_DigestUpdate(data)
+      @pk.C_DigestUpdate(@sess, data)
+    end
+    def C_DigestFinal(out_size=nil)
+      @pk.C_DigestFinal(@sess, out_size)
+    end
+
+    # Convenience method for the C_DigestInit, C_DigestUpdate, C_DigestFinal call flow.
+    #
+    # See encrypt()
+    def digest(mechanism, data=nil, &block)
+      common_digest(:C_DigestInit, :C_DigestUpdate, :C_DigestFinal, :C_Digest,
+                   mechanism, data, &block)
+    end
+
+    # The same like C_EncryptInit() but for signing.
     def C_SignInit(mechanism, key)
       @pk.C_SignInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
@@ -254,13 +290,13 @@ class PKCS11
     # Convenience method for the C_SignInit, C_SignUpdate, C_SignFinal call flow.
     #
     # See encrypt()
-    def sign(mechanism, key, data=nil)
+    def sign(mechanism, key, data=nil, &block)
       common_crypt(:C_SignInit, :C_SignUpdate, :C_SignFinal, :C_Sign,
-                   mechanism, key, data)
+                   mechanism, key, data, &block)
     end
-    
 
-    # The same like C_EncryptInit() but for decryption.
+
+    # The same like C_EncryptInit() but for verification.
     def C_VerifyInit(mechanism, key)
       @pk.C_VerifyInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
@@ -277,10 +313,138 @@ class PKCS11
     # Convenience method for the C_VerifyInit, C_VerifyUpdate, C_VerifyFinal call flow.
     #
     # See encrypt()
-    def verify(mechanism, key, signature, data=nil)
+    def verify(mechanism, key, signature, data=nil, &block)
       common_verify(:C_VerifyInit, :C_VerifyUpdate, :C_VerifyFinal, :C_Verify,
-                   mechanism, key, signature, data)
+                   mechanism, key, signature, data, &block)
+    end
+
+    # Initializes a signature operation, where the data can be recovered
+    # from the signature
+    def C_SignRecoverInit(mechanism, key)
+      @pk.C_SignRecoverInit(@sess, Session.hash_to_mechanism(mechanism), key)
+    end
+    def C_SignRecover(data, out_size=nil)
+      @pk.C_SignRecover(@sess, data, out_size)
+    end
+
+    # Convenience method for the C_SignRecoverInit, C_SignRecover call flow.
+    def sign_recover(mechanism, key, data)
+      C_SignRecoverInit(mechanism, key)
+      C_SignRecover(data)
+    end
+
+    
+    # Initializes a signature verification operation, where the data can be recovered
+    # from the signature
+    def C_VerifyRecoverInit(mechanism, key)
+      @pk.C_VerifyRecoverInit(@sess, Session.hash_to_mechanism(mechanism), key)
+    end
+    def C_VerifyRecover(signature, out_size=nil)
+      @pk.C_VerifyRecover(@sess, signature, out_size=nil)
+    end
+
+    # Convenience method for the C_VerifyRecoverInit, C_VerifyRecover call flow.
+    def verify_recover(mechanism, key, signature)
+      C_VerifyRecoverInit(mechanism, key)
+      C_VerifyRecover(signature)
     end
     
+    # Continues multiple-part digest and encryption operations,
+    # processing another data part.
+    #
+    # Digest and encryption operations must both be active (they must have been initialized
+    # with C_DigestInit and C_EncryptInit, respectively). This function may be called any
+    # number of times in succession, and may be interspersed with C_DigestUpdate,
+    # C_DigestKey, and C_EncryptUpdate calls.
+    def C_DigestEncryptUpdate(data, out_size=nil)
+      @pk.C_DigestEncryptUpdate(@sess, data, out_size)
+    end
+
+    # Continues a multiple-part combined decryption and digest
+    # operation, processing another data part.
+    #
+    # Decryption and digesting operations must both be active (they must have been initialized
+    # with C_DecryptInit and C_DigestInit, respectively). This function may be called any
+    # number of times in succession, and may be interspersed with C_DecryptUpdate,
+    # C_DigestUpdate, and C_DigestKey calls.
+    def C_DecryptDigestUpdate(data, out_size=nil)
+      @pk.C_DecryptDigestUpdate(@sess, data, out_size)
+    end
+
+    # Continues a multiple-part combined signature and encryption
+    # operation, processing another data part.
+    #
+    # Signature and encryption operations must both be active (they must have been initialized
+    # with C_SignInit and C_EncryptInit, respectively). This function may be called any
+    # number of times in succession, and may be interspersed with C_SignUpdate and
+    # C_EncryptUpdate calls.
+    def C_SignEncryptUpdate(data, out_size=nil)
+      @pk.C_SignEncryptUpdate(@sess, data, out_size)
+    end
+    
+    # Continues a multiple-part combined decryption and
+    # verification operation, processing another data part.
+    #
+    # Decryption and signature operations must both be active (they must have been initialized
+    # with C_DecryptInit and C_VerifyInit, respectively). This function may be called any
+    # number of times in succession, and may be interspersed with C_DecryptUpdate and
+    # C_VerifyUpdate calls.
+    def C_DecryptVerifyUpdate(data, out_size=nil)
+      @pk.C_DecryptVerifyUpdate(@sess, data, out_size)
+    end
+
+    # Generates a secret key or set of domain parameters, creating a new
+    # object.
+    #
+    # Returns key object of the new created key.
+    def C_GenerateKey(mechanism, template={})
+      obj = @pk.C_GenerateKey(@sess, Session.hash_to_mechanism(mechanism), Session.hash_to_attributes(template))
+      Object.new @pk, @sess, obj
+    end
+
+    # Generates a public/private key pair, creating new key objects.
+    #
+    # Returns key object of the new created key.
+    def C_GenerateKeyPair(mechanism, pubkey_template={}, privkey_template={})
+      obj = @pk.C_GenerateKeyPair(@sess, Session.hash_to_mechanism(mechanism), pubkey_template, privkey_template)
+      Object.new @pk, @sess, obj
+    end
+
+    # Wraps (i.e., encrypts) a private or secret key.
+    #
+    # Returns the encrypted binary data.
+    def C_WrapKey(mechanism, wrapping_key, wrapped_key, out_size=nil)
+      @pk.C_WrapKey(@sess, Session.hash_to_mechanism(mechanism), wrapping_key, wrapped_key, out_size)
+    end
+
+    # Unwraps (i.e. decrypts) a wrapped key, creating a new private key or
+    # secret key object.
+    #
+    # Returns key object of the new created key.
+    def C_UnwrapKey(mechanism, wrapping_key, wrapped_key, template={})
+      obj = @pk.C_UnwrapKey(@sess, Session.hash_to_mechanism(mechanism), wrapping_key, wrapped_key, Session.hash_to_attributes(template))
+      Object.new @pk, @sess, obj
+    end
+
+    # Derives a key from a base key, creating a new key object.
+    #
+    # Returns key object of the new created key.
+    def C_DeriveKey(mechanism, base_key, template={})
+      obj = @pk.C_DeriveKey(@sess, Session.hash_to_mechanism(mechanism), base_key, Session.hash_to_attributes(template))
+      Object.new @pk, @sess, obj
+    end
+
+    # Mixes additional seed material into the token’s random number
+    # generator.
+    def C_SeedRandom(data)
+      @pk.C_SeedRandom(@sess, data)
+    end
+    
+    # Generates random or pseudo-random data.
+    #
+    # Returns random or pseudo-random binary data of <tt>out_size</tt> bytes.
+    def C_GenerateRandom(out_size)
+      @pk.C_GenerateRandom(@sess, out_size)
+    end
   end
 end
