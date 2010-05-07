@@ -9,6 +9,7 @@ class TestPkcs11Session < Test::Unit::TestCase
   attr_reader :session
   attr_reader :rsa_priv_key
   attr_reader :rsa_pub_key
+  attr_reader :secret_key
 
   def setup
     $pkcs11 ||= open_softokn
@@ -23,6 +24,8 @@ class TestPkcs11Session < Test::Unit::TestCase
                         :KEY_TYPE => PKCS11::CKK_RSA).first
     @rsa_priv_key = session.find_objects(:CLASS => PKCS11::CKO_PRIVATE_KEY,
                         :KEY_TYPE => PKCS11::CKK_RSA).first
+    @secret_key = session.generate_key(:DES2_KEY_GEN,
+      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true})
   end
 
   def teardown
@@ -98,12 +101,14 @@ class TestPkcs11Session < Test::Unit::TestCase
       c.update(plaintext[4..-1])
     }
     assert_equal digest1, digest3, 'Digests should be equal'
+
+    digest3 = session.digest(:SHA256){|c|
+      c.update(plaintext)
+      c.digest_key(secret_key)
+    }
   end
 
   def test_wrap_key
-    secret_key = session.generate_key(:DES2_KEY_GEN,
-      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true})
-    
     wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, secret_key)
     assert_equal 16, wrapped_key_value.length, '112 bit 3DES key should have same size wrapped'
 
