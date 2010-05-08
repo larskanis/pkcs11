@@ -29,6 +29,7 @@ class TestPkcs11Session < Test::Unit::TestCase
   end
 
   def teardown
+    @secret_key.destroy
     @session.logout
     @session.close
   end
@@ -117,7 +118,9 @@ class TestPkcs11Session < Test::Unit::TestCase
     secret_key_kcv = session.encrypt( :DES3_ECB, secret_key, "\0"*8)
     unwrapped_key_kcv = session.encrypt( :DES3_ECB, unwrapped_key, "\0"*8)
     assert_equal secret_key_kcv, unwrapped_key_kcv, 'Key check values of original and wrapped/unwrapped key should be equal'
-    
+  end
+
+  def test_wrap_private_key
     wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, rsa_priv_key)
     assert 'RSA private key should have bigger size wrapped', wrapped_key_value.length>100
   end
