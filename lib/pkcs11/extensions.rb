@@ -2,7 +2,9 @@ require 'pkcs11/slot'
 require 'pkcs11/session'
 require 'pkcs11/object'
 
-# Ruby connector to PKCS11 libraries.
+# Ruby connector to PKCS#11 libraries.
+#
+# This library allowes to use PKCS#11 librarys in Ruby MRI.
 #
 # Example usage:
 #
@@ -10,11 +12,12 @@ require 'pkcs11/object'
 #   slot = pkcs11.active_slots.first
 #   p slot.info
 #   session = slot.open(PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION)
-#   session.login(PKCS11::CKU_USER, "1234")
+#   session.login(:USER, "1234")
 #   ...
 #   session.logout
 #   session.close
 #
+# See unit tests in the <tt>test</tt> directory for further examples of the usage.
 class PKCS11
   alias unwrapped_initialize initialize # :nodoc:
   private :unwrapped_initialize
@@ -22,7 +25,7 @@ class PKCS11
   # Load and initialize a pkcs11 dynamic library.
   #
   # * <tt>so_path</tt> : Path to the *.so or *.dll file to load.
-  # * <tt>args</tt> : Hash or CK_C_INITIALIZE_ARGS instance with load params.
+  # * <tt>args</tt> : A Hash or CK_C_INITIALIZE_ARGS instance with load params.
   def initialize(so_path, args={})
     case args
       when Hash
@@ -35,49 +38,63 @@ class PKCS11
   end
 
   module InspectableStruct
+    # Array of the InspectableStruct's attribute names.
     def members
       (self.methods - ::Object.new.methods - InspectableStruct.instance_methods).grep(/[^=]$/).sort
     end
+    # Array of the InspectableStruct's attribute values.
     def values
       members.inject([]){|a,v| a << send(v) }
     end
+    # Hash with the InspectableStruct's attribute names and values.
     def to_hash
       members.inject({}){|h,v| h[v.intern] = send(v); h }
     end
-    def inspect
+    def inspect # :nodoc:
       "#<#{self.class} #{to_hash.map{|k,v| "#{k}=#{v.inspect}"}.join(", ") }>"
     end
   end
 
+  # See InspectableStruct.
   class CK_INFO
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_C_INITIALIZE_ARGS
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_ATTRIBUTE
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_TOKEN_INFO
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_SLOT_INFO
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_MECHANISM_INFO
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_SESSION_INFO
     include InspectableStruct
   end
+  # See InspectableStruct.
   class CK_MECHANISM
     include InspectableStruct
   end
 
   class ConstValue
-    def initialize(enum_hash, value)
+    def initialize(enum_hash, value) # :nodoc:
       @enum_hash, @value = enum_hash, value
     end
+
+    # Get the constant name as String of the given value.
+    # Returns <tt>nil</tt> if value is unknown.
     def to_s
       @enum_hash[@value]
     end
@@ -85,13 +102,15 @@ class PKCS11
 #       "#<#{self.class} #{ to_s ? "#{to_s} (#{@value})" : @value}>"
       @value.inspect
     end
+
+    # The value of the constant.
     def to_int
       @value
     end
     alias to_i to_int
   end
 
-  module ConstValueHash
+  module ConstValueHash # :nodoc:
     def [](value)
       super(value.to_int)
     end

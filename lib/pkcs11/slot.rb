@@ -1,15 +1,16 @@
 class PKCS11
   class Slot
-    def initialize(pkcs11, slot)
+    def initialize(pkcs11, slot) # :nodoc:
       @pk, @slot = pkcs11, slot
     end
 
+    # The slot handle.
     def to_int
       @slot
     end
     alias to_i to_int
 
-    def inspect
+    def inspect # :nodoc:
       "#<#{self.class} #{@slot.inspect}>"
     end
 

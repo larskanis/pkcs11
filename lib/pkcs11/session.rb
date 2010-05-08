@@ -1,7 +1,7 @@
 class PKCS11
   class Session
     class << self
-      def hash_to_attributes(template)
+      def hash_to_attributes(template) # :nodoc:
         case template
           when Array
             template.map{|v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', v), nil) }
@@ -12,7 +12,7 @@ class PKCS11
         end
       end
 
-      def string_to_handle(prefix, attribute)
+      def string_to_handle(prefix, attribute) # :nodoc:
         case attribute
           when String, Symbol
             PKCS11.const_get("#{prefix}#{attribute}")
@@ -21,7 +21,7 @@ class PKCS11
         end
       end
 
-      def hash_to_mechanism(hash)
+      def hash_to_mechanism(hash) # :nodoc:
         case hash
           when String, Symbol
             PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', hash))
@@ -34,16 +34,17 @@ class PKCS11
       end
     end
     
-    def initialize(pkcs11, session)
+    def initialize(pkcs11, session) # :nodoc:
       @pk, @sess = pkcs11, session
     end
 
+    # The session handle.
     def to_int
       @sess
     end
     alias to_i to_int
 
-    def inspect
+    def inspect # :nodoc:
       "#<#{self.class} #{@sess.inspect}>"
     end
 
@@ -77,6 +78,7 @@ class PKCS11
     end
     alias close C_CloseSession
 
+    # Obtains information about a session. Returns a CK_SESSION_INFO.
     def C_GetSessionInfo()
       @pk.C_GetSessionInfo(@sess)
     end
@@ -166,7 +168,7 @@ class PKCS11
     alias set_pin C_SetPIN
 
     class Cipher
-      def initialize(update_block)
+      def initialize(update_block) # :nodoc:
         @update_block = update_block
       end
       def update(data)
@@ -176,7 +178,7 @@ class PKCS11
     end
 
     class DigestCipher < Cipher
-      def initialize(update_block, digest_key_block)
+      def initialize(update_block, digest_key_block) # :nodoc:
         super(update_block)
         @digest_key_block = digest_key_block
       end
@@ -186,7 +188,7 @@ class PKCS11
       end
     end
 
-    def common_crypt( init, update, final, single, mechanism, key, data=nil)
+    def common_crypt( init, update, final, single, mechanism, key, data=nil) # :nodoc:
       send(init, mechanism, key)
       if block_given?
         raise "data not nil, but block given" if data
@@ -200,7 +202,7 @@ class PKCS11
     end
     private :common_crypt
     
-    def common_verify( init, update, final, single, mechanism, key, signature, data=nil )
+    def common_verify( init, update, final, single, mechanism, key, signature, data=nil ) # :nodoc:
       send(init, mechanism, key)
       if block_given?
         raise "data not nil, but block given" if data
@@ -219,6 +221,8 @@ class PKCS11
     # * <tt>mechanism</tt> : the encryption mechanism, Hash, String or Integer
     # * <tt>key</tt> : the object handle of the encryption key.
     #
+    # See encrypt() for convenience.
+    #
     # The CKA_ENCRYPT attribute of the encryption key, which indicates whether the key
     # supports encryption, must be true.
     #
@@ -231,17 +235,28 @@ class PKCS11
     def C_EncryptInit(mechanism, key)
       @pk.C_EncryptInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
+    # Encrypts single-part data.
     def C_Encrypt(data, out_size=nil)
       @pk.C_Encrypt(@sess, data, out_size)
     end
+    # Continues a multiple-part encryption operation, processing another
+    # data part.
     def C_EncryptUpdate(data, out_size=nil)
       @pk.C_EncryptUpdate(@sess, data, out_size)
     end
+    # Finishes a multiple-part encryption operation.
     def C_EncryptFinal(out_size=nil)
       @pk.C_EncryptFinal(@sess, out_size)
     end
 
     # Convenience method for the C_EncryptInit, C_EncryptUpdate, C_EncryptFinal call flow.
+    #
+    # If no block is given, the single part operation C_EncryptInit, C_Encrypt is called.
+    # If a block is given, the multi part operation (C_EncryptInit, C_EncryptUpdate, C_EncryptFinal)
+    # is used. The given block is called once with a cipher object. There can be any number of
+    # Cipher#update calls within the block, each giving the encryption result of this part as String.
+    #
+    # Returns the final part of the encryption operation.
     #
     # Example:
     #   iv = "12345678"
@@ -255,16 +270,22 @@ class PKCS11
                    mechanism, key, data, &block)
     end
 
-    # The same like C_EncryptInit() but for decryption.
+    # Initializes a decryption operation.
+    #
+    # See decrypt() for convenience.
     def C_DecryptInit(mechanism, key)
       @pk.C_DecryptInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
+    # Decrypts encrypted data in a single part.
     def C_Decrypt(data, out_size=nil)
       @pk.C_Decrypt(@sess, data, out_size)
     end
+    # Continues a multiple-part decryption operation, processing another
+    # encrypted data part.
     def C_DecryptUpdate(data, out_size=nil)
       @pk.C_DecryptUpdate(@sess, data, out_size)
     end
+    # Finishes a multiple-part decryption operation.
     def C_DecryptFinal(out_size=nil)
       @pk.C_DecryptFinal(@sess, out_size)
     end
@@ -277,13 +298,18 @@ class PKCS11
                    mechanism, key, data, &block)
     end
 
-    # The same like C_EncryptInit() but for message-digesting.
+    # Initializes a message-digesting operation.
+    #
+    # See digest() for convenience.
     def C_DigestInit(mechanism)
       @pk.C_DigestInit(@sess, Session.hash_to_mechanism(mechanism))
     end
+    # Digests data in a single part.
     def C_Digest(data, out_size=nil)
       @pk.C_Digest(@sess, data, out_size)
     end
+    # Continues a multiple-part message-digesting operation, processing
+    # another data part.
     def C_DigestUpdate(data)
       @pk.C_DigestUpdate(@sess, data)
     end
@@ -296,6 +322,8 @@ class PKCS11
     def C_DigestKey(key)
       @pk.C_DigestKey(@sess, key)
     end
+    # Finishes a multiple-part message-digesting operation, returning the
+    # message digest as String.
     def C_DigestFinal(out_size=nil)
       @pk.C_DigestFinal(@sess, out_size)
     end
@@ -304,7 +332,7 @@ class PKCS11
     # C_DigestFinal call flow.
     #
     # Example:
-    #   digest_string = session.encrypt( :SHA_1 ) do |cipher|
+    #   digest_string = session.digest( :SHA_1 ) do |cipher|
     #     cipher.update("key prefix")
     #     cipher.digest_key(some_key)
     #   end
@@ -323,16 +351,23 @@ class PKCS11
       end
     end
 
-    # The same like C_EncryptInit() but for signing.
+    # Initializes a signature operation, where the signature is an appendix to the
+    # data.
+    #
+    # See sign() for convenience.
     def C_SignInit(mechanism, key)
       @pk.C_SignInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
+    # Signs data in a single part, where the signature is an appendix to the data.
     def C_Sign(data, out_size=nil)
       @pk.C_Sign(@sess, data, out_size)
     end
+    # Continues a multiple-part signature operation, processing another data
+    # part.
     def C_SignUpdate(data)
       @pk.C_SignUpdate(@sess, data)
     end
+    # Finishes a multiple-part signature operation, returning the signature.
     def C_SignFinal(out_size=nil)
       @pk.C_SignFinal(@sess, out_size)
     end
@@ -346,16 +381,26 @@ class PKCS11
     end
 
 
-    # The same like C_EncryptInit() but for verification.
+    # Initializes a verification operation, where the signature is an appendix to
+    # the data.
+    #
+    # See verify() for convenience.
     def C_VerifyInit(mechanism, key)
       @pk.C_VerifyInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
+    # Verifies a signature in a single-part operation, where the signature is an
+    # appendix to the data.
     def C_Verify(data, out_size=nil)
       @pk.C_Verify(@sess, data, out_size)
     end
+    # Continues a multiple-part verification operation, processing another
+    # data part.
     def C_VerifyUpdate(data)
       @pk.C_VerifyUpdate(@sess, data)
     end
+    # Finishes a multiple-part verification operation, checking the signature.
+    #
+    # Returns <tt>true</tt> for valid signature.
     def C_VerifyFinal(out_size=nil)
       @pk.C_VerifyFinal(@sess, out_size)
     end
@@ -373,6 +418,8 @@ class PKCS11
     def C_SignRecoverInit(mechanism, key)
       @pk.C_SignRecoverInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
+    # Signs data in a single operation, where the data can be recovered from
+    # the signature.
     def C_SignRecover(data, out_size=nil)
       @pk.C_SignRecover(@sess, data, out_size)
     end
@@ -389,6 +436,8 @@ class PKCS11
     def C_VerifyRecoverInit(mechanism, key)
       @pk.C_VerifyRecoverInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
+    # Verifies a signature in a single-part operation, where the data is
+    # recovered from the signature.
     def C_VerifyRecover(signature, out_size=nil)
       @pk.C_VerifyRecover(@sess, signature, out_size=nil)
     end

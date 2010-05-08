@@ -1,6 +1,6 @@
 class PKCS11
   class Object
-    def initialize(pkcs11, session, object)
+    def initialize(pkcs11, session, object) # :nodoc:
       @pk, @sess, @obj = pkcs11, session, object
     end
 
@@ -10,40 +10,51 @@ class PKCS11
     end
     alias to_i to_int
 
-    def inspect
+    def inspect # :nodoc:
       "#<#{self.class} #{@obj.inspect}>"
     end
 
     # Returns the value of one attribute the object.
     #
-    # attribute can be String or Symbol of the attribute constant
+    # * <tt>attribute</tt> : can be String or Symbol of the attribute constant
     # or the attribute value as Integer.
+    #
+    # Returns the attribute value as String.
     def [](attribute)
       attrs = C_GetAttributeValue( [attribute] )
       attrs.first.value unless attrs.empty?
     end
 
     # Modifies the value of one attribute the object.
+    #
+    # * <tt>attribute</tt> : can be String or Symbol of the attribute constant
+    # or the attribute value as Integer.
+    # * <tt>value</tt> : String value the attribute will be set to.
+    #
+    # Following value conversations are done:
+    #   true   -> 0x01
+    #   false  -> 0x00
+    #   nil    -> NULL pointer
+    #   Fixnum -> binary encoded unsigned long
     def []=(attribute, value)
       C_SetAttributeValue( attribute => value )
     end
 
-    # Modifies the value of one or more attributes the object.
+    # Modifies the value of one or more attributes of the object in a single call.
     #
     # Examples:
-    #   object.attributes = :VALUE => cert_data
-    #   object.attributes = PKCS11::CKA_VALUE => cert_data
+    #   object.attributes = :SUBJECT => cert_subject, PKCS11::CKA_VALUE => cert_data
     def C_SetAttributeValue(template={})
       template = Session.hash_to_attributes template
       @pk.C_SetAttributeValue(@sess, @obj, template)
     end
     alias attributes= C_SetAttributeValue
     
-    # Obtains the value of one or more attributes the object.
-    # Returns an Array of PKCS11::CK_ATTRIBUTE.
+    # Obtains the value of one or more attributes of the object in a single call.
+    # Returns an Array of PKCS11::CK_ATTRIBUTE's.
     #
     # Example:
-    #   p object.attributes [:ID, :VALUE]
+    #   certificate.attributes [:ID, :VALUE]
     def C_GetAttributeValue(template={})
       template = Session.hash_to_attributes template
       @pk.C_GetAttributeValue(@sess, @obj, template)
