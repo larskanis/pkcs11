@@ -30,6 +30,11 @@ class TestPkcs11Slot < Test::Unit::TestCase
     ]
   end
 
+  def test_token_info
+    ti = slot.token_info
+    assert 'Token info should contain a serialNumber', ti =~ /serialNumber=/
+  end
+  
   def test_mechanisms
     assert 'There should be some mechanisms', !slot.mechanisms.empty?
     slot.mechanisms.each do |m|

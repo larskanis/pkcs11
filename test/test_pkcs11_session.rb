@@ -53,4 +53,8 @@ class TestPkcs11Session < Test::Unit::TestCase
     assert_not_equal rnd1, rnd2, 'Two random blocks should be different'
   end
 
+  def test_session_info
+    info = session.info
+    assert 'Session info should have a flag attribute', info =~ /flags=/
+  end
 end
