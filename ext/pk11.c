@@ -21,11 +21,21 @@ static VALUE cCK_MECHANISM_INFO;
 static VALUE cCK_SESSION_INFO;
 static VALUE cCK_MECHANISM;
 
-#define HANDLE2NUM(n) LONG2NUM(n)
-#define NUM2HANDLE(n) NUM2LONG(n)
+#define HANDLE2NUM(n) ULONG2NUM(n)
+#define NUM2HANDLE(n) PKNUM2ULONG(n)
+#define PKNUM2ULONG(n) pkcs11_num2ulong(n)
 #define pkcs11_new_struct(klass) rb_funcall(klass, sNEW, 0)
 
 VALUE pkcs11_return_value_to_name(CK_RV);
+
+static VALUE
+pkcs11_num2ulong(VALUE val)
+{
+  if (TYPE(val) == T_BIGNUM || TYPE(val) == T_FIXNUM) {
+    return NUM2ULONG(val);
+  }
+  return NUM2ULONG(rb_to_int(val));
+}
 
 static void
 pkcs11_raise(CK_RV rv)
