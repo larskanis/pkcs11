@@ -43,7 +43,7 @@ class TestPkcs11Slot < Test::Unit::TestCase
   end
 
   def test_session
-    flags = PKCS11::CKF_SERIAL_SESSION | PKCS11::CKF_RW_SESSION
+    flags = PKCS11::CKF_SERIAL_SESSION #| PKCS11::CKF_RW_SESSION
     session = slot.open(flags){|session|
       assert 'Session info should tell about it\'s state', session.info =~ /state=/
     }

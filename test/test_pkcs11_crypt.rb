@@ -16,7 +16,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     @slots = pk.active_slots
     @slot = slots.last
     
-    flags = PKCS11::CKF_SERIAL_SESSION | PKCS11::CKF_RW_SESSION
+    flags = PKCS11::CKF_SERIAL_SESSION #| PKCS11::CKF_RW_SESSION
     @session = slot.open(flags)
     session.login(:USER, "")
     
@@ -25,7 +25,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     @rsa_priv_key = session.find_objects(:CLASS => PKCS11::CKO_PRIVATE_KEY,
                         :KEY_TYPE => PKCS11::CKK_RSA).first
     @secret_key = session.generate_key(:DES2_KEY_GEN,
-      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true})
+      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false})
   end
 
   def teardown
@@ -127,9 +127,9 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
   def test_generate_key_pair
     pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
-      {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>[3].pack("N")},
-      {:TOKEN=>true, :PRIVATE=>true,:SUBJECT=>'test', :ID=>[123].pack("n"),
-       :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true})
+      {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
+      {:PRIVATE=>true,:SUBJECT=>'test', :ID=>[123].pack("n"),
+       :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true, :TOKEN=>false})
 
     assert_equal priv_key[:CLASS], PKCS11::CKO_PRIVATE_KEY
     assert_equal pub_key[:CLASS], PKCS11::CKO_PUBLIC_KEY
