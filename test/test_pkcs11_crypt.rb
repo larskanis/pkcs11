@@ -3,7 +3,7 @@ require "pkcs11"
 require "test/helper"
 require "openssl"
 
-class TestPkcs11Session < Test::Unit::TestCase
+class TestPkcs11Crypt < Test::Unit::TestCase
   attr_reader :slots
   attr_reader :slot
   attr_reader :session
