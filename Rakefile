@@ -4,7 +4,6 @@
 require 'rubygems'
 require 'hoe'
 require 'rake/extensiontask'
-require 'grancher/task'
 
 hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
@@ -24,15 +23,13 @@ Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
 end
 
-require 'grancher/task'
-Grancher::Task.new do |g|
-  g.branch = 'gh-pages'         # alternatively, g.refspec = 'ghpages:/refs/heads/ghpages'
-  g.push_to = 'origin'
-#  g.repo = 'some_repo'          # defaults to '.'
-#  g.message = 'Updated website' # defaults to 'Updated files.'
-
-  # Put the website-directory in the root
-  g.directory 'doc'
-end
+# RDoc-upload task for github (currently on rubyforge)
+#
+# require 'grancher/task'
+# Grancher::Task.new do |g|
+#   g.branch = 'gh-pages'         # alternatively, g.refspec = 'ghpages:/refs/heads/ghpages'
+#   g.push_to = 'origin'
+#   g.directory 'doc'
+# end
 
 # vim: syntax=ruby
