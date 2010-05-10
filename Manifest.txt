@@ -22,6 +22,9 @@ lib/pkcs11/session.rb
 lib/pkcs11/slot.rb
 sample/firefox_certs.rb
 sample/nssckbi.rb
+test/fixtures/softokn/cert8.db
+test/fixtures/softokn/key3.db
+test/fixtures/softokn/secmod.db
 test/helper.rb
 test/test_pkcs11.rb
 test/test_pkcs11_crypt.rb
