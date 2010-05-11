@@ -19,7 +19,9 @@ module PKCS11
     # * <tt>attribute</tt> : can be String or Symbol of the attribute constant
     # or the attribute number as Integer.
     #
-    # Returns the attribute value as String. No conversations are carried out.
+    # Returns the attribute value as String, Integer or true/false
+    # depending on the attribute type.
+    # Unknown attributes (out of PKCS#11 v2.2) are not converted but returned as String.
     # That is true/false will be returned as "\001" respectively "\000".
     def [](attribute)
       attrs = C_GetAttributeValue( [attribute] )
