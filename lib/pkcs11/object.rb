@@ -1,4 +1,4 @@
-class PKCS11
+module PKCS11
   class Object
     def initialize(pkcs11, session, object) # :nodoc:
       @pk, @sess, @obj = pkcs11, session, object

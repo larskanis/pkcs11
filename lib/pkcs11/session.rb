@@ -1,4 +1,4 @@
-class PKCS11
+module PKCS11
   class Session
     class << self
       def hash_to_attributes(template) # :nodoc:

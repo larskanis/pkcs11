@@ -1,4 +1,4 @@
-class PKCS11
+module PKCS11
   class Slot
     def initialize(pkcs11, slot) # :nodoc:
       @pk, @slot = pkcs11, slot

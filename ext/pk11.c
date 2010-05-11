@@ -9,6 +9,7 @@
 static const char *VERSION = "0.1.0";
 
 static ID sNEW;
+static VALUE mPKCS11;
 static VALUE cPKCS11;
 static VALUE ePKCS11Error;
 
@@ -79,6 +80,12 @@ pkcs11_s_alloc(VALUE self)
   pkcs11_ctx *ctx;
   obj = Data_Make_Struct(self, pkcs11_ctx, 0, pkcs11_ctx_free, ctx);
   return obj;
+}
+
+static VALUE
+pkcs11_provider_new(int argc, VALUE *argv, VALUE self)
+{
+  return rb_funcall2(cPKCS11, sNEW, argc, argv);
 }
 
 static VALUE 
@@ -1470,7 +1477,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
 
 #define PKCS11_DEFINE_STRUCT(s) \
   do { \
-    c##s = rb_define_class_under(cPKCS11, #s, rb_cObject); \
+    c##s = rb_define_class_under(mPKCS11, #s, rb_cObject); \
     rb_define_alloc_func(c##s, s##_s_alloc); \
   } while(0)
 
@@ -1483,13 +1490,15 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
 void
 Init_pkcs11_ext()
 {
+  mPKCS11 = rb_define_module("PKCS11");
   sNEW = rb_intern("new");
-  cPKCS11 = rb_define_class("PKCS11", rb_cObject);
+  cPKCS11 = rb_define_class_under(mPKCS11, "Provider", rb_cObject);
+  rb_define_module_function(mPKCS11, "new", pkcs11_provider_new, -1);
   
   /* Library version */
-  rb_define_const( cPKCS11, "VERSION", rb_str_new2(VERSION) );
+  rb_define_const( mPKCS11, "VERSION", rb_str_new2(VERSION) );
   
-  ePKCS11Error = rb_define_class_under(cPKCS11, "Error", rb_eStandardError);
+  ePKCS11Error = rb_define_class_under(mPKCS11, "Error", rb_eStandardError);
   rb_define_alloc_func(cPKCS11, pkcs11_s_alloc);
   rb_define_method(cPKCS11, "initialize", pkcs11_initialize, -1);
 
@@ -1566,7 +1575,7 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_MEMBER(CK_C_INITIALIZE_ARGS, flags);
   PKCS11_DEFINE_MEMBER(CK_C_INITIALIZE_ARGS, pReserved);
 
-  cCK_ATTRIBUTE = rb_define_class_under(cPKCS11, "CK_ATTRIBUTE", rb_cObject);
+  cCK_ATTRIBUTE = rb_define_class_under(mPKCS11, "CK_ATTRIBUTE", rb_cObject);
   rb_define_alloc_func(cCK_ATTRIBUTE, ck_attr_s_alloc);
   rb_define_method(cCK_ATTRIBUTE, "initialize", ck_attr_initialize, -1);
   rb_define_method(cCK_ATTRIBUTE, "type", ck_attr_type, 0);
@@ -1667,5 +1676,5 @@ Init_pkcs11_ext()
 
   ///////////////////////////////////////
 
-  Init_pkcs11_const(cPKCS11);
+  Init_pkcs11_const(mPKCS11);
 }

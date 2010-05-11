@@ -22,12 +22,13 @@ PKCS11.new requires suitable PKCS #11 implementation for your smart-cards.
 
   require "rubygems"
   require "pkcs11"
+  include PKCS11
 
   pkcs11 = PKCS11.new("/path/to/pkcs11.so")
   slot = pkcs11.active_slots.first
   p slot.info
-  session = slot.open(PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION)
-  session.login(PKCS11::CKU_USER, "1234")
+  session = slot.open(CKF_SERIAL_SESSION|CKF_RW_SESSION)
+  session.login(:USER, "1234")
   ...
   session.logout
   session.close
