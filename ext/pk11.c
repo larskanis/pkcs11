@@ -1525,6 +1525,11 @@ Init_pkcs11_ext()
   mPKCS11 = rb_define_module("PKCS11");
   sNEW = rb_intern("new");
   cPKCS11 = rb_define_class_under(mPKCS11, "Provider", rb_cObject);
+
+/* Document-method: PKCS11.new
+ *
+ * Alias function for PKCS11::Provider.new
+ */
   rb_define_module_function(mPKCS11, "new", pkcs11_provider_new, -1);
   
   /* Library version */
