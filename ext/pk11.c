@@ -166,7 +166,7 @@ pkcs11_C_GetSlotList(VALUE self, VALUE presented)
     pkcs11_raise(rv);
   }
   for (i = 0; i < ulSlotCount; i++)
-    rb_ary_push(ary, ULONG2NUM(pSlotList[i]));
+    rb_ary_push(ary, HANDLE2NUM(pSlotList[i]));
   free(pSlotList);
 
   return ary;
@@ -181,7 +181,7 @@ pkcs11_C_GetSlotInfo(VALUE self, VALUE slot_id)
 
   GetFunction(self, C_GetSlotInfo, func);
   info = pkcs11_new_struct(cCK_SLOT_INFO);
-  rv = func(NUM2ULONG(slot_id), DATA_PTR(info));
+  rv = func(NUM2HANDLE(slot_id), DATA_PTR(info));
   if (rv != CKR_OK) pkcs11_raise(rv);
 
   return info;
@@ -196,7 +196,7 @@ pkcs11_C_GetTokenInfo(VALUE self, VALUE slot_id)
 
   GetFunction(self, C_GetTokenInfo, func);
   info = pkcs11_new_struct(cCK_TOKEN_INFO);
-  rv = func(NUM2ULONG(slot_id), DATA_PTR(info));
+  rv = func(NUM2HANDLE(slot_id), DATA_PTR(info));
   if (rv != CKR_OK) pkcs11_raise(rv);
 
   return info;
@@ -214,19 +214,19 @@ pkcs11_C_GetMechanismList(VALUE self, VALUE slot_id)
 
   ary = rb_ary_new();
   GetFunction(self, C_GetMechanismList, func);
-  rv = func(NUM2ULONG(slot_id), NULL_PTR, &count);
+  rv = func(NUM2HANDLE(slot_id), NULL_PTR, &count);
   if (rv != CKR_OK) pkcs11_raise(rv);
   if (count == 0) return ary;
 
   types = (CK_MECHANISM_TYPE_PTR)malloc(sizeof(CK_MECHANISM_TYPE)*count);
   if (!types) rb_sys_fail(0);
-  rv = func(NUM2ULONG(slot_id), types, &count);
+  rv = func(NUM2HANDLE(slot_id), types, &count);
   if (rv != CKR_OK){
     free(types);
     pkcs11_raise(rv);
   }
   for (i = 0; i < count; i++)
-    rb_ary_push(ary, ULONG2NUM(*(types+i)));
+    rb_ary_push(ary, HANDLE2NUM(*(types+i)));
   free(types);
 
   return ary;
@@ -241,7 +241,7 @@ pkcs11_C_GetMechanismInfo(VALUE self, VALUE slot_id, VALUE type)
 
   info = pkcs11_new_struct(cCK_MECHANISM_INFO);
   GetFunction(self, C_GetMechanismInfo, func);
-  rv = func(NUM2ULONG(slot_id), NUM2ULONG(type), DATA_PTR(info));
+  rv = func(NUM2HANDLE(slot_id), NUM2HANDLE(type), DATA_PTR(info));
   if (rv != CKR_OK) pkcs11_raise(rv);
 
   return info;
@@ -256,7 +256,7 @@ pkcs11_C_InitToken(VALUE self, VALUE slot_id, VALUE pin, VALUE label)
   StringValue(pin);
   StringValue(label);
   GetFunction(self, C_InitToken, func);
-  rv = func(NUM2ULONG(slot_id),
+  rv = func(NUM2HANDLE(slot_id),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(pin), RSTRING_LEN(pin),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(label));
   if (rv != CKR_OK) pkcs11_raise(rv);
@@ -272,7 +272,7 @@ pkcs11_C_InitPIN(VALUE self, VALUE session, VALUE pin)
 
   StringValue(pin);
   GetFunction(self, C_InitPIN, func);
-  rv = func(NUM2ULONG(session),
+  rv = func(NUM2HANDLE(session),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(pin), RSTRING_LEN(pin));
   if (rv != CKR_OK) pkcs11_raise(rv);
 
@@ -290,7 +290,7 @@ pkcs11_C_OpenSession(VALUE self, VALUE slot_id, VALUE flags)
   rv = func(NUM2HANDLE(slot_id), NUM2ULONG(flags), 0, 0, &handle);
   if(rv != CKR_OK) pkcs11_raise(rv);
 
-  return ULONG2NUM(handle);
+  return HANDLE2NUM(handle);
 }
 
 static VALUE
@@ -645,7 +645,7 @@ pkcs11_C_WaitForSlotEvent(VALUE self, VALUE flags)
   if(rv == CKR_NO_EVENT) return Qnil;
   if(rv != CKR_OK) pkcs11_raise(rv);
 
-  return ULONG2NUM(slot_id);
+  return HANDLE2NUM(slot_id);
 }
 
 ///////////////////////////////////////
@@ -1183,7 +1183,7 @@ ck_attr_initialize(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "02", &type, &value);
   Data_Get_Struct(self, CK_ATTRIBUTE, attr);
   if (argc == 0) return self;
-  attr->type = NUM2ULONG(type);
+  attr->type = NUM2HANDLE(type);
   attr->pValue = NULL;
   switch(TYPE(value)){
   case T_TRUE:
