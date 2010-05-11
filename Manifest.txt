@@ -18,6 +18,7 @@ ext/pk11_const.c
 lib/pkcs11.rb
 lib/pkcs11/extensions.rb
 lib/pkcs11/object.rb
+lib/pkcs11/provider.rb
 lib/pkcs11/session.rb
 lib/pkcs11/slot.rb
 sample/firefox_certs.rb
@@ -28,5 +29,6 @@ test/fixtures/softokn/secmod.db
 test/helper.rb
 test/test_pkcs11.rb
 test/test_pkcs11_crypt.rb
+test/test_pkcs11_object.rb
 test/test_pkcs11_session.rb
 test/test_pkcs11_slot.rb
