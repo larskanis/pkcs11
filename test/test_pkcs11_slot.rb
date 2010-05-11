@@ -3,6 +3,8 @@ require "pkcs11"
 require "test/helper"
 
 class TestPkcs11Slot < Test::Unit::TestCase
+  include PKCS11
+  
   attr_reader :slots
   attr_reader :slot
   
@@ -43,7 +45,7 @@ class TestPkcs11Slot < Test::Unit::TestCase
   end
 
   def test_session
-    flags = PKCS11::CKF_SERIAL_SESSION #| PKCS11::CKF_RW_SESSION
+    flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     session = slot.open(flags){|session|
       assert 'Session info should tell about it\'s state', session.info =~ /state=/
     }

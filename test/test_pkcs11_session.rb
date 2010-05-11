@@ -4,6 +4,8 @@ require "test/helper"
 require "openssl"
 
 class TestPkcs11Session < Test::Unit::TestCase
+  include PKCS11
+  
   attr_reader :slots
   attr_reader :slot
   attr_reader :session
@@ -15,7 +17,7 @@ class TestPkcs11Session < Test::Unit::TestCase
     @slots = pk.active_slots
     @slot = slots.last
     
-    flags = PKCS11::CKF_SERIAL_SESSION #| PKCS11::CKF_RW_SESSION
+    flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     @session = slot.C_OpenSession(flags)
     @session.login(:USER, "")
   end
@@ -30,11 +32,11 @@ class TestPkcs11Session < Test::Unit::TestCase
   end
 
   def test_find_objects
-    obj = session.find_objects(:CLASS => PKCS11::CKO_CERTIFICATE)
+    obj = session.find_objects(:CLASS => CKO_CERTIFICATE)
     assert 'There should be some certificates in the test database', obj.length>10
     assert_equal PKCS11::Object, obj.first.class, 'Retuned objects should be class Object'
     
-    session.find_objects(:CLASS => PKCS11::CKO_CERTIFICATE) do |obj|
+    session.find_objects(:CLASS => CKO_CERTIFICATE) do |obj|
       assert 'A certificate should have a subject', obj[:SUBJECT]
       assert 'Every certificate should have a CN in the subject', OpenSSL::X509::Name.new(obj[:SUBJECT]) =~ /\/CN=/i
     end
@@ -56,24 +58,24 @@ class TestPkcs11Session < Test::Unit::TestCase
   
   def test_create_data_object
     obj = session.create_object(
-      :CLASS=>PKCS11::CKO_DATA,
+      :CLASS=>CKO_DATA,
       :TOKEN=>false,
       :APPLICATION=>'My Application',
       :VALUE=>'value')
   end
   
   def test_create_certificate_object
-    obj1 = session.find_objects(:CLASS => PKCS11::CKO_CERTIFICATE, :ID=>TestCert_ID).first
+    obj1 = session.find_objects(:CLASS => CKO_CERTIFICATE, :ID=>TestCert_ID).first
 #     PKCS11::ATTRIBUTES.values.each{|attr|
 #       p [attr, obj1[attr.gsub('CKA_','')]] rescue PKCS11::Error
 #     }
 
     obj = session.create_object(
-      :CLASS=>PKCS11::CKO_CERTIFICATE,
+      :CLASS=>CKO_CERTIFICATE,
       :SUBJECT=>obj1[:SUBJECT],
       :TOKEN=>false,
       :LABEL=>'test_create_object',
-      :CERTIFICATE_TYPE=>PKCS11::CKC_X_509,
+      :CERTIFICATE_TYPE=>CKC_X_509,
       :ISSUER=>obj1[:ISSUER],
       :VALUE=>obj1[:VALUE],
       :SERIAL_NUMBER=>'12345'
@@ -86,8 +88,8 @@ class TestPkcs11Session < Test::Unit::TestCase
     rsa = OpenSSL::PKey::RSA.generate(512)
   
     obj = session.create_object(
-      :CLASS=>PKCS11::CKO_PUBLIC_KEY,
-      :KEY_TYPE=>PKCS11::CKK_RSA,
+      :CLASS=>CKO_PUBLIC_KEY,
+      :KEY_TYPE=>CKK_RSA,
       :TOKEN=>false,
       :MODULUS=>rsa.n.to_s(2),
       :PUBLIC_EXPONENT=>rsa.e.to_s(2),

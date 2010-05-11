@@ -4,6 +4,8 @@ require "test/helper"
 require "openssl"
 
 class TestPkcs11Object < Test::Unit::TestCase
+  include PKCS11
+
   attr_reader :slots
   attr_reader :slot
   attr_reader :session
@@ -14,13 +16,13 @@ class TestPkcs11Object < Test::Unit::TestCase
     @slots = pk.active_slots
     @slot = slots.last
     
-    flags = PKCS11::CKF_SERIAL_SESSION #| PKCS11::CKF_RW_SESSION
+    flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     @session = slot.C_OpenSession(flags)
     @session.login(:USER, "")
     
     # Create session object for tests.
     @object = session.create_object(
-      :CLASS=>PKCS11::CKO_DATA,
+      :CLASS=>CKO_DATA,
       :TOKEN=>false,
       :APPLICATION=>'My Application',
       :VALUE=>'value')
@@ -42,7 +44,7 @@ class TestPkcs11Object < Test::Unit::TestCase
 
     # The C language way to retrieve the attribute values:
     template = [
-      PKCS11::CK_ATTRIBUTE.new(PKCS11::CKA_VALUE, nil),
+      CK_ATTRIBUTE.new(CKA_VALUE, nil),
     ]
     attrs = pk.C_GetAttributeValue(session, object, template)
     attrs.each do |attr|

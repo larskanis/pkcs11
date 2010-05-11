@@ -4,6 +4,8 @@ require "test/helper"
 require "openssl"
 
 class TestPkcs11Crypt < Test::Unit::TestCase
+  include PKCS11
+
   attr_reader :slots
   attr_reader :slot
   attr_reader :session
@@ -16,14 +18,14 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     @slots = pk.active_slots
     @slot = slots.last
     
-    flags = PKCS11::CKF_SERIAL_SESSION #| PKCS11::CKF_RW_SESSION
+    flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     @session = slot.open(flags)
     session.login(:USER, "")
     
-    @rsa_pub_key = session.find_objects(:CLASS => PKCS11::CKO_PUBLIC_KEY,
-                        :KEY_TYPE => PKCS11::CKK_RSA).first
-    @rsa_priv_key = session.find_objects(:CLASS => PKCS11::CKO_PRIVATE_KEY,
-                        :KEY_TYPE => PKCS11::CKK_RSA).first
+    @rsa_pub_key = session.find_objects(:CLASS => CKO_PUBLIC_KEY,
+                        :KEY_TYPE => CKK_RSA).first
+    @rsa_priv_key = session.find_objects(:CLASS => CKO_PRIVATE_KEY,
+                        :KEY_TYPE => CKK_RSA).first
     @secret_key = session.generate_key(:DES2_KEY_GEN,
       {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false})
   end
@@ -113,7 +115,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, secret_key)
     assert_equal 16, wrapped_key_value.length, '112 bit 3DES key should have same size wrapped'
 
-    unwrapped_key = session.unwrap_key(:DES3_ECB, secret_key, wrapped_key_value, :CLASS=>PKCS11::CKO_SECRET_KEY, :KEY_TYPE=>PKCS11::CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true)
+    unwrapped_key = session.unwrap_key(:DES3_ECB, secret_key, wrapped_key_value, :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true)
 
     secret_key_kcv = session.encrypt( :DES3_ECB, secret_key, "\0"*8)
     unwrapped_key_kcv = session.encrypt( :DES3_ECB, unwrapped_key, "\0"*8)
@@ -131,8 +133,8 @@ class TestPkcs11Crypt < Test::Unit::TestCase
       {:PRIVATE=>true,:SUBJECT=>'test', :ID=>[123].pack("n"),
        :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true, :TOKEN=>false})
 
-    assert_equal priv_key[:CLASS], PKCS11::CKO_PRIVATE_KEY
-    assert_equal pub_key[:CLASS], PKCS11::CKO_PUBLIC_KEY
+    assert_equal priv_key[:CLASS], CKO_PRIVATE_KEY
+    assert_equal pub_key[:CLASS], CKO_PUBLIC_KEY
     assert_equal true, priv_key[:SENSITIVE], 'Private key should be sensitive'
   end
 
