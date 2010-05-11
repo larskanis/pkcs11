@@ -76,10 +76,11 @@ module PKCS11
       end
     end
     alias open C_OpenSession
-  end
-  
-  # Closes all sessions an application has with a token.
-  def C_CloseAllSessions
-    @pk.C_CloseAllSessions(@slot)
+    
+    # Closes all sessions an application has with a token.
+    def C_CloseAllSessions
+      @pk.C_CloseAllSessions(@slot)
+    end
+    alias close_all_sessions C_CloseAllSessions
   end
 end

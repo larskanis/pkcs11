@@ -56,5 +56,11 @@ class TestPkcs11Slot < Test::Unit::TestCase
     assert session.info.inspect =~ /flags=/, 'Session info should tell about it\'s flags'
     session.close
   end
+
+  def test_session2
+    flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
+    session = slot.open(flags)
+    slot.close_all_sessions
+  end
 end
 
