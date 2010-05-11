@@ -26,8 +26,12 @@ class TestPkcs11Crypt < Test::Unit::TestCase
                         :KEY_TYPE => CKK_RSA).first
     @rsa_priv_key = session.find_objects(:CLASS => CKO_PRIVATE_KEY,
                         :KEY_TYPE => CKK_RSA).first
-    @secret_key = session.generate_key(:DES2_KEY_GEN,
-      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false})
+    @secret_key = session.create_object(
+      :CLASS=>CKO_SECRET_KEY,
+      :KEY_TYPE=>CKK_DES2,
+      :ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false,
+      :VALUE=>'0123456789abcdef',
+      :LABEL=>'test_secret_key')
   end
 
   def teardown
@@ -43,18 +47,17 @@ class TestPkcs11Crypt < Test::Unit::TestCase
   def test_endecrypt
     plaintext1 = "secret text"
     cryptogram = session.encrypt( :RSA_PKCS, rsa_pub_key, plaintext1)
-    assert 'The cryptogram should contain some data', cryptogram.length>10
+    assert cryptogram.length>10, 'The cryptogram should contain some data'
     assert_not_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
     
     plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
-    assert 'Decrypted plaintext should be the same', plaintext1==plaintext2
+    assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
   end
 
   def test_sign_verify
     plaintext = "important text"
     signature = session.sign( :SHA1_RSA_PKCS, rsa_priv_key, plaintext)
-    assert 'The signature should contain some data', signature.length>10
-    assert 'The signature should contain some data', signature.length>10
+    assert signature.length>10, 'The signature should contain some data'
 
     signature2 = session.sign( :SHA1_RSA_PKCS, rsa_priv_key){|c|
       c.update(plaintext[0..3])
@@ -63,7 +66,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     assert_equal signature, signature2, 'results of one-step and two-step signatures should be equal'
 
     valid = session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, plaintext)
-    assert 'The signature should be correct', valid
+    assert  valid, 'The signature should be correct'
     
     assert_raise(PKCS11::Error, 'The signature should be invalid on different text') do
       session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "modified text")
@@ -82,7 +85,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
     osslc = create_openssl_cipher rsa_pub_key
     valid = osslc.verify(OpenSSL::Digest::SHA1.new, signature, "important text")
-    assert 'The signature should be correct', valid
+    assert valid, 'The signature should be correct'
   end
 
   def test_compare_endecrypt_with_openssl
@@ -123,16 +126,23 @@ class TestPkcs11Crypt < Test::Unit::TestCase
   end
 
   def test_wrap_private_key
-    wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, rsa_priv_key)
-    assert 'RSA private key should have bigger size wrapped', wrapped_key_value.length>100
+    wrapped_key_value = session.wrap_key({:DES3_CBC_PAD=>"\0"*8}, secret_key, rsa_priv_key)
+    assert wrapped_key_value.length>100, 'RSA private key should have bigger size wrapped'
+  end
+
+  def test_generate_secret_key
+    key = session.generate_key(:DES2_KEY_GEN,
+      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
+    assert_equal true, key[:LOCAL], 'Keys created on the token should be marked as local'
   end
 
   def test_generate_key_pair
     pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
       {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
       {:PRIVATE=>true,:SUBJECT=>'test', :ID=>[123].pack("n"),
-       :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true, :TOKEN=>false})
-
+       :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
+    
+    assert_equal true, priv_key[:LOCAL], 'Private keys created on the token should be marked as local'
     assert_equal priv_key[:CLASS], CKO_PRIVATE_KEY
     assert_equal pub_key[:CLASS], CKO_PUBLIC_KEY
     assert_equal true, priv_key[:SENSITIVE], 'Private key should be sensitive'

@@ -52,12 +52,27 @@ module PKCS11
     alias attributes= C_SetAttributeValue
     
     # Obtains the value of one or more attributes of the object in a single call.
+    #
+    # Without params all known attributes are tried to read from the Object.
+    # This is significant slower then naming the needed attributes and should
+    # be used for debug purposes only.
+    #
     # Returns an Array of PKCS11::CK_ATTRIBUTE's.
     #
     # Example:
     #   certificate.attributes :ID, :VALUE
-    def C_GetAttributeValue(template={}, *args)
-      template = [template] + args unless args.empty?
+    def C_GetAttributeValue(*template)
+      case template.length
+        when 0
+          return PKCS11::ATTRIBUTES.values.map{|attr|
+            begin
+              attributes(PKCS11.const_get(attr))
+            rescue PKCS11::Error
+            end
+          }.flatten.compact
+        when 1
+          template = template[0]
+      end
       template = Session.hash_to_attributes template
       @pk.C_GetAttributeValue(@sess, @obj, template)
     end

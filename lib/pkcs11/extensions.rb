@@ -39,6 +39,29 @@ module PKCS11
     end
   end
 
+  module InspectableAttribute
+    # Array of the InspectableStruct's attribute names.
+    def members
+      ['type', 'value']
+    end
+    # Array of the InspectableStruct's attribute values.
+    def values
+      members.inject([]){|a,v| a << send(v) }
+    end
+    # Hash with the InspectableStruct's attribute names and values.
+    def to_hash
+      members.inject({}){|h,v| h[v.intern] = send(v); h }
+    end
+    # Get the constant name as String of the given value.
+    # Returns <tt>nil</tt> if value is unknown.
+    def to_s
+      ATTRIBUTES[type]
+    end
+    def inspect # :nodoc:
+      "#<#{self.class} #{ to_s ? "#{to_s} (#{type})" : type} value=#{value.inspect}>"
+    end
+  end
+
   # See InspectableStruct.
   class CK_INFO
     include InspectableStruct
@@ -49,7 +72,7 @@ module PKCS11
   end
   # See InspectableStruct.
   class CK_ATTRIBUTE
-    include InspectableStruct
+    include InspectableAttribute
   end
   # See InspectableStruct.
   class CK_TOKEN_INFO

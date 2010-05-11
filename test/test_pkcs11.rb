@@ -18,11 +18,11 @@ class TestPkcs11 < Test::Unit::TestCase
   
   def test_info
     info = pk.info
-    assert 'There should be a version in the library info', info.inspect =~ /cryptokiVersion=/
+    assert info.inspect =~ /cryptokiVersion=/, 'There should be a version in the library info'
   end
 
   def test_slots
     slots = pk.active_slots
-    assert 'Hope there is at least one active slot', slots.length>=1
+    assert slots.length>=1, 'Hope there is at least one active slot'
   end
 end

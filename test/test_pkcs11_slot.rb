@@ -24,7 +24,7 @@ class TestPkcs11Slot < Test::Unit::TestCase
   def test_info
     sinfo = slot.info
     
-    assert 'Slot info should tell about manufacturerID', sinfo.inspect =~ /manufacturerID=/
+    assert sinfo.inspect =~ /manufacturerID=/, 'Slot info should tell about manufacturerID'
     
     [
       sinfo.slotDescription, sinfo.manufacturerID, sinfo.flags,
@@ -34,24 +34,26 @@ class TestPkcs11Slot < Test::Unit::TestCase
 
   def test_token_info
     ti = slot.token_info
-    assert 'Token info should contain a serialNumber', ti =~ /serialNumber=/
+    assert ti.inspect =~ /serialNumber=/, 'Token info should contain a serialNumber'
   end
   
   def test_mechanisms
-    assert 'There should be some mechanisms', !slot.mechanisms.empty?
+    assert_equal false, slot.mechanisms.empty?, 'There should be some mechanisms'
     slot.mechanisms.each do |m|
-      assert 'Mechanism info should tell about max key size', slot.mechanism_info(m).inspect =~ /ulMaxKeySize=/
+      info = slot.mechanism_info(m)
+      assert_equal CK_MECHANISM_INFO, info.class, 'Mechanism info should a CK_MECHANISM_INFO'
+      assert info.inspect =~ /ulMaxKeySize=/, 'Mechanism info should tell about max key size'
     end
   end
 
   def test_session
     flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     session = slot.open(flags){|session|
-      assert 'Session info should tell about it\'s state', session.info =~ /state=/
+      assert session.info.inspect =~ /state=/, 'Session info should tell about it\'s state'
     }
     
     session = slot.open(flags)
-    assert 'Session info should tell about it\'s flags', session.info =~ /flags=/
+    assert session.info.inspect =~ /flags=/, 'Session info should tell about it\'s flags'
     session.close
   end
 end

@@ -38,9 +38,12 @@ class TestPkcs11Object < Test::Unit::TestCase
   end
 
   def test_attributes
-    assert 'An object should have some attributes', object.attributes(:VALUE, :TOKEN).length == 2
-    assert 'Another way to retieve attributes', object.attributes([:VALUE, :TOKEN]).length == 2
-    assert 'Third way to retieve attributes', object.attributes(:VALUE=>nil, :TOKEN=>nil).length == 2
+    assert_equal 1, object.attributes(:VALUE).length, 'There should be one resulting attribute'
+    assert_equal CK_ATTRIBUTE, object.attributes(:VALUE).first.class, 'Resulting attribute should be type CK_ATTRIBUTE'
+    assert_equal CKO_DATA, object.attributes(:CLASS).first.value, 'Resulting attribute should be Integer value CKO_DATA'
+    assert_equal 3, object.attributes(:VALUE, :TOKEN, :PRIVATE).length, 'An object should have some attributes'
+    assert_equal 3, object.attributes([:VALUE, :TOKEN, :APPLICATION]).length, 'Another way to retieve attributes'
+    assert_equal 2, object.attributes(:VALUE=>nil, :TOKEN=>nil).length, 'Third way to retieve attributes'
 
     # The C language way to retrieve the attribute values:
     template = [
@@ -48,12 +51,25 @@ class TestPkcs11Object < Test::Unit::TestCase
     ]
     attrs = pk.C_GetAttributeValue(session, object, template)
     attrs.each do |attr|
-      assert 'There should be a value to the object', attr.value
+      assert attr.value, 'There should be a value to the object'
     end
+
+    assert object.attributes.length>=4, 'There should be at least the 4 stored attributes readable'
+  end
+
+  def test_accessor
+    assert_equal 'value', object[:VALUE], "Value should be readable"
+    assert_equal CKO_DATA, object[:CLASS], "Class should be readable"
+  end
+
+  def test_attribute
+    attr = object.attributes(:CLASS).first
+    assert attr.inspect =~ /CLASS/, 'The attribute should tell about it\'s type'
+    assert attr.inspect =~ /#{CKO_DATA}/, 'The attribute should tell about it\'s type'
   end
     
   def test_size
-    assert 'There should be an object size', object.size
+    assert object.size, 'There should be an object size'
   end
   
   def test_destroy

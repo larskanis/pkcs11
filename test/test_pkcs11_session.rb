@@ -33,12 +33,12 @@ class TestPkcs11Session < Test::Unit::TestCase
 
   def test_find_objects
     obj = session.find_objects(:CLASS => CKO_CERTIFICATE)
-    assert 'There should be some certificates in the test database', obj.length>10
+    assert obj.length>2, 'There should be some certificates in the test database'
     assert_equal PKCS11::Object, obj.first.class, 'Retuned objects should be class Object'
     
     session.find_objects(:CLASS => CKO_CERTIFICATE) do |obj|
-      assert 'A certificate should have a subject', obj[:SUBJECT]
-      assert 'Every certificate should have a CN in the subject', OpenSSL::X509::Name.new(obj[:SUBJECT]) =~ /\/CN=/i
+      assert obj[:SUBJECT], 'A certificate should have a subject'
+      assert OpenSSL::X509::Name.new(obj[:SUBJECT]).to_s =~ /\/CN=/i, 'Every certificate should have a CN in the subject'
     end
   end
 
@@ -53,7 +53,7 @@ class TestPkcs11Session < Test::Unit::TestCase
 
   def test_session_info
     info = session.info
-    assert 'Session info should have a flag attribute', info =~ /flags=/
+    assert info.inspect =~ /flags=/, 'Session info should have a flag attribute'
   end
   
   def test_create_data_object
@@ -66,9 +66,6 @@ class TestPkcs11Session < Test::Unit::TestCase
   
   def test_create_certificate_object
     obj1 = session.find_objects(:CLASS => CKO_CERTIFICATE, :ID=>TestCert_ID).first
-#     PKCS11::ATTRIBUTES.values.each{|attr|
-#       p [attr, obj1[attr.gsub('CKA_','')]] rescue PKCS11::Error
-#     }
 
     obj = session.create_object(
       :CLASS=>CKO_CERTIFICATE,
