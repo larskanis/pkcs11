@@ -1239,12 +1239,44 @@ ck_attr_value(VALUE self)
   switch(attr->type){
   case CKA_TOKEN:
   case CKA_PRIVATE:
+  case CKA_SENSITIVE:
+  case CKA_ENCRYPT:
+  case CKA_DECRYPT:
+  case CKA_WRAP:
+  case CKA_UNWRAP:
+  case CKA_SIGN:
+  case CKA_SIGN_RECOVER:
+  case CKA_VERIFY:
+  case CKA_VERIFY_RECOVER:
+  case CKA_DERIVE:
+  case CKA_TRUSTED:
+  case CKA_EXTRACTABLE:
+  case CKA_LOCAL:
+  case CKA_NEVER_EXTRACTABLE:
+  case CKA_ALWAYS_SENSITIVE:
   case CKA_MODIFIABLE:
+  case CKA_HAS_RESET:
+  case CKA_ALWAYS_AUTHENTICATE:
+  case CKA_COLOR:
+  case CKA_OTP_USER_FRIENDLY_MODE:
+  case CKA_WRAP_WITH_TRUSTED:
     if (attr->ulValueLen == sizeof(CK_BBOOL))
       return (*(CK_BBOOL*)(attr->pValue)) == CK_TRUE ? Qtrue : Qfalse;
     break;
   case CKA_CLASS:
+  case CKA_CERTIFICATE_TYPE:
   case CKA_KEY_TYPE:
+  case CKA_HW_FEATURE_TYPE:
+  case CKA_BITS_PER_PIXEL:
+  case CKA_CERTIFICATE_CATEGORY:
+  case CKA_CHAR_COLUMNS:
+  case CKA_CHAR_ROWS:
+  case CKA_JAVA_MIDP_SECURITY_DOMAIN:
+  case CKA_MECHANISM_TYPE:
+  case CKA_OTP_SERVICE_LOGO_TYPE:
+  case CKA_PIXEL_X:
+  case CKA_PIXEL_Y:
+  case CKA_RESOLUTION:
     if (attr->ulValueLen == sizeof(CK_ULONG))
       return ULONG2NUM(*(CK_ULONG_PTR)(attr->pValue));
     break;

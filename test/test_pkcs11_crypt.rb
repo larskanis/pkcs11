@@ -133,7 +133,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
     assert_equal priv_key[:CLASS], PKCS11::CKO_PRIVATE_KEY
     assert_equal pub_key[:CLASS], PKCS11::CKO_PUBLIC_KEY
-    assert_equal [1].pack("C"), priv_key[:SENSITIVE], 'Private key should be sensitive'
+    assert_equal true, priv_key[:SENSITIVE], 'Private key should be sensitive'
   end
 
 end
