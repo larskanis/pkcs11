@@ -1362,7 +1362,7 @@ set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
   return value;
 }
 
-#define OFFSET_OF(s, f) ((off_t)&(((s*)0)->f))
+#define OFFSET_OF(s, f) ((off_t)((char*)&(((s*)0)->f) - (char*)0))
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
 
 #define PKCS11_IMPLEMENT_ALLOCATOR(s) \

@@ -28,7 +28,12 @@ void Init_pkcs11_const(VALUE);
 
 #ifdef compile_for_windows
 #pragma pack(push, cryptoki, 1)
-#define CK_IMPORT_SPEC __declspec(dllimport)
+#ifdef __MINGW32_VERSION
+  /* avoid warning about ignored ‘dllimport’ attribute on mingw32*/
+  #define CK_IMPORT_SPEC __declspec()
+#else
+  #define CK_IMPORT_SPEC __declspec(dllimport)
+#endif
 /* Define CRYPTOKI_EXPORTS during the build of cryptoki
 * libraries. Do not define it in applications.
 */
