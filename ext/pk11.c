@@ -43,7 +43,7 @@ pkcs11_raise(CK_RV rv)
 {
   VALUE message;
   message = pkcs11_return_value_to_name(rv);
-  rb_raise(ePKCS11Error, RSTRING_PTR(message));
+  rb_raise(ePKCS11Error, "%s", RSTRING_PTR(message));
 }
 
 ///////////////////////////////////////
@@ -127,10 +127,10 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
   }
 #else
   if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
-    rb_raise(ePKCS11Error, dlerror());
+    rb_raise(ePKCS11Error, "%s", dlerror());
   }
   func = (CK_C_GetFunctionList)dlsym(ctx->module, "C_GetFunctionList");
-  if(!func) rb_raise(ePKCS11Error, dlerror());
+  if(!func) rb_raise(ePKCS11Error, "%s", dlerror());
 #endif
   if((rv = func(&(ctx->functions))) != CKR_OK) pkcs11_raise(rv);
   if ((rv = ctx->functions->C_Initialize(args)) != CKR_OK) pkcs11_raise(rv);
