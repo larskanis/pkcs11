@@ -57,12 +57,13 @@ typedef struct {
 { \
   pkcs11_ctx *ctx; \
   Data_Get_Struct(self, pkcs11_ctx, ctx); \
+  if (!ctx->functions) rb_raise(ePKCS11Error, "library already closed"); \
   sval = (CK_##name)ctx->functions->name; \
   if (!sval) rb_raise(ePKCS11Error, #name " is not supported."); \
 } while(0)
 
 static void
-pkcs11_ctx_free(pkcs11_ctx *ctx) 
+pkcs11_ctx_unload_library(pkcs11_ctx *ctx)
 {
   if(ctx->functions) ctx->functions->C_Finalize(NULL_PTR);
 #ifdef compile_for_windows
@@ -70,7 +71,25 @@ pkcs11_ctx_free(pkcs11_ctx *ctx)
 #else
   if(ctx->module) dlclose(ctx->module);
 #endif
+  ctx->module = NULL;
+  ctx->functions = NULL;
+}
+
+static void
+pkcs11_ctx_free(pkcs11_ctx *ctx)
+{
+  pkcs11_ctx_unload_library(ctx);
   free(ctx);
+}
+
+static VALUE
+pkcs11_C_Finalize(VALUE self)
+{
+  pkcs11_ctx *ctx;
+  
+  Data_Get_Struct(self, pkcs11_ctx, ctx);
+  pkcs11_ctx_unload_library(ctx);
+  return Qnil;
 }
 
 static VALUE
@@ -1605,6 +1624,7 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_METHOD(C_GenerateRandom, 2);
 
   PKCS11_DEFINE_METHOD(C_WaitForSlotEvent, 1);
+  PKCS11_DEFINE_METHOD(C_Finalize, 0);
 
   ///////////////////////////////////////
 

@@ -4,16 +4,17 @@ require "test/helper"
 
 class TestPkcs11 < Test::Unit::TestCase
   def setup
-    $pkcs11 ||= open_softokn
+    @pk = open_softokn
   end
 
   def teardown
-#    $pkcs11 = nil
+    @pk.close
+    @pk = nil
     GC.start
   end
 
   def pk
-    $pkcs11
+    @pk
   end
   
   def test_info
@@ -24,5 +25,12 @@ class TestPkcs11 < Test::Unit::TestCase
   def test_slots
     slots = pk.active_slots
     assert slots.length>=1, 'Hope there is at least one active slot'
+  end
+
+  def test_close
+    pk.close
+    assert_raise(PKCS11::Error){ pk.info }
+    pk.close
+    assert_raise(PKCS11::Error){ pk.active_slots }
   end
 end

@@ -1,7 +1,6 @@
 module PKCS11
   class Library
     alias unwrapped_initialize initialize # :nodoc:
-    private :unwrapped_initialize
 
     # Load and initialize a pkcs11 dynamic library.
     #
@@ -18,11 +17,15 @@ module PKCS11
       unwrapped_initialize(so_path, pargs)
     end
 
+    alias unwrapped_C_GetInfo C_GetInfo
+    # Returns general information about Cryptoki.
+    def C_GetInfo
+      unwrapped_C_GetInfo
+    end
     alias info C_GetInfo
 
     alias unwrapped_C_GetSlotList C_GetSlotList
-    private :unwrapped_C_GetSlotList
-
+    
     # Obtain an array of Slot objects in the system. tokenPresent indicates
     # whether the list obtained includes only those slots with a token present (true), or
     # all slots (false);
@@ -38,9 +41,22 @@ module PKCS11
     def active_slots
       slots(true)
     end
+    
     # Obtain an array of Slot objects in the system regardless if a token is present.
     def all_slots
       slots(false)
     end
+    
+    alias unwrapped_C_Finalize C_Finalize
+    # Close and unload library. If not called, the library is freed by the GC.
+    def C_Finalize
+      unwrapped_C_Finalize
+    end
+    alias close C_Finalize
+    
+    private :unwrapped_initialize
+    private :unwrapped_C_GetSlotList
+    private :unwrapped_C_Finalize
+    private :unwrapped_C_GetInfo
   end
 end
