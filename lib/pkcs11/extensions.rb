@@ -1,4 +1,4 @@
-require 'pkcs11/provider'
+require 'pkcs11/library'
 require 'pkcs11/slot'
 require 'pkcs11/session'
 require 'pkcs11/object'

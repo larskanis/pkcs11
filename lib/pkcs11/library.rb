@@ -1,5 +1,5 @@
 module PKCS11
-  class Provider
+  class Library
     alias unwrapped_initialize initialize # :nodoc:
     private :unwrapped_initialize
 

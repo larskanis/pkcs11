@@ -83,7 +83,7 @@ pkcs11_s_alloc(VALUE self)
 }
 
 static VALUE
-pkcs11_provider_new(int argc, VALUE *argv, VALUE self)
+pkcs11_library_new(int argc, VALUE *argv, VALUE self)
 {
   return rb_funcall2(cPKCS11, sNEW, argc, argv);
 }
@@ -1524,13 +1524,13 @@ Init_pkcs11_ext()
 {
   mPKCS11 = rb_define_module("PKCS11");
   sNEW = rb_intern("new");
-  cPKCS11 = rb_define_class_under(mPKCS11, "Provider", rb_cObject);
+  cPKCS11 = rb_define_class_under(mPKCS11, "Library", rb_cObject);
 
 /* Document-method: PKCS11.new
  *
- * Alias function for PKCS11::Provider.new
+ * Alias function for PKCS11::Library.new
  */
-  rb_define_module_function(mPKCS11, "new", pkcs11_provider_new, -1);
+  rb_define_module_function(mPKCS11, "new", pkcs11_library_new, -1);
   
   /* Library version */
   rb_define_const( mPKCS11, "VERSION", rb_str_new2(VERSION) );

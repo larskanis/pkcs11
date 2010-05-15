@@ -17,8 +17,8 @@ ext/pk11.h
 ext/pk11_const.c
 lib/pkcs11.rb
 lib/pkcs11/extensions.rb
+lib/pkcs11/library.rb
 lib/pkcs11/object.rb
-lib/pkcs11/provider.rb
 lib/pkcs11/session.rb
 lib/pkcs11/slot.rb
 sample/firefox_certs.rb
