@@ -149,31 +149,21 @@ class TestPkcs11Crypt < Test::Unit::TestCase
   end
 
   def test_derive_key
-    # Generate DH key params for both sides.
-    # softokn3 doesn't support CKM_DH_PKCS_PARAMETER_GEN, so we use OpenSSL instead.
-    # dh_par = session.generate_key :DH_PKCS_PARAMETER_GEN, :PRIME_BITS=>512
-    # prime, base = dh_par[:PRIME], dh_par[:BASE]
-    dh_par = OpenSSL::PKey::DH.new(512)
-    prime, base = dh_par.p.to_s(2), dh_par.g.to_s(2)
+    # Generate DH key for side 1
+    key1 = OpenSSL::PKey::DH.new(512)
 
-    # Generate key side 1
-    pub_key1, priv_key1 = session.generate_key_pair(:DH_PKCS_KEY_PAIR_GEN,
-      {:PRIME=>prime, :BASE=>base, :TOKEN=>false},
-      {:DERIVE=>true, :TOKEN=>false})
-
-    # Generate key side 2
+    # Generate key side 2 with same prime and base as side 1
     pub_key2, priv_key2 = session.generate_key_pair(:DH_PKCS_KEY_PAIR_GEN,
-      {:PRIME=>prime, :BASE=>base, :TOKEN=>false},
-      {:DERIVE=>true, :TOKEN=>false})
+      {:PRIME=>key1.p.to_s(2), :BASE=>key1.g.to_s(2), :TOKEN=>false},
+      {:VALUE_BITS=>512, :DERIVE=>true, :TOKEN=>false})
 
-    # Derive secret DES key for side 1
-    new_key1 = session.derive_key( {:DH_PKCS_DERIVE=>pub_key2[:VALUE]}, priv_key1,
-      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+    # Derive secret DES key for side 1 with OpenSSL
+    new_key1 = key1.compute_key(OpenSSL::BN.new pub_key2[:VALUE], 2)
     
-    # Derive secret DES key for side 2
-    new_key2 = session.derive_key( {:DH_PKCS_DERIVE=>pub_key1[:VALUE]}, priv_key2,
-      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+    # Derive secret DES key for side 2 with softokn3
+    new_key2 = session.derive_key( {:DH_PKCS_DERIVE=>key1.pub_key.to_s(2)}, priv_key2,
+      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :VALUE_LEN=>16, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
 
-    assert_equal new_key1[:VALUE], new_key2[:VALUE], 'Exchanged session key should be equal'
+    assert_equal new_key1[0,16], new_key2[:VALUE], 'Exchanged session key should be equal'
   end
 end
