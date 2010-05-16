@@ -139,7 +139,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
   def test_generate_key_pair
     pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
       {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
-      {:PRIVATE=>true,:SUBJECT=>'test', :ID=>[123].pack("n"),
+      {:PRIVATE=>true, :SUBJECT=>'test', :ID=>[123].pack("n"),
        :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
     
     assert_equal true, priv_key[:LOCAL], 'Private keys created on the token should be marked as local'
@@ -148,4 +148,32 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     assert_equal true, priv_key[:SENSITIVE], 'Private key should be sensitive'
   end
 
+  def test_derive_key
+    # Generate DH key params for both sides.
+    # softokn3 doesn't support CKM_DH_PKCS_PARAMETER_GEN, so we use OpenSSL instead.
+    # dh_par = session.generate_key :DH_PKCS_PARAMETER_GEN, :PRIME_BITS=>512
+    # prime, base = dh_par[:PRIME], dh_par[:BASE]
+    dh_par = OpenSSL::PKey::DH.new(512)
+    prime, base = dh_par.p.to_s(2), dh_par.g.to_s(2)
+
+    # Generate key side 1
+    pub_key1, priv_key1 = session.generate_key_pair(:DH_PKCS_KEY_PAIR_GEN,
+      {:PRIME=>prime, :BASE=>base, :TOKEN=>false},
+      {:DERIVE=>true, :TOKEN=>false})
+
+    # Generate key side 2
+    pub_key2, priv_key2 = session.generate_key_pair(:DH_PKCS_KEY_PAIR_GEN,
+      {:PRIME=>prime, :BASE=>base, :TOKEN=>false},
+      {:DERIVE=>true, :TOKEN=>false})
+
+    # Derive secret DES key for side 1
+    new_key1 = session.derive_key( {:DH_PKCS_DERIVE=>pub_key2[:VALUE]}, priv_key1,
+      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+    
+    # Derive secret DES key for side 2
+    new_key2 = session.derive_key( {:DH_PKCS_DERIVE=>pub_key1[:VALUE]}, priv_key2,
+      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+
+    assert_equal new_key1[:VALUE], new_key2[:VALUE], 'Exchanged session key should be equal'
+  end
 end
