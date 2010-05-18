@@ -17,9 +17,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     $pkcs11 ||= open_softokn
     @slots = pk.active_slots
     @slot = slots.last
-    
-    flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
-    @session = slot.open(flags)
+    @session = slot.open
     session.login(:USER, "")
     
     @rsa_pub_key = session.find_objects(:CLASS => CKO_PUBLIC_KEY,

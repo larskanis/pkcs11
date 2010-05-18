@@ -57,12 +57,13 @@ module PKCS11
     alias init_token C_InitToken
     
     # Opens a Session between an application and a token in a particular slot.
-    # flags indicates the type of session.
+    # flags indicates the type of session. Default is read-only,
+    # use <tt>CKF_SERIAL_SESSION | CKF_RW_SESSION</tt> for read-write session.
     #
     # If called with block, yields the block with the session and closes the session
     # when the is finished.
     # If called without block, returns the session object.
-    def C_OpenSession(flags)
+    def C_OpenSession(flags=CKF_SERIAL_SESSION)
       nr = @pk.C_OpenSession(@slot, flags)
       sess = Session.new @pk, nr
       if block_given?
