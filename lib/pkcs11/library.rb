@@ -1,4 +1,5 @@
 module PKCS11
+  # A Library instance holds a handle to the opened PKCS#11 - dll or so file.
   class Library
     alias unwrapped_initialize initialize # :nodoc:
 

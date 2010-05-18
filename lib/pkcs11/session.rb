@@ -1,4 +1,8 @@
 module PKCS11
+  # Cryptoki requires that an application open one or more sessions with a token to gain
+  # access to the token’s objects and functions. A session provides a logical connection
+  # between the application and the token. A session can be a read/write (R/W) session or a
+  # read-only (R/O) session.
   class Session
     class << self
       def hash_to_attributes(template) # :nodoc:
@@ -225,7 +229,7 @@ module PKCS11
     # * <tt>mechanism</tt> : the encryption mechanism, Hash, String or Integer
     # * <tt>key</tt> : the object handle of the encryption key.
     #
-    # See encrypt() for convenience.
+    # See Session#encrypt for convenience.
     #
     # The CKA_ENCRYPT attribute of the encryption key, which indicates whether the key
     # supports encryption, must be true.
@@ -276,7 +280,7 @@ module PKCS11
 
     # Initializes a decryption operation.
     #
-    # See decrypt() for convenience.
+    # See Session#decrypt for convenience.
     def C_DecryptInit(mechanism, key)
       @pk.C_DecryptInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
@@ -296,7 +300,7 @@ module PKCS11
 
     # Convenience method for the C_DecryptInit, C_DecryptUpdate, C_DecryptFinal call flow.
     #
-    # See encrypt()
+    # See Session#encrypt
     def decrypt(mechanism, key, data=nil, &block)
       common_crypt(:C_DecryptInit, :C_DecryptUpdate, :C_DecryptFinal, :C_Decrypt,
                    mechanism, key, data, &block)
@@ -304,7 +308,7 @@ module PKCS11
 
     # Initializes a message-digesting operation.
     #
-    # See digest() for convenience.
+    # See Session#digest for convenience.
     def C_DigestInit(mechanism)
       @pk.C_DigestInit(@sess, Session.hash_to_mechanism(mechanism))
     end
@@ -358,7 +362,7 @@ module PKCS11
     # Initializes a signature operation, where the signature is an appendix to the
     # data.
     #
-    # See sign() for convenience.
+    # See Session#sign for convenience.
     def C_SignInit(mechanism, key)
       @pk.C_SignInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
@@ -378,7 +382,7 @@ module PKCS11
 
     # Convenience method for the C_SignInit, C_SignUpdate, C_SignFinal call flow.
     #
-    # See encrypt()
+    # See Session#encrypt
     def sign(mechanism, key, data=nil, &block)
       common_crypt(:C_SignInit, :C_SignUpdate, :C_SignFinal, :C_Sign,
                    mechanism, key, data, &block)
@@ -388,7 +392,7 @@ module PKCS11
     # Initializes a verification operation, where the signature is an appendix to
     # the data.
     #
-    # See verify() for convenience.
+    # See ession#verify for convenience.
     def C_VerifyInit(mechanism, key)
       @pk.C_VerifyInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end
@@ -411,7 +415,7 @@ module PKCS11
 
     # Convenience method for the C_VerifyInit, C_VerifyUpdate, C_VerifyFinal call flow.
     #
-    # See encrypt()
+    # See Session#encrypt
     def verify(mechanism, key, signature, data=nil, &block)
       common_verify(:C_VerifyInit, :C_VerifyUpdate, :C_VerifyFinal, :C_Verify,
                    mechanism, key, signature, data, &block)
@@ -437,6 +441,8 @@ module PKCS11
     
     # Initializes a signature verification operation, where the data can be recovered
     # from the signature
+    #
+    # See Session#verify_recover for convenience.
     def C_VerifyRecoverInit(mechanism, key)
       @pk.C_VerifyRecoverInit(@sess, Session.hash_to_mechanism(mechanism), key)
     end

@@ -1,4 +1,9 @@
 module PKCS11
+  # Cryptoki’s logical view of a token is a device that stores objects and can perform
+  # cryptographic functions. Cryptoki defines three classes of object: data, certificates, and
+  # keys.
+  #
+  # Attributes are characteristics that distinguish an instance of an object.
   class Object
     def initialize(pkcs11, session, object) # :nodoc:
       @pk, @sess, @obj = pkcs11, session, object

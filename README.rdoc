@@ -17,21 +17,26 @@ This module works on the Unix like operating systems and win32.
 
 
 == Usage
+Cryptoki has a reputation to be complicated to implement and use.
+While this seems to be true for C it isn't for Ruby.
 
-PKCS11.new requires suitable PKCS #11 implementation for your smart-cards.
+PKCS11.new requires suitable PKCS #11 implementation as UN*X *.so file or Windows-DLL.
 
   require "rubygems"
   require "pkcs11"
   include PKCS11
 
   pkcs11 = PKCS11.new("/path/to/pkcs11.so")
+  p pkcs11.info
   slot = pkcs11.active_slots.first
-  p slot.info
-  session = slot.open(CKF_SERIAL_SESSION|CKF_RW_SESSION)
+  session = slot.open
   session.login(:USER, "1234")
   ...
   session.logout
   session.close
+
+See PKCS11::Library for API documentation. See unit tests in the <tt>test</tt>
+directory of the project or gem for further examples of the usage.
 
 Detail information for the API specification is provided by RSA Security Inc.
 Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133.
