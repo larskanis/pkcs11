@@ -2,7 +2,7 @@ module PKCS11
   # Cryptoki requires that an application open one or more sessions with a token to gain
   # access to the token’s objects and functions. A session provides a logical connection
   # between the application and the token. A session can be a read/write (R/W) session or a
-  # read-only (R/O) session.
+  # read-only (R/O) session (default).
   class Session
     class << self
       def hash_to_attributes(template) # :nodoc:
@@ -57,7 +57,7 @@ module PKCS11
     end
 
     # Logs a user into a token. user_type is the user type;
-    # pin is the user’s PIN.
+    # pin:: is the user’s PIN.
     #
     # When the user type is either CKU_SO or CKU_USER, if the call succeeds, each of the
     # application's sessions will enter either the "R/W SO Functions" state, the "R/W User
@@ -95,7 +95,7 @@ module PKCS11
     # Initializes a search for token and session objects that match a
     # template.
     #
-    # * <tt>template</tt> : points to a search template that
+    # find_template:: points to a search template that
     #   specifies the attribute values to match
     #   The matching criterion is an exact byte-for-byte match with all attributes in the
     #   template. Use empty Hash to find all objects.

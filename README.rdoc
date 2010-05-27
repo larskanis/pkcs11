@@ -2,12 +2,17 @@
 
 * Homepage: http://github.com/larskanis/pkcs11
 * older SVN repository: http://coderepos.org/share/log/lang/ruby/pkcs11-ruby
+* API documentation: http://pkcs11.rubyforge.org/pkcs11/
 
 This module allows Ruby programs to interface with "RSA Security Inc.
 PKCS #11 Cryptographic Token Interface (Cryptoki)".
 PKCS #11 is the de-facto standard to access cryptographic devices.
 You must have the PKCS #11 v2.20 implementation library installed in
-order to use this module.
+order to use this module. Working implementations of PKCS#11 librarys
+include:
+* OpenSC[http://www.opensc-project.org] supported Smart Cards
+* Safenet[http://www.safenet-inc.com] - Protect Server HSMs
+* Mozilla_Soft_Token[https://developer.mozilla.org/en/PKCS11] which comes with every firefox installation
 
 This module works on the Unix like operating systems and win32.
 
