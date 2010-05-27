@@ -9,6 +9,7 @@ hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
   developer('Lars Kanis', 'kanis@comcard.de')
+  self.url = 'http://github.com/larskanis/pkcs11'
   
   self.readme_file = 'README.rdoc'
   self.extra_rdoc_files << self.readme_file << 'ext/pk11.c'
