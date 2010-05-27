@@ -9,8 +9,11 @@ hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
   developer('Lars Kanis', 'kanis@comcard.de')
+
   self.url = 'http://github.com/larskanis/pkcs11'
-  
+  self.summary = 'PKCS#11 binding for Ruby'
+  self.description = 'This module allows Ruby programs to interface with "RSA Security Inc. PKCS #11 Cryptographic Token Interface (Cryptoki)".'
+
   self.readme_file = 'README.rdoc'
   self.extra_rdoc_files << self.readme_file << 'ext/pk11.c'
   spec_extras[:extensions] = 'ext/extconf.rb'
