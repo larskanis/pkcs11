@@ -60,8 +60,8 @@ module PKCS11
     
     # Opens a Session between an application and a token in a particular slot.
     #
-    # * <tt>flags</tt> : indicates the type of session. Default is read-only,
-    # use <tt>CKF_SERIAL_SESSION | CKF_RW_SESSION</tt> for read-write session.
+    # flags:: indicates the type of session. Default is read-only,
+    #         use <tt>CKF_SERIAL_SESSION | CKF_RW_SESSION</tt> for read-write session.
     #
     # * If called with block, yields the block with the session and closes the session
     # when the is finished.

@@ -56,7 +56,8 @@ module PKCS11
       "#<#{self.class} #{@sess.inspect}>"
     end
 
-    # Logs a user into a token. user_type is the user type;
+    # Logs a user into a token.
+    # user_type:: is the user type CKU_*;
     # pin:: is the user’s PIN.
     #
     # When the user type is either CKU_SO or CKU_USER, if the call succeeds, each of the
@@ -96,9 +97,9 @@ module PKCS11
     # template.
     #
     # find_template:: points to a search template that
-    #   specifies the attribute values to match
-    #   The matching criterion is an exact byte-for-byte match with all attributes in the
-    #   template. Use empty Hash to find all objects.
+    #                 specifies the attribute values to match
+    #                 The matching criterion is an exact byte-for-byte match with all attributes in the
+    #                 template. Use empty Hash to find all objects.
 
     def C_FindObjectsInit(find_template={})
       @pk.C_FindObjectsInit(@sess, Session.hash_to_attributes(find_template))
@@ -152,6 +153,7 @@ module PKCS11
     # CKA_LOCAL attribute set to false. If that key object is a secret or private key
     # then the new key will have the CKA_ALWAYS_SENSITIVE attribute set to
     # false, and the CKA_NEVER_EXTRACTABLE attribute set to false.
+    #
     # Only session objects can be created during a read-only session. Only public objects can
     # be created unless the normal user is logged in.
     def C_CreateObject(template={})
@@ -226,8 +228,8 @@ module PKCS11
 
     # Initializes an encryption operation.
     #
-    # * <tt>mechanism</tt> : the encryption mechanism, Hash, String or Integer
-    # * <tt>key</tt> : the object handle of the encryption key.
+    # mechanism:: the encryption mechanism, Hash, String or Integer
+    # key:: the object handle of the encryption key.
     #
     # See Session#encrypt for convenience.
     #

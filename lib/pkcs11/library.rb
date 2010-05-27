@@ -5,8 +5,8 @@ module PKCS11
 
     # Load and initialize a pkcs11 dynamic library.
     #
-    # * <tt>so_path</tt> : Path to the *.so or *.dll file to load.
-    # * <tt>args</tt> : A Hash or CK_C_INITIALIZE_ARGS instance with load params.
+    # so_path:: Path to the *.so or *.dll file to load.
+    # args:: A Hash or CK_C_INITIALIZE_ARGS instance with load params.
     def initialize(so_path, args={})
       case args
         when Hash

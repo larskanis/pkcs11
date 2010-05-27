@@ -21,13 +21,13 @@ module PKCS11
 
     # Returns the value of one attribute of the object.
     #
-    # * <tt>attribute</tt> : can be String or Symbol of the attribute constant
-    # or the attribute number as Integer.
+    # attribute:: can be String or Symbol of the attribute constant
+    #             or the attribute number as Integer.
     #
     # Returns the attribute value as String, Integer or true/false
     # depending on the attribute type.
     # Unknown attributes (out of PKCS#11 v2.2) are not converted but returned as String.
-    # That is true/false will be returned as "\001" respectively "\000".
+    # That is true/false will be returned as "\\001" respectively "\\000".
     def [](attribute)
       attrs = C_GetAttributeValue( [attribute] )
       attrs.first.value unless attrs.empty?
@@ -35,9 +35,9 @@ module PKCS11
 
     # Modifies the value of one attribute the object.
     #
-    # * <tt>attribute</tt> : can be String or Symbol of the attribute constant
-    # or the attribute value as Integer.
-    # * <tt>value</tt> : String value the attribute will be set to.
+    # attribute:: can be String or Symbol of the attribute constant
+    #             or the attribute value as Integer.
+    # value:: String value the attribute will be set to.
     #
     # Following value conversations are done:
     #   true   -> 0x01
@@ -51,7 +51,7 @@ module PKCS11
     # Modifies the value of one or more attributes of the object in a single call.
     #
     # Examples:
-    #   object.attributes = :SUBJECT => cert_subject, PKCS11::CKA_VALUE => cert_data
+    #   object.attributes = {:SUBJECT => cert_subject, PKCS11::CKA_VALUE => cert_data}
     def C_SetAttributeValue(template={})
       template = Session.hash_to_attributes template
       @pk.C_SetAttributeValue(@sess, @obj, template)

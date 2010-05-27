@@ -22,8 +22,8 @@ require 'pkcs11/object'
 module PKCS11
 
   class << self
-  # Open a PKCS#11 library file.
-  alias new open
+    # Open a PKCS#11 library file.
+    alias new open
   end
   
   module InspectableStruct
