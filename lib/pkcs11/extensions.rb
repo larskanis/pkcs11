@@ -9,7 +9,7 @@ require 'pkcs11/object'
 #
 # Example usage:
 #
-#   pkcs11 = PKCS11.new("/path/to/pkcs11.so")
+#   pkcs11 = PKCS11.open("/path/to/pkcs11.so")
 #   slot = pkcs11.active_slots.first
 #   p slot.info
 #   session = slot.open(PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION)
@@ -21,6 +21,11 @@ require 'pkcs11/object'
 # See unit tests in the <tt>test</tt> directory for further examples of the usage.
 module PKCS11
 
+  class << self
+  # Open a PKCS#11 library file.
+  alias new open
+  end
+  
   module InspectableStruct
     # Array of the InspectableStruct's attribute names.
     def members

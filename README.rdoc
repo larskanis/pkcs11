@@ -25,13 +25,13 @@ This module works on the Unix like operating systems and win32.
 Cryptoki has a reputation to be complicated to implement and use.
 While this seems to be true for C it isn't for Ruby.
 
-PKCS11.new requires suitable PKCS #11 implementation as UN*X *.so file or Windows-DLL.
+PKCS11.open requires suitable PKCS #11 implementation as UN*X *.so file or Windows-DLL.
 
   require "rubygems"
   require "pkcs11"
   include PKCS11
 
-  pkcs11 = PKCS11.new("/path/to/pkcs11.so")
+  pkcs11 = PKCS11.open("/path/to/pkcs11.so")
   p pkcs11.info
   slot = pkcs11.active_slots.first
   session = slot.open

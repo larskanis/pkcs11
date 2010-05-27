@@ -39,5 +39,5 @@ def open_softokn
   "flags='readWrite'",
   ]
 
-  pk11 = PKCS11.new(so_path, :flags=>0, :pReserved=>nNSS_INIT_ARGS.join(" "))
+  pk11 = PKCS11.open(so_path, :flags=>0, :pReserved=>nNSS_INIT_ARGS.join(" "))
 end
