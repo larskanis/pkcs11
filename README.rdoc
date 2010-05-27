@@ -8,7 +8,7 @@ This module allows Ruby programs to interface with "RSA Security Inc.
 PKCS #11 Cryptographic Token Interface (Cryptoki)".
 PKCS #11 is the de-facto standard to access cryptographic devices.
 You must have the PKCS #11 v2.20 implementation library installed in
-order to use this module. Working implementations of PKCS#11 librarys
+order to use this module. Tested implementations of PKCS#11 librarys
 include:
 * OpenSC[http://www.opensc-project.org] supported Smart Cards
 * Safenet[http://www.safenet-inc.com] - Protect Server HSMs
