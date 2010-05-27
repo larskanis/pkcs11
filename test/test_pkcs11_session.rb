@@ -36,9 +36,9 @@ class TestPkcs11Session < Test::Unit::TestCase
     assert obj.length>2, 'There should be some certificates in the test database'
     assert_equal PKCS11::Object, obj.first.class, 'Retuned objects should be class Object'
     
-    session.find_objects(:CLASS => CKO_CERTIFICATE) do |obj|
-      assert obj[:SUBJECT], 'A certificate should have a subject'
-      assert OpenSSL::X509::Name.new(obj[:SUBJECT]).to_s =~ /\/CN=/i, 'Every certificate should have a CN in the subject'
+    session.find_objects(:CLASS => CKO_CERTIFICATE) do |obj2|
+      assert obj2[:SUBJECT], 'A certificate should have a subject'
+      assert OpenSSL::X509::Name.new(obj2[:SUBJECT]).to_s =~ /\/CN=/i, 'Every certificate should have a CN in the subject'
     end
   end
 

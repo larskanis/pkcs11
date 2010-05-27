@@ -48,8 +48,8 @@ class TestPkcs11Slot < Test::Unit::TestCase
 
   def test_session
     flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
-    session = slot.open(flags){|session|
-      assert session.info.inspect =~ /state=/, 'Session info should tell about it\'s state'
+    session = slot.open(flags){|_session|
+      assert _session.info.inspect =~ /state=/, 'Session info should tell about it\'s state'
     }
     
     session = slot.open(flags)
