@@ -67,7 +67,19 @@ class TestPkcs11Object < Test::Unit::TestCase
     assert attr.inspect =~ /CLASS/, 'The attribute should tell about it\'s type'
     assert attr.inspect =~ /#{CKO_DATA}/, 'The attribute should tell about it\'s type'
   end
-    
+
+  def test_set_attribute
+    object[:VALUE] = 'value2'
+    assert_equal 'value2', object[:VALUE], "Value should have changed"
+  end
+
+  def test_set_attributes
+    object.attributes = {:VALUE => 'value2', PKCS11::CKA_APPLICATION => 'app2'}
+
+    assert_equal 'value2', object[:VALUE], "Value should have changed"
+    assert_equal 'app2', object[:APPLICATION], "App should have changed"
+  end
+
   def test_size
     assert object.size, 'There should be an object size'
   end
