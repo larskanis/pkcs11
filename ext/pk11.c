@@ -125,7 +125,6 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
       rb_raise(rb_eArgError, "2nd arg must be a PKCS11::CK_C_INITIALIZE_ARGS");
     args = DATA_PTR(init_args);
   }
-  args = NIL_P(init_args) ? NULL_PTR : DATA_PTR(init_args);
 
   Data_Get_Struct(self, pkcs11_ctx, ctx);
 #ifdef compile_for_windows
