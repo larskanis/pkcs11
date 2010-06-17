@@ -1,10 +1,9 @@
 require "openssl"
 
-def open_softokn
-  
-  if RUBY_PLATFORM =~ /win32/
+def find_softokn
+  if RUBY_PLATFORM =~ /mswin|mingw/
     lLIBSOFTOKEN3_SO = "softokn3.dll"
-    
+
     # Try to find the firefox path.
     unless ENV['SOFTOKN_PATH']
       require 'win32/registry'
@@ -31,13 +30,21 @@ def open_softokn
   end
 
   raise "#{lLIBSOFTOKEN3_SO} not found - please install firefox or set ENV['SOFTOKN_PATH']" unless so_path
+  so_path
+end
 
+def softokn_params
   dir = File.join(File.dirname(__FILE__), 'fixtures/softokn')
-  nNSS_INIT_ARGS = [
+  [
   "configDir='#{dir}'",
   "secmod='secmod.db'",
   "flags='readWrite'",
   ]
+end
 
-  pk11 = PKCS11.open(so_path, :flags=>0, :pReserved=>nNSS_INIT_ARGS.join(" "))
+def open_softokn
+  so_path = find_softokn
+  nNSS_INIT_ARGS = softokn_params
+
+  PKCS11.open(so_path, :flags=>0, :pReserved=>nNSS_INIT_ARGS.join(" "))
 end
