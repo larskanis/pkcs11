@@ -29,8 +29,19 @@ class TestPkcs11 < Test::Unit::TestCase
 
   def test_close
     pk.close
+    pk.unload_library
     assert_raise(PKCS11::Error){ pk.info }
-    pk.close
-    assert_raise(PKCS11::Error){ pk.active_slots }
+
+    @pk = PKCS11.open
+    pk.load_library(find_softokn)
+    
+    pk.C_GetFunctionList
+    
+    pargs = PKCS11::CK_C_INITIALIZE_ARGS.new
+    pargs.flags = 0
+    pargs.pReserved = softokn_params.join(" ")
+    pk.C_Initialize(pargs)
+    
+    pk.info
   end
 end

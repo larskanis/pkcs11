@@ -7,7 +7,7 @@ module PKCS11
     #
     # so_path:: Path to the *.so or *.dll file to load.
     # args:: A Hash or CK_C_INITIALIZE_ARGS instance with load params.
-    def initialize(so_path, args={})
+    def initialize(so_path=nil, args={})
       case args
         when Hash
           pargs = CK_C_INITIALIZE_ARGS.new
@@ -47,17 +47,15 @@ module PKCS11
     def all_slots
       slots(false)
     end
-    
-    alias unwrapped_C_Finalize C_Finalize
-    # Close and unload library. If not called, the library is freed by the GC.
-    def C_Finalize
-      unwrapped_C_Finalize
+
+    # Finalize and unload the library. If not called, the library is freed by the GC.
+    def close
+      self.C_Finalize
+      self.unload_library
     end
-    alias close C_Finalize
     
     private :unwrapped_initialize
     private :unwrapped_C_GetSlotList
-    private :unwrapped_C_Finalize
     private :unwrapped_C_GetInfo
   end
 end

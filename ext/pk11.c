@@ -56,8 +56,8 @@ typedef struct {
 #define GetFunction(obj, name, sval) \
 { \
   pkcs11_ctx *ctx; \
-  Data_Get_Struct(self, pkcs11_ctx, ctx); \
-  if (!ctx->functions) rb_raise(ePKCS11Error, "library already closed"); \
+  Data_Get_Struct(obj, pkcs11_ctx, ctx); \
+  if (!ctx->functions) rb_raise(ePKCS11Error, "no function list"); \
   sval = (CK_##name)ctx->functions->name; \
   if (!sval) rb_raise(ePKCS11Error, #name " is not supported."); \
 } while(0)
@@ -65,7 +65,6 @@ typedef struct {
 static void
 pkcs11_ctx_unload_library(pkcs11_ctx *ctx)
 {
-  if(ctx->functions) ctx->functions->C_Finalize(NULL_PTR);
 #ifdef compile_for_windows
   if(ctx->module) FreeLibrary(ctx->module);
 #else
@@ -78,6 +77,7 @@ pkcs11_ctx_unload_library(pkcs11_ctx *ctx)
 static void
 pkcs11_ctx_free(pkcs11_ctx *ctx)
 {
+  if(ctx->functions) ctx->functions->C_Finalize(NULL_PTR);
   pkcs11_ctx_unload_library(ctx);
   free(ctx);
 }
@@ -85,11 +85,25 @@ pkcs11_ctx_free(pkcs11_ctx *ctx)
 static VALUE
 pkcs11_C_Finalize(VALUE self)
 {
-  pkcs11_ctx *ctx;
+  CK_C_Finalize func;
+  CK_RV rv;
   
+  GetFunction(self, C_Finalize, func);
+  rv = func(NULL_PTR);
+  if (rv != CKR_OK) pkcs11_raise(rv);
+  
+  return self;
+}
+
+static VALUE
+pkcs11_unload_library(VALUE self)
+{
+  pkcs11_ctx *ctx;
+
   Data_Get_Struct(self, pkcs11_ctx, ctx);
   pkcs11_ctx_unload_library(ctx);
-  return Qnil;
+
+  return self;
 }
 
 static VALUE
@@ -107,25 +121,13 @@ pkcs11_library_new(int argc, VALUE *argv, VALUE self)
   return rb_funcall2(cPKCS11, sNEW, argc, argv);
 }
 
-static VALUE 
-pkcs11_initialize(int argc, VALUE *argv, VALUE self)
+static VALUE
+pkcs11_load_library(VALUE self, VALUE path)
 {
-  VALUE path, init_args;
-  pkcs11_ctx *ctx;
   const char *so_path;
-  CK_C_GetFunctionList func;
-  CK_C_INITIALIZE_ARGS *args;
-  CK_RV rv;
-
-  rb_scan_args(argc, argv, "11", &path, &init_args);
+  pkcs11_ctx *ctx;
+  
   so_path = StringValuePtr(path);
-  if (NIL_P(init_args)) args = NULL_PTR;
-  else {
-    if (!rb_obj_is_kind_of(init_args, cCK_C_INITIALIZE_ARGS))
-      rb_raise(rb_eArgError, "2nd arg must be a PKCS11::CK_C_INITIALIZE_ARGS");
-    args = DATA_PTR(init_args);
-  }
-
   Data_Get_Struct(self, pkcs11_ctx, ctx);
 #ifdef compile_for_windows
   if((ctx->module = LoadLibrary(so_path)) == NULL) {
@@ -135,6 +137,24 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
     rb_raise(ePKCS11Error, error_text);
   }
+#else
+  if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
+    rb_raise(ePKCS11Error, "%s", dlerror());
+  }
+#endif
+
+  return self;
+}
+
+static VALUE
+pkcs11_C_GetFunctionList(VALUE self)
+{
+  pkcs11_ctx *ctx;
+  CK_RV rv;
+  CK_C_GetFunctionList func;
+
+  Data_Get_Struct(self, pkcs11_ctx, ctx);
+#ifdef compile_for_windows
   func = (CK_C_GetFunctionList)GetProcAddress(ctx->module, "C_GetFunctionList");
   if(!func){
     char error_text[999] = "GetProcAddress() error";
@@ -144,14 +164,48 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
     rb_raise(ePKCS11Error, error_text);
   }
 #else
-  if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
-    rb_raise(ePKCS11Error, "%s", dlerror());
-  }
   func = (CK_C_GetFunctionList)dlsym(ctx->module, "C_GetFunctionList");
   if(!func) rb_raise(ePKCS11Error, "%s", dlerror());
 #endif
-  if((rv = func(&(ctx->functions))) != CKR_OK) pkcs11_raise(rv);
-  if ((rv = ctx->functions->C_Initialize(args)) != CKR_OK) pkcs11_raise(rv);
+  rv = func(&(ctx->functions));
+  if (rv != CKR_OK) pkcs11_raise(rv);
+
+  return self;
+}
+
+static VALUE
+pkcs11_C_Initialize(int argc, VALUE *argv, VALUE self)
+{
+  VALUE init_args;
+  CK_C_Initialize func;
+  CK_C_INITIALIZE_ARGS *args;
+  CK_RV rv;
+
+  rb_scan_args(argc, argv, "01", &init_args);
+  if (NIL_P(init_args)) args = NULL_PTR;
+  else {
+    if (!rb_obj_is_kind_of(init_args, cCK_C_INITIALIZE_ARGS))
+      rb_raise(rb_eArgError, "2nd arg must be a PKCS11::CK_C_INITIALIZE_ARGS");
+    args = DATA_PTR(init_args);
+  }
+  GetFunction(self, C_Initialize, func);
+  rv = func(args);
+  if (rv != CKR_OK) pkcs11_raise(rv);
+
+  return self;
+}
+
+static VALUE
+pkcs11_initialize(int argc, VALUE *argv, VALUE self)
+{
+  VALUE path, init_args;
+
+  rb_scan_args(argc, argv, "02", &path, &init_args);
+  if( !NIL_P(path) ){
+    pkcs11_load_library(self, path);
+    pkcs11_C_GetFunctionList(self);
+    pkcs11_C_Initialize(1, &init_args, self);
+  }
 
   return self;
 }
@@ -1557,6 +1611,9 @@ Init_pkcs11_ext()
   rb_define_alloc_func(cPKCS11, pkcs11_s_alloc);
   rb_define_method(cPKCS11, "initialize", pkcs11_initialize, -1);
 
+  PKCS11_DEFINE_METHOD(load_library, 1);
+  PKCS11_DEFINE_METHOD(C_GetFunctionList, 0);
+  PKCS11_DEFINE_METHOD(C_Initialize, -1);
   PKCS11_DEFINE_METHOD(C_GetInfo, 0);
   PKCS11_DEFINE_METHOD(C_GetSlotList, 1);
   PKCS11_DEFINE_METHOD(C_GetSlotInfo, 1);
@@ -1624,6 +1681,7 @@ Init_pkcs11_ext()
 
   PKCS11_DEFINE_METHOD(C_WaitForSlotEvent, 1);
   PKCS11_DEFINE_METHOD(C_Finalize, 0);
+  PKCS11_DEFINE_METHOD(unload_library, 0);
 
   ///////////////////////////////////////
 
