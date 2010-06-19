@@ -7,6 +7,10 @@ module PKCS11
     #
     # so_path:: Path to the *.so or *.dll file to load.
     # args:: A Hash or CK_C_INITIALIZE_ARGS instance with load params.
+    #
+    # If so_path is +nil+ no library is loaded or initialized.
+    # In this case the calls to load_library, C_GetFunctionList and
+    # C_Initialize have to be done manually, before using other methods.
     def initialize(so_path=nil, args={})
       case args
         when Hash

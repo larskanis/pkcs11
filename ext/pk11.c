@@ -82,6 +82,11 @@ pkcs11_ctx_free(pkcs11_ctx *ctx)
   free(ctx);
 }
 
+/* rb_define_method(cPKCS11, "C_Finalize", pkcs11_C_Finalize, 0); */
+/*
+ * Is called to indicate that an application is finished with the Cryptoki library.
+ * See also PKCS11::Library#close .
+ */
 static VALUE
 pkcs11_C_Finalize(VALUE self)
 {
@@ -95,6 +100,11 @@ pkcs11_C_Finalize(VALUE self)
   return self;
 }
 
+/* rb_define_method(cPKCS11, "unload_library", pkcs11_unload_library, 0); */
+/*
+ * Unloads the Cryptoki library from process memory.
+ * See also PKCS11::Library#close .
+ */
 static VALUE
 pkcs11_unload_library(VALUE self)
 {
@@ -121,6 +131,11 @@ pkcs11_library_new(int argc, VALUE *argv, VALUE self)
   return rb_funcall2(cPKCS11, sNEW, argc, argv);
 }
 
+/* rb_define_method(cPKCS11, "load_library", pkcs11_load_library, 0); */
+/*
+ * Load a Cryptoki library into process memory.
+ * See also PKCS11::Library#new .
+ */
 static VALUE
 pkcs11_load_library(VALUE self, VALUE path)
 {
@@ -146,6 +161,13 @@ pkcs11_load_library(VALUE self, VALUE path)
   return self;
 }
 
+/* rb_define_method(cPKCS11, "C_GetFunctionList", pkcs11_C_GetFunctionList, 0); */
+/*
+ * Obtains a pointer to the Cryptoki library’s list of function pointers. The pointer
+ * is stored in the PKCS11::Library object and used to call any Cryptoki functions.
+ *
+ * See also PKCS11::Library#new .
+ */
 static VALUE
 pkcs11_C_GetFunctionList(VALUE self)
 {
@@ -173,6 +195,10 @@ pkcs11_C_GetFunctionList(VALUE self)
   return self;
 }
 
+/* rb_define_method(cPKCS11, "C_Initialize", pkcs11_C_Initialize, 0); */
+/*
+ * Initializes the Cryptoki library.
+ */
 static VALUE
 pkcs11_C_Initialize(int argc, VALUE *argv, VALUE self)
 {
