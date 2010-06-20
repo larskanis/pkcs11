@@ -24,7 +24,7 @@
 #endif
 
 void Init_pkcs11_ext();
-void Init_pkcs11_const(VALUE);
+void Init_pkcs11_const(VALUE, VALUE);
 
 #ifdef compile_for_windows
 #pragma pack(push, cryptoki, 1)

@@ -87,7 +87,7 @@ class TestPkcs11Object < Test::Unit::TestCase
   def test_destroy
     object.destroy
     
-    assert_raise(PKCS11::Error, 'destroyed object shouldn\'t have any attributes') do
+    assert_raise(CKR_OBJECT_HANDLE_INVALID, 'destroyed object shouldn\'t have any attributes') do
       object[:VALUE]
     end
   end

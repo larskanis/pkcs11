@@ -153,8 +153,4 @@ module PKCS11
   extend_ConstValueHash(:MECHANISMS)
   class Mechanism < ConstValue
   end
-
-#   extend_ConstValueHash(:RETURN_VALUES)
-#   class ReturnValue < ConstValue
-#   end
 end

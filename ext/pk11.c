@@ -27,7 +27,7 @@ static VALUE cCK_MECHANISM;
 #define PKNUM2ULONG(n) pkcs11_num2ulong(n)
 #define pkcs11_new_struct(klass) rb_funcall(klass, sNEW, 0)
 
-VALUE pkcs11_return_value_to_name(CK_RV);
+VALUE pkcs11_return_value_to_class(CK_RV, VALUE);
 
 static VALUE
 pkcs11_num2ulong(VALUE val)
@@ -41,9 +41,9 @@ pkcs11_num2ulong(VALUE val)
 static void
 pkcs11_raise(CK_RV rv)
 {
-  VALUE message;
-  message = pkcs11_return_value_to_name(rv);
-  rb_raise(ePKCS11Error, "%s", RSTRING_PTR(message));
+  VALUE class;
+  class = pkcs11_return_value_to_class(rv, ePKCS11Error);
+  rb_raise(class, "%li", rv);
 }
 
 ///////////////////////////////////////
@@ -1632,7 +1632,10 @@ Init_pkcs11_ext()
   
   /* Library version */
   rb_define_const( mPKCS11, "VERSION", rb_str_new2(VERSION) );
-  
+
+  /* Document-class: PKCS11::Error
+   *
+   * Base class for all Cryptoki exceptions (CKR_*)  */
   ePKCS11Error = rb_define_class_under(mPKCS11, "Error", rb_eStandardError);
   rb_define_alloc_func(cPKCS11, pkcs11_s_alloc);
   rb_define_method(cPKCS11, "initialize", pkcs11_initialize, -1);
@@ -1816,5 +1819,5 @@ Init_pkcs11_ext()
 
   ///////////////////////////////////////
 
-  Init_pkcs11_const(mPKCS11);
+  Init_pkcs11_const(mPKCS11, ePKCS11Error);
 }

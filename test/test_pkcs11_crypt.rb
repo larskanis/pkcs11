@@ -66,7 +66,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     valid = session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, plaintext)
     assert  valid, 'The signature should be correct'
     
-    assert_raise(PKCS11::Error, 'The signature should be invalid on different text') do
+    assert_raise(CKR_SIGNATURE_INVALID, 'The signature should be invalid on different text') do
       session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "modified text")
     end
   end

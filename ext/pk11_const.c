@@ -20,7 +20,13 @@
 #define PKCS11_DEFINE_MECHANISM(constant) \
   PKCS11_DEFINE_CONST_GROUP(vMECHANISMS, #constant, constant)
 #define PKCS11_DEFINE_RETURN_VALUE(constant) \
-  PKCS11_DEFINE_CONST_GROUP(vRETURN_VALUES, #constant, constant)
+  do { \
+    VALUE rvalue = ULONG2NUM(constant); \
+    VALUE eError = rb_define_class_under(cPKCS11, #constant, ePKCS11Error); \
+    VALUE old = rb_hash_aref(vRETURN_VALUES, rvalue); \
+    if (!NIL_P(old)) rb_warning("%s is equal to %s", RSTRING_PTR(old), #constant); \
+    rb_hash_aset(vRETURN_VALUES, rvalue, eError); \
+  } while(0)
 
 static VALUE vOBJECT_CLASSES;
 static VALUE vATTRIBUTES;
@@ -28,22 +34,20 @@ static VALUE vMECHANISMS;
 static VALUE vRETURN_VALUES;
 
 VALUE
-pkcs11_return_value_to_name(CK_RV rv)
+pkcs11_return_value_to_class(CK_RV rv, VALUE ePKCS11Error)
 {
-  VALUE name;
+  VALUE class;
   
-  name = rb_hash_aref(vRETURN_VALUES, INT2NUM(rv));
-  if (NIL_P(name)){
-    char buf[16];
-    snprintf(buf, sizeof(buf), "0x%08x", (unsigned int)rv);
-    name = rb_obj_freeze(rb_str_new2(buf));
+  class = rb_hash_aref(vRETURN_VALUES, INT2NUM(rv));
+  if (NIL_P(class)){
+    class = ePKCS11Error;
   }
 
-  return name;
+  return class;
 }
 
 void
-Init_pkcs11_const(VALUE cPKCS11)
+Init_pkcs11_const(VALUE cPKCS11, VALUE ePKCS11Error)
 {
   PKCS11_DEFINE_CONST(CRYPTOKI_VERSION_MAJOR);
   PKCS11_DEFINE_CONST(CRYPTOKI_VERSION_MINOR);
