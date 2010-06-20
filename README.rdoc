@@ -86,10 +86,10 @@ directory.
 
   STATE   FUNCTION               NOTE
   ------  ---------------------  ----------------------------------------
-  N/A     C_Initialize           called in PKCS11#initialize("/path/to/pk11lib")
-  DONE    C_Finalize             called in GC
+  DONE    C_Initialize
+  DONE    C_Finalize
   DONE    C_GetInfo
-  N/A     C_GetFunctionList      internal use only
+  DONE    C_GetFunctionList
   DONE    C_GetSlotList
   DONE    C_GetSlotInfo
   DONE    C_GetTokenInfo
