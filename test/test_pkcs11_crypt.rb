@@ -132,6 +132,15 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     key = session.generate_key(:DES2_KEY_GEN,
       {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
     assert_equal true, key[:LOCAL], 'Keys created on the token should be marked as local'
+    assert_equal CKK_DES2, key[:KEY_TYPE], 'Should be a 2 key 3des key'
+		
+		# other ways to use mechanisms
+    key = session.generate_key(CKM_DES2_KEY_GEN,
+      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
+    assert_equal CKK_DES2, key[:KEY_TYPE], 'Should be a 2 key 3des key'
+    key = session.generate_key(CK_MECHANISM.new(CKM_DES2_KEY_GEN, nil),
+      {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
+    assert_equal CKK_DES2, key[:KEY_TYPE], 'Should be a 2 key 3des key'
   end
 
   def test_generate_key_pair

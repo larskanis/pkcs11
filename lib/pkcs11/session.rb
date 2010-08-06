@@ -36,8 +36,10 @@ module PKCS11
           when Hash
             raise "only one mechanism allowed" unless hash.length==1
             PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', hash.keys.first), hash.values.first)
+					when Fixnum
+						PKCS11::CK_MECHANISM.new(hash)
           else
-            hash.to_int
+            hash
         end
       end
     end
