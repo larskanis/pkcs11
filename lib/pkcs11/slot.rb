@@ -47,7 +47,7 @@ module PKCS11
     # Obtains information about a particular mechanism possibly
     # supported by a token.
     def C_GetMechanismInfo(mechanism)
-      @pk.C_GetMechanismInfo(@slot, Session.hash_to_mechanism(mechanism))
+      @pk.C_GetMechanismInfo(@slot, Session.to_mechanism(mechanism))
     end
     alias mechanism_info C_GetMechanismInfo
 
