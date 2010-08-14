@@ -1,3 +1,5 @@
+require 'pkcs11/helper'
+
 module PKCS11
   # Cryptoki’s logical view of a token is a device that stores objects and can perform
   # cryptographic functions. Cryptoki defines three classes of object: data, certificates, and
@@ -5,6 +7,8 @@ module PKCS11
   #
   # Attributes are characteristics that distinguish an instance of an object.
   class Object
+    include Helper
+
     def initialize(pkcs11, session, object) # :nodoc:
       @pk, @sess, @obj = pkcs11, session, object
     end
@@ -53,7 +57,7 @@ module PKCS11
     # Examples:
     #   object.attributes = {:SUBJECT => cert_subject, PKCS11::CKA_VALUE => cert_data}
     def C_SetAttributeValue(template={})
-      template = Session.to_attributes template
+      template = to_attributes template
       @pk.C_SetAttributeValue(@sess, @obj, template)
     end
     alias attributes= C_SetAttributeValue
@@ -80,7 +84,7 @@ module PKCS11
         when 1
           template = template[0]
       end
-      template = Session.to_attributes template
+      template = to_attributes template
       @pk.C_GetAttributeValue(@sess, @obj, template)
     end
     alias attributes C_GetAttributeValue

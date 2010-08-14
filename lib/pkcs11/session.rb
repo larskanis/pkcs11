@@ -1,49 +1,13 @@
+require 'pkcs11/helper'
+
 module PKCS11
   # Cryptoki requires that an application open one or more sessions with a token to gain
   # access to the token’s objects and functions. A session provides a logical connection
   # between the application and the token. A session can be a read/write (R/W) session or a
   # read-only (R/O) session (default).
   class Session
-    class << self
-      def to_attributes(template) # :nodoc:
-        case template
-          when Array
-            template.map{|v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', v), nil) }
-          when Hash
-            template.map{|k,v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', k), v) }
-          when String, Symbol
-            [PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', template), nil)]
-          when Integer
-            [PKCS11::CK_ATTRIBUTE.new(template, nil)]
-          else
-            template
-        end
-      end
+    include Helper
 
-      def string_to_handle(prefix, attribute) # :nodoc:
-        case attribute
-          when String, Symbol
-            PKCS11.const_get("#{prefix}#{attribute}")
-          else
-            attribute
-        end
-      end
-
-      def to_mechanism(mechanism) # :nodoc:
-        case mechanism
-          when String, Symbol
-            PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', mechanism))
-          when Hash
-            raise "only one mechanism allowed" unless mechanism.length==1
-            PKCS11::CK_MECHANISM.new(string_to_handle('CKM_', mechanism.keys.first), mechanism.values.first)
-					when Fixnum
-						PKCS11::CK_MECHANISM.new(mechanism)
-          else
-            mechanism
-        end
-      end
-    end
-    
     def initialize(pkcs11, session) # :nodoc:
       @pk, @sess = pkcs11, session
     end
@@ -69,7 +33,7 @@ module PKCS11
     # it is called. Improper use of this user type will result in a return value
     # CKR_OPERATION_NOT_INITIALIZED.
     def C_Login(user_type, pin)
-      @pk.C_Login(@sess, Session::string_to_handle('CKU_', user_type), pin)
+      @pk.C_Login(@sess, string_to_handle('CKU_', user_type), pin)
     end
     alias login C_Login
 
@@ -104,7 +68,7 @@ module PKCS11
     #                 template. Use empty Hash to find all objects.
 
     def C_FindObjectsInit(find_template={})
-      @pk.C_FindObjectsInit(@sess, Session.to_attributes(find_template))
+      @pk.C_FindObjectsInit(@sess, to_attributes(find_template))
     end
 
     # Continues a search for token and session objects that match a template,
@@ -159,7 +123,7 @@ module PKCS11
     # Only session objects can be created during a read-only session. Only public objects can
     # be created unless the normal user is logged in.
     def C_CreateObject(template={})
-      handle = @pk.C_CreateObject(@sess, Session.to_attributes(template))
+      handle = @pk.C_CreateObject(@sess, to_attributes(template))
       Object.new @pk, @sess, handle
     end
     alias create_object C_CreateObject
@@ -245,7 +209,7 @@ module PKCS11
     # final piece of ciphertext. To process additional data (in single or multiple parts), the
     # application must call C_EncryptInit again.
     def C_EncryptInit(mechanism, key)
-      @pk.C_EncryptInit(@sess, Session.to_mechanism(mechanism), key)
+      @pk.C_EncryptInit(@sess, to_mechanism(mechanism), key)
     end
     # Encrypts single-part data.
     def C_Encrypt(data, out_size=nil)
@@ -286,7 +250,7 @@ module PKCS11
     #
     # See Session#decrypt for convenience.
     def C_DecryptInit(mechanism, key)
-      @pk.C_DecryptInit(@sess, Session.to_mechanism(mechanism), key)
+      @pk.C_DecryptInit(@sess, to_mechanism(mechanism), key)
     end
     # Decrypts encrypted data in a single part.
     def C_Decrypt(data, out_size=nil)
@@ -314,7 +278,7 @@ module PKCS11
     #
     # See Session#digest for convenience.
     def C_DigestInit(mechanism)
-      @pk.C_DigestInit(@sess, Session.to_mechanism(mechanism))
+      @pk.C_DigestInit(@sess, to_mechanism(mechanism))
     end
     # Digests data in a single part.
     def C_Digest(data, out_size=nil)
@@ -368,7 +332,7 @@ module PKCS11
     #
     # See Session#sign for convenience.
     def C_SignInit(mechanism, key)
-      @pk.C_SignInit(@sess, Session.to_mechanism(mechanism), key)
+      @pk.C_SignInit(@sess, to_mechanism(mechanism), key)
     end
     # Signs data in a single part, where the signature is an appendix to the data.
     def C_Sign(data, out_size=nil)
@@ -398,7 +362,7 @@ module PKCS11
     #
     # See ession#verify for convenience.
     def C_VerifyInit(mechanism, key)
-      @pk.C_VerifyInit(@sess, Session.to_mechanism(mechanism), key)
+      @pk.C_VerifyInit(@sess, to_mechanism(mechanism), key)
     end
     # Verifies a signature in a single-part operation, where the signature is an
     # appendix to the data.
@@ -428,7 +392,7 @@ module PKCS11
     # Initializes a signature operation, where the data can be recovered
     # from the signature
     def C_SignRecoverInit(mechanism, key)
-      @pk.C_SignRecoverInit(@sess, Session.to_mechanism(mechanism), key)
+      @pk.C_SignRecoverInit(@sess, to_mechanism(mechanism), key)
     end
     # Signs data in a single operation, where the data can be recovered from
     # the signature.
@@ -448,7 +412,7 @@ module PKCS11
     #
     # See Session#verify_recover for convenience.
     def C_VerifyRecoverInit(mechanism, key)
-      @pk.C_VerifyRecoverInit(@sess, Session.to_mechanism(mechanism), key)
+      @pk.C_VerifyRecoverInit(@sess, to_mechanism(mechanism), key)
     end
     # Verifies a signature in a single-part operation, where the data is
     # recovered from the signature.
@@ -511,7 +475,7 @@ module PKCS11
     #
     # Returns key Object of the new created key.
     def C_GenerateKey(mechanism, template={})
-      obj = @pk.C_GenerateKey(@sess, Session.to_mechanism(mechanism), Session.to_attributes(template))
+      obj = @pk.C_GenerateKey(@sess, to_mechanism(mechanism), to_attributes(template))
       Object.new @pk, @sess, obj
     end
     alias generate_key C_GenerateKey
@@ -520,7 +484,7 @@ module PKCS11
     #
     # Returns an two-items array of new created public and private key Object.
     def C_GenerateKeyPair(mechanism, pubkey_template={}, privkey_template={})
-      objs = @pk.C_GenerateKeyPair(@sess, Session.to_mechanism(mechanism), Session.to_attributes(pubkey_template), Session.to_attributes(privkey_template))
+      objs = @pk.C_GenerateKeyPair(@sess, to_mechanism(mechanism), to_attributes(pubkey_template), to_attributes(privkey_template))
       objs.map{|obj| Object.new @pk, @sess, obj }
     end
     alias generate_key_pair C_GenerateKeyPair
@@ -529,7 +493,7 @@ module PKCS11
     #
     # Returns the encrypted binary data.
     def C_WrapKey(mechanism, wrapping_key, wrapped_key, out_size=nil)
-      @pk.C_WrapKey(@sess, Session.to_mechanism(mechanism), wrapping_key, wrapped_key, out_size)
+      @pk.C_WrapKey(@sess, to_mechanism(mechanism), wrapping_key, wrapped_key, out_size)
     end
     alias wrap_key C_WrapKey
 
@@ -538,7 +502,7 @@ module PKCS11
     #
     # Returns key Object of the new created key.
     def C_UnwrapKey(mechanism, wrapping_key, wrapped_key, template={})
-      obj = @pk.C_UnwrapKey(@sess, Session.to_mechanism(mechanism), wrapping_key, wrapped_key, Session.to_attributes(template))
+      obj = @pk.C_UnwrapKey(@sess, to_mechanism(mechanism), wrapping_key, wrapped_key, to_attributes(template))
       Object.new @pk, @sess, obj
     end
     alias unwrap_key C_UnwrapKey
@@ -547,7 +511,7 @@ module PKCS11
     #
     # Returns key Object of the new created key.
     def C_DeriveKey(mechanism, base_key, template={})
-      obj = @pk.C_DeriveKey(@sess, Session.to_mechanism(mechanism), base_key, Session.to_attributes(template))
+      obj = @pk.C_DeriveKey(@sess, to_mechanism(mechanism), base_key, to_attributes(template))
       Object.new @pk, @sess, obj
     end
     alias derive_key C_DeriveKey

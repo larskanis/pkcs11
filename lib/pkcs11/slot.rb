@@ -1,7 +1,11 @@
+require 'pkcs11/helper'
+
 module PKCS11
   # Each slot corresponds to a physical reader or other device interface.
   # It may contain a token.
   class Slot
+    include Helper
+
     def initialize(pkcs11, slot) # :nodoc:
       @pk, @slot = pkcs11, slot
     end
@@ -47,7 +51,7 @@ module PKCS11
     # Obtains information about a particular mechanism possibly
     # supported by a token.
     def C_GetMechanismInfo(mechanism)
-      @pk.C_GetMechanismInfo(@slot, Session.to_mechanism(mechanism))
+      @pk.C_GetMechanismInfo(@slot, to_mechanism(mechanism))
     end
     alias mechanism_info C_GetMechanismInfo
 
