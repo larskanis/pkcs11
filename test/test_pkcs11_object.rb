@@ -84,9 +84,23 @@ class TestPkcs11Object < Test::Unit::TestCase
     assert object.size, 'There should be an object size'
   end
   
+  def test_copy_without_params
+    new_obj = object.copy
+    new_obj[:APPLICATION] = 'Copied object'
+    assert_equal 'Copied object', new_obj[:APPLICATION], "Application should be changed"
+    assert_equal 'My Application', object[:APPLICATION], "Original object should be unchanged"
+  end
+
+  def test_copy_with_params
+    new_obj = object.copy :APPLICATION=>'Copied object'
+    assert_equal 'value', new_obj[:VALUE], "Value should be copied"
+    assert_equal 'Copied object', new_obj[:APPLICATION], "Application should be changed"
+    assert_equal 'My Application', object[:APPLICATION], "Original object should be unchanged"
+  end
+  
   def test_destroy
     object.destroy
-    
+
     assert_raise(CKR_OBJECT_HANDLE_INVALID, 'destroyed object shouldn\'t have any attributes') do
       object[:VALUE]
     end

@@ -114,7 +114,7 @@ module PKCS11
     end
 
 
-    # Creates a new Object based on given template. Returns a new object’s handle.
+    # Creates a new Object based on given template.
     # If C_CreateObject is used to create a key object, the key object will have its
     # CKA_LOCAL attribute set to false. If that key object is a secret or private key
     # then the new key will have the CKA_ALWAYS_SENSITIVE attribute set to

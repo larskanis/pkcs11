@@ -547,10 +547,27 @@ pkcs11_C_CreateObject(VALUE self, VALUE session, VALUE template)
   CK_RV rv;
   CK_ATTRIBUTE *tmp;
   CK_OBJECT_HANDLE handle;
- 
+
   tmp = pkcs11_attr_ary2buf(template);
   GetFunction(self, C_CreateObject, func);
   rv = func(NUM2HANDLE(session), tmp, RARRAY_LEN(template), &handle);
+  free(tmp);
+  if(rv != CKR_OK) pkcs11_raise(rv);
+
+  return HANDLE2NUM(handle);
+}
+
+static VALUE
+pkcs11_C_CopyObject(VALUE self, VALUE session, VALUE object, VALUE template)
+{
+  CK_C_CopyObject func;
+  CK_RV rv;
+  CK_ATTRIBUTE *tmp;
+  CK_OBJECT_HANDLE handle;
+
+  tmp = pkcs11_attr_ary2buf(template);
+  GetFunction(self, C_CopyObject, func);
+  rv = func(NUM2HANDLE(session), NUM2HANDLE(object), tmp, RARRAY_LEN(template), &handle);
   free(tmp);
   if(rv != CKR_OK) pkcs11_raise(rv);
 
@@ -1663,6 +1680,7 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_METHOD(C_SetPIN, 3);
 
   PKCS11_DEFINE_METHOD(C_CreateObject, 2);
+  PKCS11_DEFINE_METHOD(C_CopyObject, 3);
   PKCS11_DEFINE_METHOD(C_DestroyObject, 2);
   PKCS11_DEFINE_METHOD(C_GetObjectSize, 2);
   PKCS11_DEFINE_METHOD(C_FindObjectsInit, 2);

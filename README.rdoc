@@ -107,7 +107,7 @@ directory.
   DONE    C_Login
   DONE    C_Logout
   DONE    C_CreateObject
-  N/A     C_CopyObject           use C_GetAttributeValue and C_CreateObject
+  DONE    C_CopyObject
   DONE    C_DestroyObject
   DONE    C_GetObjectSize
   DONE    C_GetAttributeValue

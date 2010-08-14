@@ -88,7 +88,29 @@ module PKCS11
       @pk.C_GetAttributeValue(@sess, @obj, template)
     end
     alias attributes C_GetAttributeValue
-    
+
+    # Copies an object, creating a new object for the copy.
+    #
+    # The template may specify new values for any attributes of the object that can ordinarily
+    # be modified (e.g., in the course of copying a secret key, a key’s CKA_EXTRACTABLE
+    # attribute may be changed from true to false, but not the other way around.
+    # If this change is made, the new key’s CKA_NEVER_EXTRACTABLE attribute will
+    # have the value false. Similarly, the template may specify that the new key’s
+    # CKA_SENSITIVE attribute be true; the new key will have the same value for its
+    # CKA_ALWAYS_SENSITIVE attribute as the original key). It may also specify new
+    # values of the CKA_TOKEN and CKA_PRIVATE attributes (e.g., to copy a session
+    # object to a token object). If the template specifies a value of an attribute which is
+    # incompatible with other existing attributes of the object, the call fails exception
+    # CKR_TEMPLATE_INCONSISTENT.
+    #
+    # Only session objects can be created during a read-only session. Only public objects can
+    # be created unless the normal user is logged in.
+    def C_CopyObject(template={})
+      handle = @pk.C_CopyObject(@sess, @obj, to_attributes(template))
+      Object.new @pk, @sess, handle
+    end
+    alias copy C_CopyObject
+
     # Destroys the object.
     #
     # Only session objects can be destroyed during a read-only session. Only public objects
