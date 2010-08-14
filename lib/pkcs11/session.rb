@@ -530,5 +530,19 @@ module PKCS11
       @pk.C_GenerateRandom(@sess, out_size)
     end
     alias generate_random C_GenerateRandom
+    
+    # Obtains a copy of the cryptographic operations state of a session,
+    # encoded as a string of bytes.
+    def C_GetOperationState
+      @pk.C_GetOperationState(@sess)
+    end
+    alias get_operation_state C_GetOperationState
+
+    # Restores the cryptographic operations state of a session from a
+    # string of bytes obtained with C_GetOperationState.
+    def C_SetOperationState(state, enc_key=nil, auth_key=nil)
+      @pk.C_SetOperationState(@sess, state, enc_key||0, auth_key||0)
+    end
+    alias set_operation_state C_SetOperationState
   end
 end

@@ -481,6 +481,7 @@ pkcs11_C_GetOperationState(VALUE self, VALUE session)
   state = rb_str_new(0, size);
   rv = func(NUM2HANDLE(session), (CK_BYTE_PTR)RSTRING_PTR(state), &size);
   if (rv != CKR_OK) pkcs11_raise(rv);
+  rb_str_set_len(state, size);
 
   return state;
 }
@@ -495,7 +496,7 @@ pkcs11_C_SetOperationState(VALUE self, VALUE session, VALUE state, VALUE enc_key
   GetFunction(self, C_SetOperationState, func);
   rv = func(NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(state), RSTRING_LEN(state),
-            NUM2HANDLE(state), NUM2HANDLE(auth_key));
+            NUM2HANDLE(enc_key), NUM2HANDLE(auth_key));
   if (rv != CKR_OK) pkcs11_raise(rv);
 
   return self;

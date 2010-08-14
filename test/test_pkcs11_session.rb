@@ -94,4 +94,30 @@ class TestPkcs11Session < Test::Unit::TestCase
     
     assert_equal 'test_create_public_key_object', obj[:LABEL], 'Value as created'
   end
+
+  def test_get_set_operation_state
+    plaintext = "secret text"
+
+    # Start a digest operation
+    session.C_DigestInit(:SHA_1)
+    session.C_DigestUpdate(plaintext[0..3])
+
+    # Save the current state and close the session
+    state = session.get_operation_state
+    @session.close
+
+    assert state.length >= 4, 'There should be at least some bytes for the first part of plaintext in the state'
+
+    # Open a new session and restore the previous state
+    @session = @slot.open
+    session.login(:USER, "")
+    session.set_operation_state(state)
+
+    # Finish the digest
+    session.C_DigestUpdate(plaintext[4..-1])
+    digest1 = session.C_DigestFinal
+    digest2 = OpenSSL::Digest::SHA1.new(plaintext).digest
+
+    assert_equal digest2, digest1, 'Digests should be equal'
+  end
 end
