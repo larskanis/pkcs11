@@ -1478,6 +1478,33 @@ set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
   return value;
 }
 
+static VALUE
+get_string_ptr_len(VALUE obj, char *name, off_t offset, off_t offset_len)
+{
+  char *ptr = (char*)DATA_PTR(obj);
+  char *p = *(char**)(ptr+offset);
+  unsigned long l = *(unsigned long*)(ptr+offset_len);
+  if (!p) return Qnil;
+  return rb_str_new(p, l);
+}
+
+static VALUE
+set_string_ptr_len(VALUE obj, VALUE value, char *name, off_t offset, off_t offset_len)
+{
+  char *ptr = (char*)DATA_PTR(obj);
+  rb_iv_set(obj, name, value);
+  if (NIL_P(value)){
+    *(CK_VOID_PTR*)(ptr+offset) = NULL_PTR;
+    *(unsigned long*)(ptr+offset_len) = 0;
+    return value;
+  }
+  StringValue(value);
+  value = rb_obj_freeze(rb_str_dup(value));
+  *(CK_VOID_PTR*)(ptr+offset) = RSTRING_PTR(value);
+  *(unsigned long*)(ptr+offset_len) = RSTRING_LEN(value);
+  return value;
+}
+
 #define OFFSET_OF(s, f) ((off_t)((char*)&(((s*)0)->f) - (char*)0))
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
 
@@ -1485,9 +1512,12 @@ set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
 static VALUE s##_s_alloc(VALUE self){ \
   s *info; \
   VALUE obj = Data_Make_Struct(self, s, 0, -1, info); \
-  memset(info, 0, sizeof(s)); \
   return obj; \
 }
+
+#define PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(s) \
+static VALUE c##s;\
+PKCS11_IMPLEMENT_ALLOCATOR(s);
 
 #define PKCS11_IMPLEMENT_STRING_ACCESSOR(s, f) \
 static VALUE c##s##_get_##f(VALUE o){ \
@@ -1519,6 +1549,14 @@ static VALUE c##s##_get_##f(VALUE o){ \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_string_ptr(o, v, #f, OFFSET_OF(s, f)); \
+}
+
+#define PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(s, f, l) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  return get_string_ptr_len(o, #f, OFFSET_OF(s, f), OFFSET_OF(s, l)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  return set_string_ptr_len(o, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l)); \
 }
 
 ///////////////////////////////////////
@@ -1572,6 +1610,31 @@ PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_SESSION_INFO, state);
 PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_SESSION_INFO, flags);
 PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_SESSION_INFO, ulDeviceError);
 
+PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(CK_AES_CBC_ENCRYPT_DATA_PARAMS);
+PKCS11_IMPLEMENT_STRING_ACCESSOR(CK_AES_CBC_ENCRYPT_DATA_PARAMS, iv);
+PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(CK_AES_CBC_ENCRYPT_DATA_PARAMS, pData, length);
+PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(CK_DES_CBC_ENCRYPT_DATA_PARAMS);
+PKCS11_IMPLEMENT_STRING_ACCESSOR(CK_DES_CBC_ENCRYPT_DATA_PARAMS, iv);
+PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(CK_DES_CBC_ENCRYPT_DATA_PARAMS, pData, length);
+PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(CK_KEY_DERIVATION_STRING_DATA);
+PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(CK_KEY_DERIVATION_STRING_DATA, pData, ulLen);
+
+PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(CK_RSA_PKCS_OAEP_PARAMS);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_RSA_PKCS_OAEP_PARAMS, hashAlg);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_RSA_PKCS_OAEP_PARAMS, mgf);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_RSA_PKCS_OAEP_PARAMS, source);
+PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(CK_RSA_PKCS_OAEP_PARAMS, pSourceData, ulSourceDataLen);
+
+PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(CK_RSA_PKCS_PSS_PARAMS);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_RSA_PKCS_PSS_PARAMS, hashAlg);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_RSA_PKCS_PSS_PARAMS, mgf);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_RSA_PKCS_PSS_PARAMS, sLen);
+
+PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(CK_ECDH1_DERIVE_PARAMS);
+PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_ECDH1_DERIVE_PARAMS, kdf);
+PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(CK_ECDH1_DERIVE_PARAMS, pSharedData, ulSharedDataLen);
+PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(CK_ECDH1_DERIVE_PARAMS, pPublicData, ulPublicDataLen);
+
 ///////////////////////////////////////
 
 PKCS11_IMPLEMENT_ALLOCATOR(CK_MECHANISM)
@@ -1602,17 +1665,32 @@ static VALUE
 cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
 {
   CK_MECHANISM_PTR m = DATA_PTR(self);
+  CK_ULONG ulong_val;
 
-  if (NIL_P(value)){
+  switch(TYPE(value)){
+  case T_NIL:
     m->pParameter = NULL_PTR;
     m->ulParameterLen = 0;
-  }
-  else{
-    StringValue(value);
+    break;
+  case T_STRING:
     value = rb_obj_freeze(rb_str_dup(value));
     m->pParameter = RSTRING_PTR(value);
     m->ulParameterLen = RSTRING_LEN(value);
+    break;
+  case T_FIXNUM:
+    ulong_val = NUM2ULONG(value);
+    value = rb_obj_freeze(rb_str_new((char*)&ulong_val, sizeof(ulong_val)));
+    m->pParameter = RSTRING_PTR(value);
+    m->ulParameterLen = RSTRING_LEN(value);
+    break;
+  case T_DATA:
+    m->pParameter = DATA_PTR(value);
+    m->ulParameterLen = NUM2LONG(rb_const_get(rb_funcall(value, rb_intern("class"), 0), rb_intern("SIZEOF_STRUCT")));
+    break;
+  default:
+    rb_raise(rb_eArgError, "invalid argument");
   }
+  /* don't GC the value as long as this object is active */
   rb_iv_set(self, "pParameter", value);
 
   return value;
@@ -1627,6 +1705,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
   do { \
     c##s = rb_define_class_under(mPKCS11, #s, rb_cObject); \
     rb_define_alloc_func(c##s, s##_s_alloc); \
+    rb_define_const(c##s, "SIZEOF_STRUCT", ULONG2NUM(sizeof(s))); \
   } while(0)
 
 #define PKCS11_DEFINE_MEMBER(s, f) \
@@ -1793,21 +1872,40 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_MEMBER(CK_MECHANISM, mechanism);
   PKCS11_DEFINE_MEMBER(CK_MECHANISM, pParameter);
 
-  //CK_RSA_PKCS_OAEP_PARAMS
-  //CK_RSA_PKCS_PSS_PARAMS
-  //CK_AES_CBC_ENCRYPT_DATA_PARAMS
+  PKCS11_DEFINE_STRUCT(CK_AES_CBC_ENCRYPT_DATA_PARAMS);
+  PKCS11_DEFINE_MEMBER(CK_AES_CBC_ENCRYPT_DATA_PARAMS, iv);
+  PKCS11_DEFINE_MEMBER(CK_AES_CBC_ENCRYPT_DATA_PARAMS, pData);
+  PKCS11_DEFINE_STRUCT(CK_DES_CBC_ENCRYPT_DATA_PARAMS);
+  PKCS11_DEFINE_MEMBER(CK_DES_CBC_ENCRYPT_DATA_PARAMS, iv);
+  PKCS11_DEFINE_MEMBER(CK_DES_CBC_ENCRYPT_DATA_PARAMS, pData);
+  PKCS11_DEFINE_STRUCT(CK_KEY_DERIVATION_STRING_DATA);
+  PKCS11_DEFINE_MEMBER(CK_KEY_DERIVATION_STRING_DATA, pData);
+
+  PKCS11_DEFINE_STRUCT(CK_RSA_PKCS_OAEP_PARAMS);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_OAEP_PARAMS, hashAlg);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_OAEP_PARAMS, mgf);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_OAEP_PARAMS, source);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_OAEP_PARAMS, pSourceData);
+
+  PKCS11_DEFINE_STRUCT(CK_RSA_PKCS_PSS_PARAMS);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_PSS_PARAMS, hashAlg);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_PSS_PARAMS, mgf);
+  PKCS11_DEFINE_MEMBER(CK_RSA_PKCS_PSS_PARAMS, sLen);
+
+  PKCS11_DEFINE_STRUCT(CK_ECDH1_DERIVE_PARAMS);
+  PKCS11_DEFINE_MEMBER(CK_ECDH1_DERIVE_PARAMS, kdf);
+  PKCS11_DEFINE_MEMBER(CK_ECDH1_DERIVE_PARAMS, pSharedData);
+  PKCS11_DEFINE_MEMBER(CK_ECDH1_DERIVE_PARAMS, pPublicData);
+
   //CK_AES_CTR_PARAMS
   //CK_ARIA_CBC_ENCRYPT_DATA_PARAMS
   //CK_CAMELLIA_CBC_ENCRYPT_DATA_PARAMS
   //CK_CAMELLIA_CTR_PARAMS
   //CK_CMS_SIG_PARAMS
-  //CK_DES_CBC_ENCRYPT_DATA_PARAMS
-  //CK_ECDH1_DERIVE_PARAMS
   //CK_ECDH2_DERIVE_PARAMS
   //CK_ECMQV_DERIVE_PARAMS
   //CK_FUNCTION_LIST
   //CK_KEA_DERIVE_PARAMS
-  //CK_KEY_DERIVATION_STRING_DATA
   //CK_KEY_WRAP_SET_OAEP_PARAMS
   //CK_KIP_PARAMS
   //CK_OTP_PARAM

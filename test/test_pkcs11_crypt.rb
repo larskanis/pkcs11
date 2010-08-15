@@ -173,4 +173,12 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
     assert_equal new_key1[0,16], new_key2[:VALUE], 'Exchanged session key should be equal'
   end
+
+  def test_derive_key2
+    deriv_data = "\0"*16
+    new_key1 = session.derive_key( {CKM_XOR_BASE_AND_DATA => {:pData => deriv_data}}, secret_key,
+      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :VALUE_LEN=>16, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+
+    assert_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key should have equal key value'
+  end
 end
