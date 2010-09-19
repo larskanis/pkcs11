@@ -5,6 +5,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 ext/extconf.rb
+ext/generate_structs.rb
 ext/include/cryptoki.h
 ext/include/ct-kip.h
 ext/include/otp-pkcs11.h
