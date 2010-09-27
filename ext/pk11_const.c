@@ -199,7 +199,7 @@ Init_pkcs11_const(VALUE cPKCS11, VALUE ePKCS11Error)
   vMECHANISMS = rb_hash_new();
   vRETURN_VALUES = rb_hash_new();
 
-  #include "pk11_const_def.c"
+  #include "pk11_const_def.inc"
   
   rb_obj_freeze(vOBJECT_CLASSES);
   rb_define_const(cPKCS11, "OBJECT_CLASSES", vOBJECT_CLASSES);

@@ -1659,7 +1659,7 @@ PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_SESSION_INFO, state);
 PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_SESSION_INFO, flags);
 PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_SESSION_INFO, ulDeviceError);
 
-#include "pk11_struct_impl.c"
+#include "pk11_struct_impl.inc"
 
 ///////////////////////////////////////
 
@@ -1898,7 +1898,7 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_MEMBER(CK_MECHANISM, mechanism);
   PKCS11_DEFINE_MEMBER(CK_MECHANISM, pParameter);
 
-	#include "pk11_struct_def.c"
+	#include "pk11_struct_def.inc"
 
   //CK_AES_CTR_PARAMS
   //CK_ARIA_CBC_ENCRYPT_DATA_PARAMS
