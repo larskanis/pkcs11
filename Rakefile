@@ -35,10 +35,11 @@ Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
 end
 
 file 'ext/pk11_struct_def.c' => 'ext/generate_structs.rb' do
-	sh "ruby ext/generate_structs.rb --def ext/pk11_struct_def.c --impl ext/pk11_struct_impl.c ext/include/pkcs11t.h"
+	sh "ruby ext/generate_structs.rb --def ext/pk11_struct_def.c --impl ext/pk11_struct_impl.c --const ext/pk11_const_def.c ext/include/pkcs11t.h"
 end
 file 'ext/pk11_struct_impl.c' => 'ext/pk11_struct_def.c'
 task 'ext/pk11.c' => 'ext/pk11_struct_def.c'
+task 'ext/pk11_const.c' => 'ext/pk11_struct_def.c'
 
 # RDoc-upload task for github (currently on rubyforge)
 #
