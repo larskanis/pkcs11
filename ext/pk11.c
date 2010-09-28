@@ -1456,7 +1456,7 @@ get_bool(VALUE obj, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   if(*(CK_BBOOL*)(ptr+offset)) return Qtrue;
-	else return Qfalse;
+  else return Qfalse;
 }
 
 static VALUE
@@ -1515,10 +1515,11 @@ set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
 static VALUE
 get_string_ptr_len(VALUE obj, char *name, off_t offset, off_t offset_len)
 {
+  unsigned long l;
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
-  unsigned long l = *(unsigned long*)(ptr+offset_len);
   if (!p) return Qnil;
+  l = *(unsigned long*)(ptr+offset_len);
   return rb_str_new(p, l);
 }
 
