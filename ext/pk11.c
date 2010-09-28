@@ -1500,13 +1500,14 @@ static VALUE
 set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
-  rb_iv_set(obj, name, value);
   if (NIL_P(value)){
+    rb_iv_set(obj, name, value);
     *(CK_VOID_PTR*)(ptr+offset) = NULL_PTR;
     return value;
   }
   StringValue(value);
   value = rb_obj_freeze(rb_str_dup(value));
+  rb_iv_set(obj, name, value);
   *(CK_VOID_PTR*)(ptr+offset) = RSTRING_PTR(value);
   return value;
 }
