@@ -21,6 +21,7 @@ end.parse!
 Attribute = Struct.new(:type, :name, :qual)
 IgnoreStructs = %w[CK_MECHANISM_INFO CK_VERSION CK_C_INITIALIZE_ARGS CK_MECHANISM CK_ATTRIBUTE CK_INFO CK_SLOT_INFO CK_TOKEN_INFO CK_MECHANISM_INFO CK_SESSION_INFO]
 
+structs = {}
 File.open(options.def, "w") do |fd_def|
 File.open(options.impl, "w") do |fd_impl|
 ARGV.each do |file_h|
@@ -38,6 +39,8 @@ ARGV.each do |file_h|
 			attrs[$1+" "+$2] = attr
 # 			puts attr.inspect
 		end
+
+    structs[struct_name] = attrs
 		
 		# try to find attributes belonging together
 		attrs.select{|key, attr| ['CK_BYTE_PTR', 'CK_VOID_PTR', 'CK_UTF8CHAR_PTR'].include?(attr.type) }.each do |key, attr|
@@ -75,8 +78,13 @@ ARGV.each do |file_h|
 				fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
 			else
-				fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
-				fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
+        if structs[attr.type]
+          fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct_name}, #{attr.type}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        else
+          fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
+          fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
+        end
 			end
 		end
 	

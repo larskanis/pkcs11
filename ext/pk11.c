@@ -1525,16 +1525,36 @@ static VALUE
 set_string_ptr_len(VALUE obj, VALUE value, char *name, off_t offset, off_t offset_len)
 {
   char *ptr = (char*)DATA_PTR(obj);
-  rb_iv_set(obj, name, value);
   if (NIL_P(value)){
+    rb_iv_set(obj, name, value);
     *(CK_VOID_PTR*)(ptr+offset) = NULL_PTR;
     *(unsigned long*)(ptr+offset_len) = 0;
     return value;
   }
   StringValue(value);
   value = rb_obj_freeze(rb_str_dup(value));
+  rb_iv_set(obj, name, value);
   *(CK_VOID_PTR*)(ptr+offset) = RSTRING_PTR(value);
   *(unsigned long*)(ptr+offset_len) = RSTRING_LEN(value);
+  return value;
+}
+
+static VALUE
+get_struct_inline(VALUE obj, VALUE klass, char *name, off_t offset)
+{
+  char *ptr = (char*)DATA_PTR(obj) + offset;
+  VALUE inline_obj = Data_Wrap_Struct(klass, 0, 0, ptr);
+  rb_iv_set(inline_obj, name, obj);
+  return inline_obj;
+}
+
+static VALUE
+set_struct_inline(VALUE obj, VALUE klass, char *struct_name, VALUE value, char *name, off_t offset, int sizeofstruct)
+{
+  char *ptr = (char*)DATA_PTR(obj) + offset;
+  if (!rb_obj_is_kind_of(value, klass))
+    rb_raise(rb_eArgError, "arg must be a PKCS11::%s", struct_name);
+  memcpy(ptr, DATA_PTR(value), sizeofstruct);
   return value;
 }
 
@@ -1606,6 +1626,14 @@ static VALUE c##s##_get_##f(VALUE o){ \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_string_ptr_len(o, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l)); \
+}
+
+#define PKCS11_IMPLEMENT_STRUCT_ACCESSOR(s, k, f) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  return get_struct_inline(o, c##k, #f, OFFSET_OF(s, f)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  return set_struct_inline(o, c##k, #k, v, #f, OFFSET_OF(s, f), sizeof(k)); \
 }
 
 ///////////////////////////////////////
