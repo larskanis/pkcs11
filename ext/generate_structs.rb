@@ -75,9 +75,12 @@ ARGV.each do |file_h|
 			when 'CK_BBOOL'
 				fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-			when 'CK_VERSION'
-				fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
-				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+      when 'CK_VERSION'
+        fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
+        fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+      when 'CK_ULONG_PTR'
+        fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct_name}, #{attr.name});"
+        fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
 			else
         if structs[attr.type]
           fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct_name}, #{attr.type}, #{attr.name});"

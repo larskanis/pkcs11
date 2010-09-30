@@ -99,7 +99,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_nil s.pServerRandom
   end
   
-  def test_gc_STRUCT_PTR_ACCESSOR
+  def test_STRUCT_PTR_ACCESSOR
     s = CK_SSL3_KEY_MAT_PARAMS.new
     assert_nil s.pReturnedKeyMaterial
     ri = s.pReturnedKeyMaterial = CK_SSL3_KEY_MAT_OUT.new
@@ -112,4 +112,13 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_nil s.pReturnedKeyMaterial
   end
 
+  def test_ULONG_PTR_ACCESSOR
+    s = CK_WTLS_PRF_PARAMS.new
+    assert_nil s.pulOutputLen
+    s.pulOutputLen = 123
+    GC.start
+    assert_equal 123, s.pulOutputLen
+    s.pulOutputLen = nil
+    assert_nil s.pulOutputLen
+  end
 end

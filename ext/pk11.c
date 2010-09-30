@@ -1437,6 +1437,30 @@ set_ulong(VALUE obj, VALUE value, off_t offset)
 }
 
 static VALUE
+get_ulong_ptr(VALUE obj, off_t offset)
+{
+  char *ptr = (char*)DATA_PTR(obj);
+  CK_ULONG_PTR p = *(CK_ULONG_PTR *)(ptr+offset);
+  if (!p) return Qnil;
+  return ULONG2NUM(*p);
+}
+
+static VALUE
+set_ulong_ptr(VALUE obj, VALUE value, char *name, off_t offset)
+{
+  CK_ULONG_PTR *ptr = (CK_ULONG_PTR *)((char*)DATA_PTR(obj) + offset);
+  if (NIL_P(value)){
+    rb_iv_set(obj, name, value);
+    *ptr = NULL_PTR;
+    return value;
+  }
+  VALUE new_obj = Data_Make_Struct(rb_cInteger, CK_ULONG, 0, free, *ptr);
+  rb_iv_set(obj, name, new_obj);
+  **ptr = NUM2ULONG(value);
+  return value;
+}
+
+static VALUE
 get_handle(VALUE obj, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
@@ -1613,6 +1637,14 @@ static VALUE c##s##_get_##f(VALUE o){ \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_ulong(o, v, OFFSET_OF(s, f)); \
+}
+
+#define PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(s, f) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  return get_ulong_ptr(o, OFFSET_OF(s, f)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  return set_ulong_ptr(o, v, #f, OFFSET_OF(s, f)); \
 }
 
 #define PKCS11_IMPLEMENT_HANDLE_ACCESSOR(s, f) \
