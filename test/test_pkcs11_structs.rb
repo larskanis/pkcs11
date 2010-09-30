@@ -98,4 +98,18 @@ class TestPkcs11Structs < Test::Unit::TestCase
     s.pServerRandom = nil
     assert_nil s.pServerRandom
   end
+  
+  def test_gc_STRUCT_PTR_ACCESSOR
+    s = CK_SSL3_KEY_MAT_PARAMS.new
+    assert_nil s.pReturnedKeyMaterial
+    ri = s.pReturnedKeyMaterial = CK_SSL3_KEY_MAT_OUT.new
+    assert_nil ri.pIVClient
+    ri.pIVClient = 'cli'
+    GC.start
+    assert_equal 'cli', ri.pIVClient
+    assert_equal 'cli', s.pReturnedKeyMaterial.pIVClient
+    s.pReturnedKeyMaterial = nil
+    assert_nil s.pReturnedKeyMaterial
+  end
+
 end

@@ -1560,6 +1560,31 @@ set_struct_inline(VALUE obj, VALUE klass, char *struct_name, VALUE value, char *
   return value;
 }
 
+static VALUE
+get_struct_ptr(VALUE obj, VALUE klass, char *name, off_t offset)
+{
+  char *ptr = (char*)DATA_PTR(obj);
+  char *p = *(char**)(ptr+offset);
+  if (!p) return Qnil;
+  return rb_iv_get(obj, name);
+}
+
+static VALUE
+set_struct_ptr(VALUE obj, VALUE klass, char *struct_name, VALUE value, char *name, off_t offset)
+{
+  char *ptr = (char*)DATA_PTR(obj) + offset;
+  if (NIL_P(value)){
+    rb_iv_set(obj, name, value);
+    *(CK_VOID_PTR*)ptr = NULL_PTR;
+    return value;
+  }
+  if (!rb_obj_is_kind_of(value, klass))
+    rb_raise(rb_eArgError, "arg must be a PKCS11::%s", struct_name);
+  *(CK_VOID_PTR*)ptr = DATA_PTR(value);
+  rb_iv_set(obj, name, value);
+  return value;
+}
+
 #define OFFSET_OF(s, f) ((off_t)((char*)&(((s*)0)->f) - (char*)0))
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
 
@@ -1636,6 +1661,14 @@ static VALUE c##s##_get_##f(VALUE o){ \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_struct_inline(o, c##k, #k, v, #f, OFFSET_OF(s, f), sizeof(k)); \
+}
+
+#define PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(s, k, f) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  return get_struct_ptr(o, c##k, #f, OFFSET_OF(s, f)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  return set_struct_ptr(o, c##k, #k, v, #f, OFFSET_OF(s, f)); \
 }
 
 ///////////////////////////////////////
