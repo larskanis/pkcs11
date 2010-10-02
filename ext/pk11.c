@@ -258,7 +258,7 @@ pkcs11_C_GetSlotList(VALUE self, VALUE presented)
   CK_SLOT_ID_PTR pSlotList;
   CK_RV rv;
   CK_C_GetSlotList func;
-  int i;
+  CK_ULONG i;
   VALUE ary = rb_ary_new();
 
   GetFunction(self, C_GetSlotList, func);
@@ -315,7 +315,7 @@ pkcs11_C_GetMechanismList(VALUE self, VALUE slot_id)
   CK_MECHANISM_TYPE_PTR types;
   CK_ULONG count;
   VALUE ary;
-  int i;
+  CK_ULONG i;
 
   ary = rb_ary_new();
   GetFunction(self, C_GetMechanismList, func);
@@ -643,7 +643,7 @@ pkcs11_C_FindObjects(VALUE self, VALUE session, VALUE max_count)
   CK_OBJECT_HANDLE_PTR handles;
   CK_ULONG count = 0;
   VALUE ary;
-  int i;
+  CK_ULONG i;
 
   handles = (CK_OBJECT_HANDLE_PTR)
       malloc(sizeof(CK_OBJECT_HANDLE)*NUM2ULONG(max_count));
@@ -683,7 +683,7 @@ pkcs11_C_GetAttributeValue(VALUE self, VALUE session, VALUE handle, VALUE templa
 
   for (i = 0; i < template_size; i++){
     CK_ATTRIBUTE_PTR attr = tmp + i;
-    if (attr->ulValueLen != -1)
+    if (attr->ulValueLen != (CK_ULONG)-1)
       attr->pValue = (CK_BYTE_PTR)malloc(attr->ulValueLen);
   }
   rv = func(NUM2HANDLE(session), NUM2HANDLE(handle), tmp, template_size);
@@ -698,7 +698,7 @@ pkcs11_C_GetAttributeValue(VALUE self, VALUE session, VALUE handle, VALUE templa
   ary = rb_ary_new();
   for (i = 0; i < template_size; i++){
     CK_ATTRIBUTE_PTR attr = tmp + i;
-    if (attr->ulValueLen != -1){
+    if (attr->ulValueLen != (CK_ULONG)-1){
       VALUE v = pkcs11_new_struct(cCK_ATTRIBUTE);
       memcpy(DATA_PTR(v), attr, sizeof(CK_ATTRIBUTE));
       rb_ary_push(ary, v);
@@ -1446,7 +1446,7 @@ get_ulong_ptr(VALUE obj, off_t offset)
 }
 
 static VALUE
-set_ulong_ptr(VALUE obj, VALUE value, char *name, off_t offset)
+set_ulong_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
 {
   CK_ULONG_PTR *ptr = (CK_ULONG_PTR *)((char*)DATA_PTR(obj) + offset);
   if (NIL_P(value)){
@@ -1512,7 +1512,7 @@ set_version(VALUE obj, VALUE value, off_t offset)
 }
 
 static VALUE
-get_string_ptr(VALUE obj, char *name, off_t offset)
+get_string_ptr(VALUE obj, const char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
@@ -1521,7 +1521,7 @@ get_string_ptr(VALUE obj, char *name, off_t offset)
 }
 
 static VALUE
-set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
+set_string_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   if (NIL_P(value)){
@@ -1537,7 +1537,7 @@ set_string_ptr(VALUE obj, VALUE value, char *name, off_t offset)
 }
 
 static VALUE
-get_string_ptr_len(VALUE obj, char *name, off_t offset, off_t offset_len)
+get_string_ptr_len(VALUE obj, const char *name, off_t offset, off_t offset_len)
 {
   unsigned long l;
   char *ptr = (char*)DATA_PTR(obj);
@@ -1548,7 +1548,7 @@ get_string_ptr_len(VALUE obj, char *name, off_t offset, off_t offset_len)
 }
 
 static VALUE
-set_string_ptr_len(VALUE obj, VALUE value, char *name, off_t offset, off_t offset_len)
+set_string_ptr_len(VALUE obj, VALUE value, const char *name, off_t offset, off_t offset_len)
 {
   char *ptr = (char*)DATA_PTR(obj);
   if (NIL_P(value)){
@@ -1566,7 +1566,7 @@ set_string_ptr_len(VALUE obj, VALUE value, char *name, off_t offset, off_t offse
 }
 
 static VALUE
-get_struct_inline(VALUE obj, VALUE klass, char *name, off_t offset)
+get_struct_inline(VALUE obj, VALUE klass, const char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj) + offset;
   VALUE inline_obj = Data_Wrap_Struct(klass, 0, 0, ptr);
@@ -1575,7 +1575,7 @@ get_struct_inline(VALUE obj, VALUE klass, char *name, off_t offset)
 }
 
 static VALUE
-set_struct_inline(VALUE obj, VALUE klass, char *struct_name, VALUE value, char *name, off_t offset, int sizeofstruct)
+set_struct_inline(VALUE obj, VALUE klass, const char *struct_name, VALUE value, const char *name, off_t offset, int sizeofstruct)
 {
   char *ptr = (char*)DATA_PTR(obj) + offset;
   if (!rb_obj_is_kind_of(value, klass))
@@ -1585,7 +1585,7 @@ set_struct_inline(VALUE obj, VALUE klass, char *struct_name, VALUE value, char *
 }
 
 static VALUE
-get_struct_ptr(VALUE obj, VALUE klass, char *name, off_t offset)
+get_struct_ptr(VALUE obj, VALUE klass, const char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
@@ -1594,7 +1594,7 @@ get_struct_ptr(VALUE obj, VALUE klass, char *name, off_t offset)
 }
 
 static VALUE
-set_struct_ptr(VALUE obj, VALUE klass, char *struct_name, VALUE value, char *name, off_t offset)
+set_struct_ptr(VALUE obj, VALUE klass, const char *struct_name, VALUE value, const char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj) + offset;
   if (NIL_P(value)){
