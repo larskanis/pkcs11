@@ -75,4 +75,7 @@ returnType (CK_CALL_SPEC CK_PTR name)
 #include "otp-pkcs11.h"     /* for PKCS #11 v2.20 Amendment 1 */ 
 #include "ct-kip.h"         /* for PKCS #11 v2.20 Amendment 2 */ 
 #include "pkcs-11v2-20a3.h" /* for PKCS #11 v2.20 Amendment 3 */ 
+
+#include "pk11_thread_funcs.h"
+
 #endif

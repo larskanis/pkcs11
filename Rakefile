@@ -8,6 +8,8 @@ require 'rake/extensiontask'
 CLEAN.include 'ext/pk11_struct_def.inc'
 CLEAN.include 'ext/pk11_struct_impl.inc'
 CLEAN.include 'ext/pk11_const_def.inc'
+CLEAN.include 'ext/pk11_thread_funcs.h'
+CLEAN.include 'ext/pk11_thread_funcs.c'
 CLEAN.include 'lib/pkcs11_ext.so'
 CLEAN.include 'tmp'
 
@@ -26,6 +28,9 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
   spec_extras[:files] << 'ext/pk11_struct_impl.inc'
   spec_extras[:files] << 'ext/pk11_struct_def.inc'
+  spec_extras[:files] << 'ext/pk11_const_def.inc'
+  spec_extras[:files] << 'ext/pk11_thread_funcs.h'
+  spec_extras[:files] << 'ext/pk11_thread_funcs.c'
 end
 
 ENV['RUBY_CC_VERSION'] = '1.8.6:1.9.1'
@@ -36,13 +41,19 @@ Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
 end
 
-file 'ext/extconf.rb' => 'ext/pk11_struct_def.inc'
+file 'ext/extconf.rb' => ['ext/pk11_struct_def.inc', 'ext/pk11_thread_funcs.c']
 file 'ext/pk11_struct_def.inc' => 'ext/generate_structs.rb' do
   sh "ruby ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --const ext/pk11_const_def.inc ext/include/pkcs11t.h"
 end
 file 'ext/pk11_struct_impl.inc' => 'ext/pk11_struct_def.inc'
 file 'ext/pk11.c' => 'ext/pk11_struct_def.inc'
 file 'ext/pk11_const.c' => 'ext/pk11_struct_def.inc'
+
+file 'ext/pk11_thread_funcs.h' => 'ext/generate_thread_funcs.rb' do
+  sh "ruby ext/generate_thread_funcs.rb --impl ext/pk11_thread_funcs.c --decl ext/pk11_thread_funcs.h ext/include/pkcs11f.h"
+end
+file 'ext/pk11_thread_funcs.c' => 'ext/pk11_thread_funcs.h'
+file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 
 # RDoc-upload task for github (currently on rubyforge)
 #
