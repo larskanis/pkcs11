@@ -192,10 +192,11 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     dp.RandomInfo.pClientRandom = 'crandom ' * 4
     dp.pVersion = CK_VERSION.new
     dp.pVersion.major = '3'
-    dp.pVersion.minor = '0'
+    dp.pVersion.minor = '1'
     ms_key = session.derive_key( {CKM_SSL3_MASTER_KEY_DERIVE => dp}, pm_key )
-    
+
     assert_equal 48, ms_key[:VALUE_LEN], "SSL3 master secret key should be 48 bytes long"
+    assert_equal '0', dp.pVersion.minor, 'SSL3 version number should have changed'
   end
 
 end
