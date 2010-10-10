@@ -33,7 +33,7 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:files] << 'ext/pk11_thread_funcs.c'
 end
 
-ENV['RUBY_CC_VERSION'] = '1.8.6:1.9.1'
+ENV['RUBY_CC_VERSION'] = '1.8.6:1.9.2'
 
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
