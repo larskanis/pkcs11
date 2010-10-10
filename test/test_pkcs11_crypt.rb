@@ -182,4 +182,20 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     assert_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key should have equal key value'
   end
 
+  def test_ssl3
+    pm_key = session.generate_key({:SSL3_PRE_MASTER_KEY_GEN => {:major=>'3', :minor=>'0'}},
+        {:TOKEN=>false})
+    assert_equal 48, pm_key[:VALUE_LEN], "SSL3 pre master key should be 48 bytes long"
+
+    dp = CK_SSL3_MASTER_KEY_DERIVE_PARAMS.new
+    dp.RandomInfo.pServerRandom = 'srandom ' * 4
+    dp.RandomInfo.pClientRandom = 'crandom ' * 4
+    dp.pVersion = CK_VERSION.new
+    dp.pVersion.major = '3'
+    dp.pVersion.minor = '0'
+    ms_key = session.derive_key( {CKM_SSL3_MASTER_KEY_DERIVE => dp}, pm_key )
+    
+    assert_equal 48, ms_key[:VALUE_LEN], "SSL3 master secret key should be 48 bytes long"
+  end
+
 end
