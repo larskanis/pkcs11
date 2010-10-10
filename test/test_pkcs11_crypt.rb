@@ -182,23 +182,4 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     assert_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key should have equal key value'
   end
 
-  def test_concurrency
-    return unless self.respond_to?(:skip)
-    skip "PKCS#11 calls will block on Ruby 1.8.x" if RUBY_VERSION<'1.9'
-    
-    count = 0
-    th = Thread.new{
-      loop do
-        count += 1
-        sleep 0.01
-      end
-    }
-    # This should take some seconds:
-    pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
-      {:MODULUS_BITS=>1408, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
-      {})
-    th.kill
-    assert_operator count, :>, 10, "The second thread should count further concurrent to the key generation"
-  end
-
 end
