@@ -45,7 +45,7 @@ ARGV.each do |file_h|
     fd_decl.puts <<-EOT
       struct tbr_#{func_name}_params {
         CK_#{func_name} func;
-        struct { #{ func_params.map{|f| f.type+" "+f.name+";"} } } params;
+        struct { #{ func_params.map{|f| f.type+" "+f.name+";"}.join } } params;
         CK_RV retval;
       };
       VALUE tbf_#{func_name}( void *data );
