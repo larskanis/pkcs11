@@ -1413,6 +1413,10 @@ ck_attr_value(VALUE self)
   case CKA_PIXEL_Y:
   case CKA_RESOLUTION:
   case CKA_VALUE_LEN:
+  case CKA_MODULUS_BITS:
+  case CKA_PRIME_BITS:
+  case CKA_SUBPRIME_BITS:
+  case CKA_VALUE_BITS:
     if (attr->ulValueLen == sizeof(CK_ULONG))
       return ULONG2NUM(*(CK_ULONG_PTR)(attr->pValue));
     break;
