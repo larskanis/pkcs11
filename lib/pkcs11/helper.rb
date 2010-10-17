@@ -1,5 +1,6 @@
 module PKCS11
   # Some functions internaly used to make the API more convenient.
+  # @private
   module Helper  # :nodoc:
     private
 

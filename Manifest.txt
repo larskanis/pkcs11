@@ -1,4 +1,5 @@
 .autotest
+.yardopts
 History.txt
 MIT-LICENSE
 Manifest.txt
@@ -6,6 +7,7 @@ README.rdoc
 Rakefile
 ext/extconf.rb
 ext/generate_structs.rb
+ext/generate_thread_funcs.rb
 ext/include/cryptoki.h
 ext/include/ct-kip.h
 ext/include/otp-pkcs11.h
@@ -34,3 +36,5 @@ test/test_pkcs11_crypt.rb
 test/test_pkcs11_object.rb
 test/test_pkcs11_session.rb
 test/test_pkcs11_slot.rb
+test/test_pkcs11_structs.rb
+test/test_pkcs11_thread.rb

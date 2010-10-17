@@ -7,14 +7,13 @@ require 'pkcs11/object'
 #
 # This library allowes to use PKCS#11 librarys in Ruby MRI.
 #
-# Example usage:
-#
+# @example
 #   pkcs11 = PKCS11.open("/path/to/pkcs11.so")
 #   slot = pkcs11.active_slots.first
 #   p slot.info
 #   session = slot.open(PKCS11::CKF_SERIAL_SESSION|PKCS11::CKF_RW_SESSION)
 #   session.login(:USER, "1234")
-#   ...
+#   # ... crypto operations
 #   session.logout
 #   session.close
 #
@@ -58,7 +57,7 @@ module PKCS11
       members.inject({}){|h,v| h[v.intern] = send(v); h }
     end
     # Get the constant name as String of the given value.
-    # Returns <tt>nil</tt> if value is unknown.
+    # @return [String, nil]  Returns <tt>nil</tt> if value is unknown.
     def to_s
       ATTRIBUTES[type]
     end
@@ -101,12 +100,13 @@ module PKCS11
   end
 
   class ConstValue
+    # @private
     def initialize(enum_hash, value) # :nodoc:
       @enum_hash, @value = enum_hash, value
     end
 
     # Get the constant name as String of the given value.
-    # Returns <tt>nil</tt> if value is unknown.
+    # @return [String, nil]  Returns <tt>nil</tt> if value is unknown.
     def to_s
       @enum_hash[@value]
     end
@@ -116,12 +116,14 @@ module PKCS11
     end
 
     # The value of the constant.
+    # @return [Integer]
     def to_int
       @value
     end
     alias to_i to_int
   end
 
+  # @private
   module ConstValueHash # :nodoc:
     def [](value)
       super(value.to_int)
@@ -129,6 +131,7 @@ module PKCS11
   end
 
   class << self
+    # @private
     def extend_ConstValueHash(hash_symb) # :nodoc:
       # The MECHANISMS, ATTRIBUTES, etc. Hashs are freezed.
       # So, we have make a copy, to extend the class.

@@ -1,7 +1,6 @@
 = PKCS #11/Ruby Interface
 
 * Homepage: http://github.com/larskanis/pkcs11
-* older SVN repository: http://coderepos.org/share/log/lang/ruby/pkcs11-ruby
 * API documentation: http://pkcs11.rubyforge.org/pkcs11/
 
 This module allows Ruby programs to interface with "RSA Security Inc.
@@ -23,9 +22,10 @@ This module works on the Unix like operating systems and win32.
 
 == Usage
 Cryptoki has a reputation to be complicated to implement and use.
-While this seems to be true for C it isn't for Ruby.
+While this seems to be true for C it shouldn't for Ruby.
 
-PKCS11.open requires suitable PKCS #11 implementation as UN*X *.so file or Windows-DLL.
+{PKCS11.open} opens a PKCS#11 Unix *.so file or Windows-DLL. It requires
+a suitable PKCS #11 implementation.
 
   require "rubygems"
   require "pkcs11"
@@ -33,18 +33,22 @@ PKCS11.open requires suitable PKCS #11 implementation as UN*X *.so file or Windo
 
   pkcs11 = PKCS11.open("/path/to/pkcs11.so")
   p pkcs11.info
-  slot = pkcs11.active_slots.first
-  session = slot.open
+  session = pkcs11.active_slots.first.open
   session.login(:USER, "1234")
-  ...
+  # ... crypto operations
   session.logout
   session.close
 
-See PKCS11::Library for API documentation. See unit tests in the <tt>test</tt>
-directory of the project or gem for further examples of the usage.
+This opens a {PKCS11::Session} to the first active slot of the device.
+A {PKCS11::Session} can be used for all cryptographic operations
+on the device.
 
 Detail information for the API specification is provided by RSA Security Inc.
 Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133.
+
+Further examples could be found in the unit tests of the <tt>test</tt>
+directory of the project or gem.
+
 
 
 == Cross compiling for mswin32
