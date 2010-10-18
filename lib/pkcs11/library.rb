@@ -5,7 +5,7 @@ module PKCS11
   # The API of the binding consists of a lower layer, which
   # is near to the PKCS#11 C interface, and a higher layer, which
   # is more Ruby like and more comfortable. The low layer is currently
-  # not explicitly documented.
+  # not explicitly documented and is not recommented to use.
   #
   # All low layer PKCS#11 functions can be called on the {PKCS11::Library} object.
   # Example for starting a session:
