@@ -47,7 +47,7 @@ module PKCS11
     alias wait_for_event C_WaitForSlotEvent
 
     # C_GetMechanismList is used to obtain a list of mechanism types supported by a token.
-    # @return Array<PKCS11::Mechanism>
+    # @return [Array<PKCS11::Mechanism>]
     def C_GetMechanismList
       @pk.C_GetMechanismList(@slot).map{|mech|
         Mechanism.new MECHANISMS, mech

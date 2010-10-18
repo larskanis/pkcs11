@@ -90,10 +90,11 @@ module PKCS11
     # This is significant slower then naming the needed attributes and should
     # be used for debug purposes only.
     #
-    # @return Array<PKCS11::CK_ATTRIBUTE>
+    # @return [Array<PKCS11::CK_ATTRIBUTE>] Requested attributes with values.
     #
     # @example
-    #   certificate.attributes :ID, :VALUE # => ['test', '\003...']
+    #   certificate.attributes :VALUE, :CLASS
+    #    => [#<PKCS11::CK_ATTRIBUTE CKA_VALUE (17) value="0\x82...">, #<PKCS11::CK_ATTRIBUTE CKA_CLASS (0) value=1>]
     def C_GetAttributeValue(*template)
       case template.length
         when 0
