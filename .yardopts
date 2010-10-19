@@ -1,1 +1,1 @@
---no-private --charset utf-8
+--no-private --charset utf-8 lib/**/*.rb ext/*.c ext/*.doc

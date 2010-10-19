@@ -4,7 +4,7 @@
 
 require 'optparse'
 
-options = Struct.new(:verbose, :def, :impl, :const).new
+options = Struct.new(:verbose, :def, :impl, :const, :doc).new
 OptionParser.new do |opts|
 	opts.banner = "Usage: #{$0} [options] <header-file.h>*"
 
@@ -12,6 +12,7 @@ OptionParser.new do |opts|
 	opts.on("--def FILE", "Write struct definitions to this file", &options.method(:def=))
   opts.on("--impl FILE", "Write struct implementations to this file", &options.method(:impl=))
   opts.on("--const FILE", "Write const implementations to this file", &options.method(:const=))
+  opts.on("--doc FILE", "Write documentation to this file", &options.method(:doc=))
 	opts.on_tail("-h", "--help", "Show this message") do
 		puts opts
 		exit
@@ -24,6 +25,7 @@ IgnoreStructs = %w[CK_MECHANISM_INFO CK_C_INITIALIZE_ARGS CK_MECHANISM CK_ATTRIB
 structs = {}
 File.open(options.def, "w") do |fd_def|
 File.open(options.impl, "w") do |fd_impl|
+File.open(options.doc, "w") do |fd_doc|
 ARGV.each do |file_h|
 	c_src = IO.read(file_h)
 	c_src.scan(/struct\s+([A-Z_0-9]+)\s*\{(.*?)\}/m) do |struct|
@@ -41,6 +43,7 @@ ARGV.each do |file_h|
 
     fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(#{struct_name});"
     fd_def.puts "PKCS11_DEFINE_STRUCT(#{struct_name});"
+    fd_doc.puts"class PKCS11::#{struct_name}"
 
     
 		# try to find attributes belonging together
@@ -48,14 +51,17 @@ ARGV.each do |file_h|
 			if len_attr=attrs["CK_ULONG #{attr.name.gsub(/^p/, "ul")}Len"]
 				fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct_name}, #{attr.name}, #{len_attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
 				attrs.delete_if{|k,v| v==len_attr}
 			elsif attr.name=='pData' && (len_attr = attrs["CK_ULONG length"] || attrs["CK_ULONG ulLen"])
 				fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct_name}, #{attr.name}, #{len_attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
 				attrs.delete_if{|k,v| v==len_attr}
 			else
 				fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [String, nil] accessor for #{attr.name}\nattr_accessor :#{attr.name}"
 			end
 			attrs.delete_if{|k,v| v==attr}
 		end
@@ -66,28 +72,36 @@ ARGV.each do |file_h|
 			when 'CK_BYTE', 'CK_UTF8CHAR', 'CK_CHAR'
 				fd_impl.puts "PKCS11_IMPLEMENT_STRING_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [String] accessor for #{attr.name} (max #{attr.qual | 1} bytes)\nattr_accessor :#{attr.name}"
 			when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', /CK_[A-Z_0-9]+_TYPE/
 				fd_impl.puts "PKCS11_IMPLEMENT_ULONG_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [Integer] accessor for #{attr.name} (unsigned long)\nattr_accessor :#{attr.name}"
 			when 'CK_OBJECT_HANDLE'
 				fd_impl.puts "PKCS11_IMPLEMENT_HANDLE_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [Integer, PKCS11::Object] Object handle (unsigned long)\nattr_accessor :#{attr.name}"
 			when 'CK_BBOOL'
 				fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [Boolean]  Bool value\nattr_accessor :#{attr.name}"
       when 'CK_VERSION'
         fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
         fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"attr_accessor :#{attr.name}"
       when 'CK_ULONG_PTR'
         fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct_name}, #{attr.name});"
         fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+        fd_doc.puts"# @return [Integer, nil] accessor for #{attr.name} (unsigned long)\nattr_accessor :#{attr.name}"
 			else
         if structs[attr.type]
           fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct_name}, #{attr.type}, #{attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [PKCS11::#{attr.type}] inline struct\nattr_accessor :#{attr.name}"
         elsif structs[attr.type.gsub(/_PTR$/,'')]
           fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct_name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [PKCS11::#{attr.type.gsub(/_PTR$/,'')}, nil] pointer to struct\nattr_accessor :#{attr.name}"
         else
           fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
           fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
@@ -97,7 +111,9 @@ ARGV.each do |file_h|
 	
 		fd_impl.puts
 		fd_def.puts
+    fd_doc.puts"end"
 	end
+end
 end
 end
 end

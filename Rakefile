@@ -43,7 +43,7 @@ end
 
 file 'ext/extconf.rb' => ['ext/pk11_struct_def.inc', 'ext/pk11_thread_funcs.c']
 file 'ext/pk11_struct_def.inc' => 'ext/generate_structs.rb' do
-  sh "ruby ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --const ext/pk11_const_def.inc ext/include/pkcs11t.h"
+  sh "ruby ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --const ext/pk11_const_def.inc --doc ext/pk11_struct.doc ext/include/pkcs11t.h"
 end
 file 'ext/pk11_struct_impl.inc' => 'ext/pk11_struct_def.inc'
 file 'ext/pk11.c' => 'ext/pk11_struct_def.inc'
