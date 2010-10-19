@@ -72,7 +72,7 @@ ARGV.each do |file_h|
 			when 'CK_BYTE', 'CK_UTF8CHAR', 'CK_CHAR'
 				fd_impl.puts "PKCS11_IMPLEMENT_STRING_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"# @return [String] accessor for #{attr.name} (max #{attr.qual | 1} bytes)\nattr_accessor :#{attr.name}"
+        fd_doc.puts"# @return [String] accessor for #{attr.name} (max #{attr.qual || 1} bytes)\nattr_accessor :#{attr.name}"
 			when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', /CK_[A-Z_0-9]+_TYPE/
 				fd_impl.puts "PKCS11_IMPLEMENT_ULONG_ACCESSOR(#{struct_name}, #{attr.name});"
 				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
