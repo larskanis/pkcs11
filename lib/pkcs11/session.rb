@@ -184,6 +184,9 @@ module PKCS11
       def initialize(update_block) # :nodoc:
         @update_block = update_block
       end
+      # Process a data part with the encryption operation.
+      # @param [String] data  data to be processed
+      # @return [String] output data
       def update(data)
         @update_block.call(data)
       end
@@ -197,6 +200,10 @@ module PKCS11
         @digest_key_block = digest_key_block
       end
       alias digest_update update
+      # Continues a multiple-part message-digesting operation by digesting the
+      # value of a secret key.
+      # @param [PKCS11::Object] key  key to be processed
+      # @return [String] output data
       def digest_key(key)
         @digest_key_block.call(key)
       end
@@ -290,6 +297,7 @@ module PKCS11
     # @param [Hash, Symbol, Integer, PKCS11::CK_MECHANISM] mechanism  used mechanism
     # @param [PKCS11::Object] key  used key
     # @param [String] data  data to encrypt
+    # @yield [PKCS11::Session::Cipher]  Cipher object for processing data parts
     # @return [String]  the final part of the encryption operation.
     #
     # @example for using single part operation
@@ -353,6 +361,7 @@ module PKCS11
     # @param [Hash, Symbol, Integer, PKCS11::CK_MECHANISM] mechanism  used mechanism
     # @param [PKCS11::Object] key  used key
     # @param [String] data  data to decrypt
+    # @yield [PKCS11::Session::Cipher]  Cipher object for processing data parts
     # @return [String]  the final part of the encryption operation.
     # @example Decrypt data previously encrypted with a RSA pulic key
     #     plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
@@ -421,6 +430,7 @@ module PKCS11
     #   end
     # @param [Hash, Symbol, Integer, PKCS11::CK_MECHANISM] mechanism  used mechanism
     # @param [String] data  data to digest
+    # @yield [PKCS11::Session::DigestCipher]  Cipher object for processing data parts
     # @return [String]  final message digest
     # @see Session#encrypt
     def digest(mechanism, data=nil, &block)
@@ -476,6 +486,7 @@ module PKCS11
     # @param [Hash, Symbol, Integer, PKCS11::CK_MECHANISM] mechanism  used mechanism
     # @param [PKCS11::Object] key  used key
     # @param [String] data  data to sign
+    # @yield [PKCS11::Session::Cipher]  Cipher object for processing data parts
     # @return [String]  signature
     # @see Session#encrypt
     # @example Sign a text by a RSA private key
@@ -522,6 +533,7 @@ module PKCS11
     # @param [PKCS11::Object] key  used key
     # @param [String] signature  signature
     # @param [String] data  data to verify against signature
+    # @yield [PKCS11::Session::Cipher]  Cipher object for processing data parts
     # @return [Boolean] <tt>true</tt> for valid signature.
     # @example
     #     raise("wrong signature") unless session.verify(:SHA1_RSA_PKCS, rsa_pub_key, signature, plaintext)
