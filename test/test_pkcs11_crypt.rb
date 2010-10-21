@@ -183,7 +183,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
   end
 
   def test_ssl3
-    pm_key = session.generate_key({:SSL3_PRE_MASTER_KEY_GEN => {:major=>'3', :minor=>'0'}},
+    pm_key = session.generate_key({:SSL3_PRE_MASTER_KEY_GEN => {:major=>3, :minor=>0}},
         {:TOKEN=>false})
     assert_equal 48, pm_key[:VALUE_LEN], "SSL3 pre master key should be 48 bytes long"
 
@@ -191,12 +191,12 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     dp.RandomInfo.pServerRandom = 'srandom ' * 4
     dp.RandomInfo.pClientRandom = 'crandom ' * 4
     dp.pVersion = CK_VERSION.new
-    dp.pVersion.major = '3'
-    dp.pVersion.minor = '1'
+    dp.pVersion.major = 3
+    dp.pVersion.minor = 1
     ms_key = session.derive_key( {CKM_SSL3_MASTER_KEY_DERIVE => dp}, pm_key )
 
     assert_equal 48, ms_key[:VALUE_LEN], "SSL3 master secret key should be 48 bytes long"
-    assert_equal '0', dp.pVersion.minor, 'SSL3 version number should have changed'
+    assert_equal 0, dp.pVersion.minor, 'SSL3 version number should have changed'
   end
 
 end

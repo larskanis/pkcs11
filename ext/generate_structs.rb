@@ -68,45 +68,59 @@ ARGV.each do |file_h|
 		
 		# standalone attributes
 		attrs.each do |key, attr|
-			case attr.type
-			when 'CK_BYTE', 'CK_UTF8CHAR', 'CK_CHAR'
-				fd_impl.puts "PKCS11_IMPLEMENT_STRING_ACCESSOR(#{struct_name}, #{attr.name});"
-				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"# @return [String] accessor for #{attr.name} (max #{attr.qual || 1} bytes)\nattr_accessor :#{attr.name}"
-			when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', /CK_[A-Z_0-9]+_TYPE/
-				fd_impl.puts "PKCS11_IMPLEMENT_ULONG_ACCESSOR(#{struct_name}, #{attr.name});"
-				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"# @return [Integer] accessor for #{attr.name} (unsigned long)\nattr_accessor :#{attr.name}"
-			when 'CK_OBJECT_HANDLE'
-				fd_impl.puts "PKCS11_IMPLEMENT_HANDLE_ACCESSOR(#{struct_name}, #{attr.name});"
-				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"# @return [Integer, PKCS11::Object] Object handle (unsigned long)\nattr_accessor :#{attr.name}"
-			when 'CK_BBOOL'
-				fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct_name}, #{attr.name});"
-				fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"# @return [Boolean]  Bool value\nattr_accessor :#{attr.name}"
-      when 'CK_VERSION'
-        fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
-        fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"attr_accessor :#{attr.name}"
-      when 'CK_ULONG_PTR'
-        fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct_name}, #{attr.name});"
-        fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-        fd_doc.puts"# @return [Integer, nil] accessor for #{attr.name} (unsigned long)\nattr_accessor :#{attr.name}"
-			else
-        if structs[attr.type]
-          fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct_name}, #{attr.type}, #{attr.name});"
+      if attr.qual
+        # Attributes with qualifier
+        case attr.type
+        when 'CK_BYTE', 'CK_UTF8CHAR', 'CK_CHAR'
+          fd_impl.puts "PKCS11_IMPLEMENT_STRING_ACCESSOR(#{struct_name}, #{attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-          fd_doc.puts"# @return [PKCS11::#{attr.type}] inline struct\nattr_accessor :#{attr.name}"
-        elsif structs[attr.type.gsub(/_PTR$/,'')]
-          fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct_name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name});"
-          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-          fd_doc.puts"# @return [PKCS11::#{attr.type.gsub(/_PTR$/,'')}, nil] pointer to struct\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [String] accessor for #{attr.name} (max #{attr.qual} bytes)\nattr_accessor :#{attr.name}"
         else
           fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
           fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
         end
-			end
+      else
+        case attr.type
+        when 'CK_BYTE'
+          fd_impl.puts "PKCS11_IMPLEMENT_BYTE_ACCESSOR(#{struct_name}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [Integer] accessor for #{attr.name} (CK_BYTE)\nattr_accessor :#{attr.name}"
+        when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', /CK_[A-Z_0-9]+_TYPE/
+          fd_impl.puts "PKCS11_IMPLEMENT_ULONG_ACCESSOR(#{struct_name}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [Integer] accessor for #{attr.name} (CK_ULONG)\nattr_accessor :#{attr.name}"
+        when 'CK_OBJECT_HANDLE'
+          fd_impl.puts "PKCS11_IMPLEMENT_HANDLE_ACCESSOR(#{struct_name}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [Integer, PKCS11::Object] Object handle (CK_ULONG)\nattr_accessor :#{attr.name}"
+        when 'CK_BBOOL'
+          fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct_name}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [Boolean]  Bool value\nattr_accessor :#{attr.name}"
+        when 'CK_VERSION'
+          fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"attr_accessor :#{attr.name}"
+        when 'CK_ULONG_PTR'
+          fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct_name}, #{attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+          fd_doc.puts"# @return [Integer, nil] accessor for #{attr.name} (CK_ULONG_PTR)\nattr_accessor :#{attr.name}"
+        else
+          # Struct attributes
+          if structs[attr.type]
+            fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct_name}, #{attr.type}, #{attr.name});"
+            fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+            fd_doc.puts"# @return [PKCS11::#{attr.type}] inline struct\nattr_accessor :#{attr.name}"
+          elsif structs[attr.type.gsub(/_PTR$/,'')]
+            fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct_name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name});"
+            fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
+            fd_doc.puts"# @return [PKCS11::#{attr.type.gsub(/_PTR$/,'')}, nil] pointer to struct\nattr_accessor :#{attr.name}"
+          else
+            fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
+            fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
+          end
+        end
+      end
 		end
 	
 		fd_impl.puts

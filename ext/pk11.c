@@ -1461,6 +1461,21 @@ set_ulong(VALUE obj, VALUE value, off_t offset)
 }
 
 static VALUE
+get_byte(VALUE obj, off_t offset)
+{
+  char *ptr = (char*)DATA_PTR(obj);
+  return ULONG2NUM(*(CK_BYTE_PTR)(ptr+offset));
+}
+
+static VALUE
+set_byte(VALUE obj, VALUE value, off_t offset)
+{
+  char *ptr = (char*)DATA_PTR(obj);
+  *(CK_BYTE_PTR)(ptr+offset) = NUM2ULONG(value);
+  return value;
+}
+
+static VALUE
 get_ulong_ptr(VALUE obj, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
@@ -1661,6 +1676,14 @@ static VALUE c##s##_get_##f(VALUE o){ \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_ulong(o, v, OFFSET_OF(s, f)); \
+}
+
+#define PKCS11_IMPLEMENT_BYTE_ACCESSOR(s, f) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  return get_byte(o, OFFSET_OF(s, f)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  return set_byte(o, v, OFFSET_OF(s, f)); \
 }
 
 #define PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(s, f) \
