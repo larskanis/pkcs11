@@ -19,6 +19,7 @@ This module works on the Unix like operating systems and win32.
 
   gem install pkcs11
 
+This installs the PKCS#11 extension either by compiling (Unix) or by using the precompiled gem for Win32.
 
 == Usage
 Cryptoki has a reputation to be complicated to implement and use.
