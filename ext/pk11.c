@@ -15,12 +15,19 @@ static VALUE ePKCS11Error;
 
 static VALUE cCK_ATTRIBUTE;
 static VALUE cCK_C_INITIALIZE_ARGS;
+static VALUE aCK_C_INITIALIZE_ARGS_members;
 static VALUE cCK_INFO;
+static VALUE aCK_INFO_members;
 static VALUE cCK_TOKEN_INFO;
+static VALUE aCK_TOKEN_INFO_members;
 static VALUE cCK_SLOT_INFO;
+static VALUE aCK_SLOT_INFO_members;
 static VALUE cCK_MECHANISM_INFO;
+static VALUE aCK_MECHANISM_INFO_members;
 static VALUE cCK_SESSION_INFO;
+static VALUE aCK_SESSION_INFO_members;
 static VALUE cCK_MECHANISM;
+static VALUE aCK_MECHANISM_members;
 
 #define HANDLE2NUM(n) ULONG2NUM(n)
 #define NUM2HANDLE(n) PKNUM2ULONG(n)
@@ -1659,10 +1666,14 @@ static VALUE s##_s_alloc(VALUE self){ \
 } \
 static VALUE c##s##_to_s(VALUE self){ \
   return rb_str_new(DATA_PTR(self), sizeof(s)); \
+} \
+static VALUE c##s##_members(VALUE self){ \
+  return a##s##_members; \
 }
 
 #define PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(s) \
 static VALUE c##s;\
+static VALUE a##s##_members;\
 PKCS11_IMPLEMENT_ALLOCATOR(s);
 
 #define PKCS11_IMPLEMENT_STRING_ACCESSOR(s, f) \
@@ -1875,15 +1886,19 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
 #define PKCS11_DEFINE_STRUCT(s) \
   do { \
     c##s = rb_define_class_under(mPKCS11, #s, rb_cObject); \
+    a##s##_members = rb_ary_new(); \
     rb_define_alloc_func(c##s, s##_s_alloc); \
     rb_define_const(c##s, "SIZEOF_STRUCT", ULONG2NUM(sizeof(s))); \
     rb_define_method(c##s, "to_s", c##s##_to_s, 0); \
+    rb_define_method(c##s, "members", c##s##_members, 0); \
+    rb_iv_set(c##s, "members", a##s##_members); \
   } while(0)
 
 #define PKCS11_DEFINE_MEMBER(s, f) \
   do { \
     rb_define_method(c##s, #f, c##s##_get_##f, 0); \
     rb_define_method(c##s, #f "=", c##s##_set_##f, 1); \
+    rb_ary_push(a##s##_members, rb_str_new2(#f)); \
   } while(0)
   
 void
