@@ -45,6 +45,7 @@ ARGV.each do |file_h|
     fd_def.puts "PKCS11_DEFINE_STRUCT(#{struct_name});"
     fd_doc.puts"class PKCS11::#{struct_name}"
     fd_doc.puts"# Size of corresponding C struct in bytes\nSIZEOF_STRUCT=Integer"
+    fd_doc.puts"# @return [String] Binary content of the C struct\ndef to_s; end"
     
 		# try to find attributes belonging together
 		attrs.select{|key, attr| ['CK_BYTE_PTR', 'CK_VOID_PTR', 'CK_UTF8CHAR_PTR'].include?(attr.type) }.each do |key, attr|

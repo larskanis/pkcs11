@@ -1656,6 +1656,9 @@ static VALUE s##_s_alloc(VALUE self){ \
   s *info; \
   VALUE obj = Data_Make_Struct(self, s, 0, -1, info); \
   return obj; \
+} \
+static VALUE c##s##_to_s(VALUE self){ \
+  return rb_str_new(DATA_PTR(self), sizeof(s)); \
 }
 
 #define PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(s) \
@@ -1874,6 +1877,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
     c##s = rb_define_class_under(mPKCS11, #s, rb_cObject); \
     rb_define_alloc_func(c##s, s##_s_alloc); \
     rb_define_const(c##s, "SIZEOF_STRUCT", ULONG2NUM(sizeof(s))); \
+    rb_define_method(c##s, "to_s", c##s##_to_s, 0); \
   } while(0)
 
 #define PKCS11_DEFINE_MEMBER(s, f) \
