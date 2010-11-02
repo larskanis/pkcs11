@@ -6,11 +6,11 @@
 #define PKCS11_DEFINE_CONST_GROUP(group, name, value) \
   do { \
     VALUE rvalue = ULONG2NUM(value); \
+    rb_define_const(cPKCS11, name, rvalue); \
     VALUE str = rb_obj_freeze(rb_str_new2(name)); \
     VALUE old = rb_hash_aref(group, rvalue); \
     if (!NIL_P(old)) rb_warning("%s is equal to %s", RSTRING_PTR(old), name); \
     rb_hash_aset(group, rvalue, str); \
-    rb_define_const(cPKCS11, name, rvalue); \
   } while(0)
 
 #define PKCS11_DEFINE_OBJECT_CLASS(constant) \
@@ -21,8 +21,8 @@
   PKCS11_DEFINE_CONST_GROUP(vMECHANISMS, #constant, constant)
 #define PKCS11_DEFINE_RETURN_VALUE(constant) \
   do { \
-    VALUE rvalue = ULONG2NUM(constant); \
     VALUE eError = rb_define_class_under(cPKCS11, #constant, ePKCS11Error); \
+    VALUE rvalue = ULONG2NUM(constant); \
     VALUE old = rb_hash_aref(vRETURN_VALUES, rvalue); \
     if (!NIL_P(old)) rb_warning("%s is equal to %s", RSTRING_PTR(old), #constant); \
     rb_hash_aset(vRETURN_VALUES, rvalue, eError); \
@@ -37,7 +37,7 @@ VALUE
 pkcs11_return_value_to_class(CK_RV rv, VALUE ePKCS11Error)
 {
   VALUE class;
-  
+
   class = rb_hash_aref(vRETURN_VALUES, INT2NUM(rv));
   if (NIL_P(class)){
     class = ePKCS11Error;
@@ -198,17 +198,17 @@ Init_pkcs11_const(VALUE cPKCS11, VALUE ePKCS11Error)
   vATTRIBUTES = rb_hash_new();
   vMECHANISMS = rb_hash_new();
   vRETURN_VALUES = rb_hash_new();
+  rb_define_const(cPKCS11, "OBJECT_CLASSES", vOBJECT_CLASSES);
+  rb_define_const(cPKCS11, "ATTRIBUTES", vATTRIBUTES);
+  rb_define_const(cPKCS11, "MECHANISMS", vMECHANISMS);
+  rb_define_const(cPKCS11, "RETURN_VALUES", vRETURN_VALUES);
 
   #include "pk11_const_def.inc"
-  
+
   rb_obj_freeze(vOBJECT_CLASSES);
-  rb_define_const(cPKCS11, "OBJECT_CLASSES", vOBJECT_CLASSES);
   rb_obj_freeze(vATTRIBUTES);
-  rb_define_const(cPKCS11, "ATTRIBUTES", vATTRIBUTES);
   rb_obj_freeze(vMECHANISMS);
-  rb_define_const(cPKCS11, "MECHANISMS", vMECHANISMS);
   rb_obj_freeze(vRETURN_VALUES);
-  rb_define_const(cPKCS11, "RETURN_VALUES", vRETURN_VALUES);
 
   /* OTP parameters */
   PKCS11_DEFINE_CONST(CK_OTP_CHALLENGE);
