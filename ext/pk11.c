@@ -13,6 +13,7 @@ static VALUE mPKCS11;
 static VALUE cPKCS11;
 static VALUE ePKCS11Error;
 
+static VALUE cCStruct;
 static VALUE cCK_ATTRIBUTE;
 static VALUE cCK_C_INITIALIZE_ARGS;
 static VALUE aCK_C_INITIALIZE_ARGS_members;
@@ -1364,6 +1365,10 @@ ck_attr_initialize(int argc, VALUE *argv, VALUE self)
   return self;
 }
 
+/* rb_define_method(cCK_ATTRIBUTE, "type", ck_attr_type, 0); */
+/*
+ * @return [Integer] attribute type PKCS11::CKA_*
+ */
 static VALUE
 ck_attr_type(VALUE self)
 {
@@ -1372,6 +1377,11 @@ ck_attr_type(VALUE self)
   return ULONG2NUM(attr->type);
 }
 
+/* rb_define_method(cCK_ATTRIBUTE, "value", ck_attr_value, 0); */
+/*
+ * @return [String, Integer, Boolean] attribute value
+ * @see PKCS11::Object#[]
+ */
 static VALUE
 ck_attr_value(VALUE self)
 {
@@ -1885,7 +1895,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
 
 #define PKCS11_DEFINE_STRUCT(s) \
   do { \
-    c##s = rb_define_class_under(mPKCS11, #s, rb_cObject); \
+    c##s = rb_define_class_under(mPKCS11, #s, cCStruct); \
     a##s##_members = rb_ary_new(); \
     rb_define_alloc_func(c##s, s##_s_alloc); \
     rb_define_const(c##s, "SIZEOF_STRUCT", ULONG2NUM(sizeof(s))); \
@@ -1998,6 +2008,8 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_METHOD(unload_library, 0);
 
   ///////////////////////////////////////
+
+  cCStruct = rb_define_class_under(mPKCS11, "CStruct", rb_cObject);
 
   PKCS11_DEFINE_STRUCT(CK_C_INITIALIZE_ARGS);
   PKCS11_DEFINE_MEMBER(CK_C_INITIALIZE_ARGS, flags);

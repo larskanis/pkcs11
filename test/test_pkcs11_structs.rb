@@ -121,4 +121,14 @@ class TestPkcs11Structs < Test::Unit::TestCase
     s.pulOutputLen = nil
     assert_nil s.pulOutputLen
   end
+
+  def test_CStruct
+    s = CK_DATE.new
+    s.day, s.month, s.year = "31", "12", "2010"
+
+    assert s.inspect =~ /year="2010"/, 'There should be a year in CK_DATE'
+    assert_equal ["day", "month", "year"], s.members, 'CK_DATE should contain some attributes'
+    assert_equal ["31", "12", "2010"], s.values, 'values of CK_DATE'
+    assert_equal( {:day=>"31", :month=>"12", :year=>"2010"}, s.to_hash, 'CK_DATE as hash' )
+  end
 end
