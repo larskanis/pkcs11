@@ -20,7 +20,8 @@ OptionParser.new do |opts|
 end.parse!
 
 Attribute = Struct.new(:type, :name, :qual)
-IgnoreStructs = %w[CK_MECHANISM_INFO CK_C_INITIALIZE_ARGS CK_MECHANISM CK_ATTRIBUTE CK_INFO CK_SLOT_INFO CK_TOKEN_INFO CK_MECHANISM_INFO CK_SESSION_INFO]
+IgnoreStructs = %w[CK_ATTRIBUTE CK_MECHANISM]
+OnlyAllocatorStructs = %w[CK_MECHANISM_INFO CK_C_INITIALIZE_ARGS CK_INFO CK_SLOT_INFO CK_TOKEN_INFO CK_SESSION_INFO]
 
 structs = {}
 File.open(options.def, "w") do |fd_def|
@@ -41,7 +42,11 @@ ARGV.each do |file_h|
 
     next if IgnoreStructs.include?(struct_name)
 
-    fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(#{struct_name});"
+    if OnlyAllocatorStructs.include?(struct_name)
+      fd_impl.puts "PKCS11_IMPLEMENT_ALLOCATOR(#{struct_name});"
+    else
+      fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(#{struct_name});"
+    end
     fd_def.puts "PKCS11_DEFINE_STRUCT(#{struct_name});"
     fd_doc.puts"class PKCS11::#{struct_name} < PKCS11::CStruct"
     fd_doc.puts"# Size of corresponding C struct in bytes\nSIZEOF_STRUCT=Integer"
