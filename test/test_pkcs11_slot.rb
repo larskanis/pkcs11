@@ -23,13 +23,16 @@ class TestPkcs11Slot < Test::Unit::TestCase
 
   def test_info
     sinfo = slot.info
-    
+
     assert sinfo.inspect =~ /manufacturerID=/, 'Slot info should tell about manufacturerID'
-    
-    [
-      sinfo.slotDescription, sinfo.manufacturerID, sinfo.flags,
-      sinfo.hardwareVersion, sinfo.firmwareVersion
-    ]
+
+    assert_equal Fixnum, sinfo.flags.class
+    assert sinfo.manufacturerID =~ /Mozilla/i, "It's the mozilla libaray we test against"
+    assert sinfo.slotDescription =~ /Private Key/i, "It's the slot with users private keys"
+    assert_equal Fixnum, sinfo.hardwareVersion.major.class, "Version should be a number"
+    assert_equal Fixnum, sinfo.hardwareVersion.minor.class, "Version should be a number"
+    assert_equal Fixnum, sinfo.firmwareVersion.major.class, "Version should be a number"
+    assert_equal Fixnum, sinfo.firmwareVersion.minor.class, "Version should be a number"
   end
 
   def test_token_info

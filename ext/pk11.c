@@ -1550,24 +1550,6 @@ set_bool(VALUE obj, VALUE value, off_t offset)
 }
 
 static VALUE
-get_version(VALUE obj, off_t offset)
-{
-  char *ptr = (char*)DATA_PTR(obj);
-  CK_VERSION_PTR v;
-  char buf[64];
-  v = (CK_VERSION_PTR)(ptr+offset);
-  snprintf(buf, sizeof(buf), "%d.%d", v->major, v->minor);
-  return rb_str_new2(buf);
-}
-
-static VALUE
-set_version(VALUE obj, VALUE value, off_t offset)
-{
-  rb_notimplement();
-  return Qnil;
-}
-
-static VALUE
 get_string_ptr(VALUE obj, const char *name, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
@@ -1732,14 +1714,6 @@ static VALUE c##s##_get_##f(VALUE o){ \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_bool(o, v, OFFSET_OF(s, f)); \
-}
-
-#define PKCS11_IMPLEMENT_VERSION_ACCESSOR(s, f) \
-static VALUE c##s##_get_##f(VALUE o){ \
-  return get_version(o, OFFSET_OF(s, f)); \
-} \
-static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
-  return set_version(o, v, OFFSET_OF(s, f)); \
 }
 
 #define PKCS11_IMPLEMENT_STRING_PTR_ACCESSOR(s, f) \

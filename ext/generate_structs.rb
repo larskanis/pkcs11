@@ -104,10 +104,6 @@ ARGV.each do |file_h|
           fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct_name}, #{attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
           fd_doc.puts"# @return [Boolean]  Bool value\nattr_accessor :#{attr.name}"
-        when 'CK_VERSION'
-          fd_impl.puts "PKCS11_IMPLEMENT_VERSION_ACCESSOR(#{struct_name}, #{attr.name});"
-          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
-          fd_doc.puts"attr_accessor :#{attr.name}"
         when 'CK_ULONG_PTR'
           fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct_name}, #{attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct_name}, #{attr.name});"
