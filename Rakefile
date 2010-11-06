@@ -17,7 +17,9 @@ hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
   developer('Lars Kanis', 'kanis@comcard.de')
-
+  extra_dev_deps << ['yard', '>= 0.6']
+  extra_dev_deps << ['rake-compiler', '>= 0.7']
+  
   self.url = 'http://github.com/larskanis/pkcs11'
   self.summary = 'PKCS#11 binding for Ruby'
   self.description = 'This module allows Ruby programs to interface with "RSA Security Inc. PKCS #11 Cryptographic Token Interface (Cryptoki)".'
