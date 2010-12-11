@@ -18,7 +18,7 @@ class TestPkcs11Object < Test::Unit::TestCase
     
     flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     @session = slot.C_OpenSession(flags)
-    @session.login(:USER, "")
+#     @session.login(:USER, "")
     
     # Create session object for tests.
     @object = session.create_object(
@@ -29,7 +29,7 @@ class TestPkcs11Object < Test::Unit::TestCase
   end
 
   def teardown
-    @session.logout
+#     @session.logout
     @session.close
   end
 

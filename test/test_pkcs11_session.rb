@@ -19,11 +19,11 @@ class TestPkcs11Session < Test::Unit::TestCase
     
     flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     @session = slot.C_OpenSession(flags)
-    @session.login(:USER, "")
+#     @session.login(:USER, "")
   end
 
   def teardown
-    @session.logout
+#     @session.logout
     @session.close
   end
 

@@ -18,7 +18,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     @slots = pk.active_slots
     @slot = slots.last
     @session = slot.open
-    session.login(:USER, "")
+#     session.login(:USER, "")
     
     @rsa_pub_key = session.find_objects(:CLASS => CKO_PUBLIC_KEY,
                         :KEY_TYPE => CKK_RSA).first
@@ -34,7 +34,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
   def teardown
     @secret_key.destroy
-    @session.logout
+#     @session.logout
     @session.close
   end
 

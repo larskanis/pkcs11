@@ -15,11 +15,11 @@ class TestPkcs11Thread < Test::Unit::TestCase
     @slots = $pkcs11.active_slots
     @slot = slots.last
     @session = slot.open
-    session.login(:USER, "")
+#     session.login(:USER, "")
   end
 
   def teardown
-    @session.logout
+#     @session.logout
     @session.close
   end
 
