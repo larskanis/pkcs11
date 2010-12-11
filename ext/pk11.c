@@ -1756,6 +1756,11 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 
 PKCS11_IMPLEMENT_ALLOCATOR(CK_MECHANISM)
 
+/*
+ * Spezifies a particularly crypto mechanism.
+ * @param [Integer, nil] mechanism The mechanism to use (PKCS11::CKM_*)
+ * @param [String, Integer, PKCS11::CStruct, nil] pParameter optional parameter to the mechanism
+ */
 static VALUE
 cCK_MECHANISM_initialize(int argc, VALUE *argv, VALUE self)
 {
@@ -1768,8 +1773,13 @@ cCK_MECHANISM_initialize(int argc, VALUE *argv, VALUE self)
   return self;
 }
 
+/* rb_define_method(cCK_MECHANISM, "mechanism", cCK_MECHANISM_get_mechanism, 0); */
+/* rb_define_method(cCK_MECHANISM, "mechanism=", cCK_MECHANISM_set_mechanism, 0); */
 PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_MECHANISM, mechanism);
 
+/* rb_define_method(cCK_MECHANISM, "pParameter", cCK_MECHANISM_get_pParameter, 0); */
+/* rb_define_method(cCK_MECHANISM, "pParameter=", cCK_MECHANISM_set_pParameter, 0); */
+/* @see PKCS11::CK_MECHANISM#initialize */
 static VALUE
 cCK_MECHANISM_get_pParameter(VALUE self)
 {
@@ -1942,6 +1952,10 @@ Init_pkcs11_ext()
   rb_define_method(cCK_ATTRIBUTE, "type", ck_attr_type, 0);
   rb_define_method(cCK_ATTRIBUTE, "value", ck_attr_value, 0);
 
+  /* Document-class: PKCS11::CK_MECHANISM
+   *
+   * Describes a crypto mechanism CKM_* with optional parameters. */
+  /* cCK_MECHANISM = rb_define_class_under(mPKCS11, "CK_MECHANISM", rb_cObject); */
   PKCS11_DEFINE_STRUCT(CK_MECHANISM);
   rb_define_method(cCK_MECHANISM, "initialize", cCK_MECHANISM_initialize, -1);
   PKCS11_DEFINE_MEMBER(CK_MECHANISM, mechanism);
