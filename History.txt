@@ -1,3 +1,26 @@
+=== 0.2.0 / 2011-01-18
+
+* switch API documentation to YARD instead of RDOC
+* add Ruby classes for all PKCS#11 structures
+* add CopyObject
+* add Get/SetOperationState
+* use distinct Exception classes for different error codes
+* PKCS#11 function calls don't block other ruby threads any more (only Ruby 1.9, Rubinius)
+* don't wrap mechanisms any more (GetMechanismList returns plain Integers now)
+* choose structs as mechanism parameter based on the given mechanism
+* autogenerate many constants from C header files
+* finer graded control over library loading
+* several bug fixes
+* more unit tests
+* more documentation
+
+
 === 0.1.0 / 2010-05-03
 
 * first rubygem version
+* Most functions and operations of PKCS#11 v2.2 are implemented.
+* The library is based on the work of Ryosuke Kutsuna and GOTOU Yuuzou, but extended in the following ways:
+  - running on Unix and Windows OS
+  - downloadable as rubygem in source and win32 binary version
+  - new API, it's more ruby-like and well documented
+  - most functions are unit tested with help of softokn library
