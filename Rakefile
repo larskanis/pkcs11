@@ -34,6 +34,7 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:files] << 'ext/pk11_const_def.inc'
   spec_extras[:files] << 'ext/pk11_thread_funcs.h'
   spec_extras[:files] << 'ext/pk11_thread_funcs.c'
+  spec_extras[:has_rdoc] = 'yard'
 end
 
 ENV['RUBY_CC_VERSION'] = '1.8.6:1.9.2'
@@ -57,6 +58,20 @@ file 'ext/pk11_thread_funcs.h' => 'ext/generate_thread_funcs.rb' do
 end
 file 'ext/pk11_thread_funcs.c' => 'ext/pk11_thread_funcs.h'
 file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
+
+desc "Generate static HTML documentation with YARD"
+task :yardoc do
+  sh "yardoc"
+end
+
+desc "Publish YARD to wherever you want."
+task :publish_yard => [:yardoc] do
+  rdoc_locations = hoe.rdoc_locations
+  warn "no rdoc_location values" if rdoc_locations.empty?
+  rdoc_locations.each do |dest|
+    sh %{rsync -av --delete doc/ #{dest}}
+  end
+end
 
 # RDoc-upload task for github (currently on rubyforge)
 #
