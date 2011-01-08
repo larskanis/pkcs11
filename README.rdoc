@@ -47,7 +47,7 @@ on the device.
 Detail information for the API specification is provided by RSA Security Inc.
 Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133.
 
-Further examples could be found in the unit tests of the <tt>test</tt>
+Many usage examples can be found in the unit tests of the <tt>test</tt>
 directory of the project or gem.
 
 
@@ -83,9 +83,9 @@ directory.
 
 == ToDo
 
-* unit testing (with mozilla softoken)
-* implement all functions/structs
-* sample code
+* encoding support for Ruby 1.9
+* support for proprietary extensions of different vendors
+* PKCS#11 v2.3
 
 == Development Status
 
@@ -159,3 +159,11 @@ directory.
   N/A     C_GetFunctionStatus    legacy function
   N/A     C_CancelFunction       legacy function
   DONE    C_WaitForSlotEvent
+
+== Authors
+* Ryosuke Kutsuna <ryosuke@deer-n-horse.jp>
+* GOTOU Yuuzou <gotoyuzo@notwork.org>
+* Lars Kanis <kanis@comcard.de>
+
+== Copying
+See MIT-LICENSE included in the package.
