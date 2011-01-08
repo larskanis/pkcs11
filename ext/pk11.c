@@ -116,11 +116,11 @@ pkcs11_C_Finalize(VALUE self)
 {
   CK_C_Finalize func;
   CK_RV rv;
-  
+
   GetFunction(self, C_Finalize, func);
   CallFunction(C_Finalize, func, rv, NULL_PTR);
   if (rv != CKR_OK) pkcs11_raise(rv);
-  
+
   return self;
 }
 
@@ -165,7 +165,7 @@ pkcs11_load_library(VALUE self, VALUE path)
 {
   const char *so_path;
   pkcs11_ctx *ctx;
-  
+
   so_path = StringValuePtr(path);
   Data_Get_Struct(self, pkcs11_ctx, ctx);
 #ifdef compile_for_windows
@@ -409,7 +409,7 @@ pkcs11_C_InitPIN(VALUE self, VALUE session, VALUE pin)
 }
 
 static VALUE
-pkcs11_C_OpenSession(VALUE self, VALUE slot_id, VALUE flags) 
+pkcs11_C_OpenSession(VALUE self, VALUE slot_id, VALUE flags)
 {
   CK_C_OpenSession func;
   CK_RV rv;
@@ -1845,7 +1845,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
     rb_define_method(c##s, #f "=", c##s##_set_##f, 1); \
     rb_ary_push(a##s##_members, rb_str_new2(#f)); \
   } while(0)
-  
+
 void
 Init_pkcs11_ext()
 {
@@ -1855,10 +1855,10 @@ Init_pkcs11_ext()
 
 /* Document-method: PKCS11.open
  *
- * Alias function for PKCS11::Library.new
+ * Alias function for {PKCS11::Library#initialize}
  */
   rb_define_module_function(mPKCS11, "open", pkcs11_library_new, -1);
-  
+
   /* Library version */
   rb_define_const( mPKCS11, "VERSION", rb_str_new2(VERSION) );
 
