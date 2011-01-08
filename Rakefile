@@ -39,9 +39,7 @@ end
 ENV['RUBY_CC_VERSION'] = '1.8.6:1.9.2'
 
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
-  major_minor = RUBY_VERSION[ /^(\d+\.\d+)/ ] or raise "Oops, can't extract the major/minor version from #{RUBY_VERSION.dump}"
   ext.ext_dir = 'ext'
-  ext.lib_dir = "lib/#{major_minor}"
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
   ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
 end
