@@ -1383,52 +1383,60 @@ ck_attr_value(VALUE self)
   Data_Get_Struct(self, CK_ATTRIBUTE, attr);
   if (attr->ulValueLen == 0) return Qnil;
   switch(attr->type){
-  case CKA_TOKEN:
+  case CKA_ALWAYS_AUTHENTICATE:
+  case CKA_ALWAYS_SENSITIVE:
+  case CKA_COLOR:
+/*  case CKA_COPYABLE: v2.3 */
+  case CKA_DECRYPT:
+  case CKA_DERIVE:
+  case CKA_ENCRYPT:
+  case CKA_EXTRACTABLE:
+  case CKA_HAS_RESET:
+  case CKA_LOCAL:
+  case CKA_MODIFIABLE:
+  case CKA_NEVER_EXTRACTABLE:
+  case CKA_OTP_USER_FRIENDLY_MODE:
   case CKA_PRIVATE:
   case CKA_SENSITIVE:
-  case CKA_ENCRYPT:
-  case CKA_DECRYPT:
-  case CKA_WRAP:
-  case CKA_UNWRAP:
   case CKA_SIGN:
   case CKA_SIGN_RECOVER:
+  case CKA_TOKEN:
+  case CKA_TRUSTED:
+  case CKA_UNWRAP:
   case CKA_VERIFY:
   case CKA_VERIFY_RECOVER:
-  case CKA_DERIVE:
-  case CKA_TRUSTED:
-  case CKA_EXTRACTABLE:
-  case CKA_LOCAL:
-  case CKA_NEVER_EXTRACTABLE:
-  case CKA_ALWAYS_SENSITIVE:
-  case CKA_MODIFIABLE:
-  case CKA_HAS_RESET:
-  case CKA_ALWAYS_AUTHENTICATE:
-  case CKA_COLOR:
-  case CKA_OTP_USER_FRIENDLY_MODE:
+  case CKA_WRAP:
   case CKA_WRAP_WITH_TRUSTED:
     if (attr->ulValueLen == sizeof(CK_BBOOL))
       return (*(CK_BBOOL*)(attr->pValue)) == CK_TRUE ? Qtrue : Qfalse;
     break;
-  case CKA_CLASS:
-  case CKA_CERTIFICATE_TYPE:
-  case CKA_KEY_TYPE:
-  case CKA_HW_FEATURE_TYPE:
   case CKA_BITS_PER_PIXEL:
   case CKA_CERTIFICATE_CATEGORY:
+  case CKA_CERTIFICATE_TYPE:
   case CKA_CHAR_COLUMNS:
   case CKA_CHAR_ROWS:
+  case CKA_CLASS:
+  case CKA_HW_FEATURE_TYPE:
   case CKA_JAVA_MIDP_SECURITY_DOMAIN:
+  case CKA_KEY_TYPE:
   case CKA_MECHANISM_TYPE:
+  case CKA_MODULUS_BITS:
+  case CKA_OTP_CHALLENGE_REQUIREMENT:
+  case CKA_OTP_COUNTER_REQUIREMENT:
+  case CKA_OTP_FORMAT:
+  case CKA_OTP_LENGTH:
+  case CKA_OTP_PIN_REQUIREMENT:
+  case CKA_OTP_TIME_INTERVAL:
+  case CKA_OTP_TIME_REQUIREMENT:
   case CKA_OTP_SERVICE_LOGO_TYPE:
   case CKA_PIXEL_X:
   case CKA_PIXEL_Y:
-  case CKA_RESOLUTION:
-  case CKA_VALUE_LEN:
-  case CKA_MODULUS_BITS:
   case CKA_PRIME_BITS:
+  case CKA_RESOLUTION:
   case CKA_SUBPRIME_BITS:
   case CKA_VALUE_BITS:
-    if (attr->ulValueLen == sizeof(CK_ULONG))
+  case CKA_VALUE_LEN:
+  if (attr->ulValueLen == sizeof(CK_ULONG))
       return ULONG2NUM(*(CK_ULONG_PTR)(attr->pValue));
     break;
   }
