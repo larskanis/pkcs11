@@ -44,12 +44,12 @@ This opens a {PKCS11::Session} to the first active slot of the device.
 A {PKCS11::Session} can be used for all cryptographic operations
 on the device.
 
-Detail information for the API specification is provided by RSA Security Inc.
-Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133.
-
 Many usage examples can be found in the unit tests of the <tt>test</tt>
 directory of the project or gem.
 
+Detail information for the API specification is provided by RSA Security Inc.
+Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133. Browsable HTML
+can be found at http://www.cryptsoft.com/pkcs11doc.
 
 
 == Cross compiling for mswin32
