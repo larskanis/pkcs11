@@ -6,6 +6,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 ext/extconf.rb
+ext/generate_constants.rb
 ext/generate_structs.rb
 ext/generate_thread_funcs.rb
 ext/include/cryptoki.h
