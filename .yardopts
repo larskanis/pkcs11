@@ -1,2 +1,1 @@
---no-private lib/**/*.rb ext/*.c ext/*.doc
-
+--title "PKCS#11/Ruby Interface" --no-private lib/**/*.rb ext/*.c ext/*.doc
