@@ -7,7 +7,7 @@
   #include <dlfcn.h>
 #endif
 
-static const char *VERSION = "0.2.0";
+static const char *VERSION = "0.2.1";
 
 static ID sNEW;
 static VALUE mPKCS11;
