@@ -45,7 +45,7 @@ pkcs11_raise(CK_RV rv)
 {
   VALUE class;
   class = pkcs11_return_value_to_class(rv, ePKCS11Error);
-  rb_raise(class, "%li", rv);
+  rb_raise(class, "%lu", rv);
 }
 
 ///////////////////////////////////////
