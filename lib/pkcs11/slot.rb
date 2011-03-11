@@ -59,7 +59,7 @@ module PKCS11
     # @param [Integer, Symbol] mechanism
     # @return [CK_MECHANISM_INFO]
     def C_GetMechanismInfo(mechanism)
-      @pk.C_GetMechanismInfo(@slot, to_mechanism_int(mechanism))
+      @pk.C_GetMechanismInfo(@slot, string_to_handle('CKM_', mechanism))
     end
     alias mechanism_info C_GetMechanismInfo
 
