@@ -138,14 +138,5 @@ module PKCS11
           mechanism
       end
     end
-
-    def to_mechanism_int(mechanism) # :nodoc:
-      case mechanism
-        when String, Symbol
-          PKCS11::MECHANISMS[string_to_handle('CKM_', mechanism)]
-        else
-          mechanism
-      end
-    end
   end
 end
