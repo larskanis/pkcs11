@@ -87,6 +87,20 @@ module PKCS11
       self.unload_library
     end
     
+    # @private
+    #
+    # This method could be overloaded for vendor specific extensions.
+    def pkcs11_const_get(name) # :nodoc:
+      PKCS11.const_get(name)
+    end
+    
+    # @private
+    #
+    # This method could be overloaded for vendor specific extensions.
+    def pkcs11_mechanism_parameter_struct(mech) # :nodoc:
+      Helper::MechanismParameters[mech]
+    end
+    
     private :unwrapped_initialize
     private :unwrapped_C_GetSlotList
     private :unwrapped_C_GetInfo
