@@ -54,7 +54,7 @@ module PKCS11
     alias info C_GetInfo
 
     alias unwrapped_C_GetSlotList C_GetSlotList
-    
+
     # Obtain an array of Slot objects in the system.
     #
     # @param [true, false] tokenPresent  indicates whether the list
@@ -74,7 +74,7 @@ module PKCS11
     def active_slots
       slots(true)
     end
-    
+
     # Obtain an array of Slot objects in the system regardless if a token is present.
     # @return [Array<Slot>]
     def all_slots
@@ -86,21 +86,21 @@ module PKCS11
       self.C_Finalize
       self.unload_library
     end
-    
+
     # @private
     #
     # This method could be overloaded for vendor specific extensions.
     def pkcs11_const_get(name) # :nodoc:
       PKCS11.const_get(name)
     end
-    
+
     # @private
     #
     # This method could be overloaded for vendor specific extensions.
     def pkcs11_mechanism_parameter_struct(mech) # :nodoc:
       Helper::MechanismParameters[mech]
     end
-    
+
     private :unwrapped_initialize
     private :unwrapped_C_GetSlotList
     private :unwrapped_C_GetInfo
