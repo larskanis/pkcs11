@@ -92,7 +92,7 @@ module PKCS11
     #
     # @param [String] name Name of the constant
     # @return [Integer] Value of the constant
-    def pkcs11_const_get(name) # :nodoc:
+    def vendor_const_get(name)
       PKCS11.const_get(name)
     end
 
@@ -101,7 +101,7 @@ module PKCS11
     #
     # @param [Integer] mech Mechanism
     # @return [PKCS11::CStruct] appropriate class as parameter for the mechanism
-    def pkcs11_mechanism_parameter_struct(mech) # :nodoc:
+    def vendor_mechanism_parameter_struct(mech)
       Helper::MechanismParameters[mech]
     end
 

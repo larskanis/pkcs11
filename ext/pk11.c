@@ -43,8 +43,8 @@ VALUE pkcs11_return_value_to_class(CK_RV, VALUE);
 static void
 pkcs11_raise(VALUE self, CK_RV rv)
 {
-  rb_funcall(self, rb_intern("pkcs11_raise_on_return_value"), 1, ULONG2NUM(rv));
-  rb_raise(ePKCS11Error, "method pkcs11_raise_on_return_value should never return");
+  rb_funcall(self, rb_intern("vendor_raise_on_return_value"), 1, ULONG2NUM(rv));
+  rb_raise(ePKCS11Error, "method vendor_raise_on_return_value should never return");
 }
 
 ///////////////////////////////////////
@@ -688,7 +688,7 @@ pkcs11_C_GetAttributeValue(VALUE self, VALUE session, VALUE handle, VALUE templa
   CK_ULONG i, template_size;
   CK_ATTRIBUTE_PTR tmp;
   VALUE ary;
-  VALUE class_attr = rb_funcall(self, rb_intern("pkcs11_class_CK_ATTRIBUTE"), 0);
+  VALUE class_attr = rb_funcall(self, rb_intern("vendor_class_CK_ATTRIBUTE"), 0);
 
   tmp = pkcs11_attr_ary2buf(template);
   template_size = RARRAY_LEN(template);
@@ -1300,7 +1300,7 @@ pkcs11_C_DeriveKey(VALUE self, VALUE session, VALUE mechanism, VALUE base, VALUE
   return HANDLE2NUM(h);
 }
 
-/* rb_define_method(cPKCS11, "pkcs11_raise_on_return_value", pkcs11_pkcs11_raise_on_return_value, 1); */
+/* rb_define_method(cPKCS11, "vendor_raise_on_return_value", pkcs11_vendor_raise_on_return_value, 1); */
 /*
  * Raise an exception for the given PKCS#11 return value. This method can be overloaded
  * to raise vendor specific exceptions. It is only called for rv!=0 and it should never
@@ -1308,7 +1308,7 @@ pkcs11_C_DeriveKey(VALUE self, VALUE session, VALUE mechanism, VALUE base, VALUE
  * @param [Integer] rv return value of the latest operation
  */
 static VALUE
-pkcs11_pkcs11_raise_on_return_value(VALUE self, VALUE rv_value)
+pkcs11_vendor_raise_on_return_value(VALUE self, VALUE rv_value)
 {
   VALUE class;
   CK_RV rv = NUM2ULONG(rv_value);
@@ -1319,14 +1319,14 @@ pkcs11_pkcs11_raise_on_return_value(VALUE self, VALUE rv_value)
 }
 
 
-/* rb_define_method(cPKCS11, "pkcs11_class_CK_ATTRIBUTE", pkcs11_pkcs11_class_CK_ATTRIBUTE, 0); */
+/* rb_define_method(cPKCS11, "vendor_class_CK_ATTRIBUTE", pkcs11_vendor_class_CK_ATTRIBUTE, 0); */
 /*
  * Return class CK_ATTRIBUTE. This method can be overloaded
  * to return a derived class that appropriate converts vendor specific attributes.
  * @return [CK_ATTRIBUTE] some kind of CK_ATTRIBUTE
  */
 static VALUE
-pkcs11_pkcs11_class_CK_ATTRIBUTE(VALUE self)
+pkcs11_vendor_class_CK_ATTRIBUTE(VALUE self)
 {
   return cCK_ATTRIBUTE;
 }
@@ -1646,8 +1646,8 @@ Init_pkcs11_ext()
   PKCS11_DEFINE_METHOD(C_WaitForSlotEvent, 1);
   PKCS11_DEFINE_METHOD(C_Finalize, 0);
   PKCS11_DEFINE_METHOD(unload_library, 0);
-  PKCS11_DEFINE_METHOD(pkcs11_raise_on_return_value, 1);
-  PKCS11_DEFINE_METHOD(pkcs11_class_CK_ATTRIBUTE, 0);
+  PKCS11_DEFINE_METHOD(vendor_raise_on_return_value, 1);
+  PKCS11_DEFINE_METHOD(vendor_class_CK_ATTRIBUTE, 0);
 
   ///////////////////////////////////////
 
