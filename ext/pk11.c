@@ -47,24 +47,6 @@ pkcs11_raise(VALUE self, CK_RV rv)
   rb_raise(ePKCS11Error, "method pkcs11_raise_on_return_value should never return");
 }
 
-/* rb_define_method(cPKCS11, "pkcs11_raise_on_return_value", pkcs11_pkcs11_raise_on_return_value, 1); */
-/*
- * Raise an exception for the given PKCS#11 return value. This method can be overloaded
- * to raise vendor specific exceptions. It is only called for rv!=0 and it should never
- * return regulary, but always by an exception.
- * @param [Integer] rv return value of the latest operation
- */
-static VALUE
-pkcs11_pkcs11_raise_on_return_value(VALUE self, VALUE rv_value)
-{
-  VALUE class;
-  CK_RV rv = NUM2ULONG(rv_value);
-  class = pkcs11_return_value_to_class(rv, ePKCS11Error);
-  rb_raise(class, "%lu", rv);
-
-  return Qnil;
-}
-
 ///////////////////////////////////////
 
 typedef struct {
@@ -1317,6 +1299,25 @@ pkcs11_C_DeriveKey(VALUE self, VALUE session, VALUE mechanism, VALUE base, VALUE
 
   return HANDLE2NUM(h);
 }
+
+/* rb_define_method(cPKCS11, "pkcs11_raise_on_return_value", pkcs11_pkcs11_raise_on_return_value, 1); */
+/*
+ * Raise an exception for the given PKCS#11 return value. This method can be overloaded
+ * to raise vendor specific exceptions. It is only called for rv!=0 and it should never
+ * return regulary, but always by an exception.
+ * @param [Integer] rv return value of the latest operation
+ */
+static VALUE
+pkcs11_pkcs11_raise_on_return_value(VALUE self, VALUE rv_value)
+{
+  VALUE class;
+  CK_RV rv = NUM2ULONG(rv_value);
+  class = pkcs11_return_value_to_class(rv, ePKCS11Error);
+  rb_raise(class, "%lu", rv);
+
+  return Qnil;
+}
+
 
 /* rb_define_method(cPKCS11, "pkcs11_class_CK_ATTRIBUTE", pkcs11_pkcs11_class_CK_ATTRIBUTE, 0); */
 /*
