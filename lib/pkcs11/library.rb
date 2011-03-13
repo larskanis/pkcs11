@@ -87,16 +87,20 @@ module PKCS11
       self.unload_library
     end
 
-    # @private
-    #
+    # Return the value of a named constant. Used for CKA_* and CKM_* .
     # This method could be overloaded for vendor specific extensions.
+    #
+    # @param [String] name Name of the constant
+    # @return [Integer] Value of the constant
     def pkcs11_const_get(name) # :nodoc:
       PKCS11.const_get(name)
     end
 
-    # @private
-    #
+    # Return the parameter struct of a given mechanism.
     # This method could be overloaded for vendor specific extensions.
+    #
+    # @param [Integer] mech Mechanism
+    # @return [PKCS11::CStruct] appropriate class as parameter for the mechanism
     def pkcs11_mechanism_parameter_struct(mech) # :nodoc:
       Helper::MechanismParameters[mech]
     end

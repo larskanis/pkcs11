@@ -50,7 +50,9 @@ pkcs11_raise(VALUE self, CK_RV rv)
 /* rb_define_method(cPKCS11, "pkcs11_raise_on_return_value", pkcs11_pkcs11_raise_on_return_value, 1); */
 /*
  * Raise an exception for the given PKCS#11 return value. This method can be overloaded
- * to raise vendor specific exceptions.
+ * to raise vendor specific exceptions. It is only called for rv!=0 and it should never
+ * return regulary, but always by an exception.
+ * @param [Integer] rv return value of the latest operation
  */
 static VALUE
 pkcs11_pkcs11_raise_on_return_value(VALUE self, VALUE rv_value)
