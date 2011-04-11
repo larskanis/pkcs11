@@ -136,6 +136,9 @@ class TestPkcs11Structs < Test::Unit::TestCase
     GC.start
     assert_raise(ArgumentError){ s.pParams = [s1, s2, nil] }
     assert_equal [s1.to_hash, s2.to_hash], s.pParams.map{|e| e.to_hash }
+
+    s.pParams = []
+    assert_equal [], s.pParams
   end
 
   def test_CStruct
