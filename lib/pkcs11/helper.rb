@@ -104,7 +104,7 @@ module PKCS11
     def string_to_handle(prefix, attribute) # :nodoc:
       case attribute
         when String, Symbol
-          PKCS11.const_get("#{prefix}#{attribute}")
+          @pk.vendor_const_get("#{prefix}#{attribute}")
         else
           attribute
       end
@@ -121,8 +121,8 @@ module PKCS11
           param = mechanism.values.first
           case param
           when Hash
-            param_class = MechanismParameters[mech]
-            raise ArgumentError, "unknown mechanism - please use mechanism parameter as String" unless param_class
+            param_class = @pk.vendor_mechanism_parameter_struct(mech)
+            raise ArgumentError, "unknown mechanism - please use String/Int/Struct as mechanism parameter" unless param_class
 
             pa = param_class.new
             param.each do |k, v|
@@ -134,15 +134,6 @@ module PKCS11
           PKCS11::CK_MECHANISM.new(mech, param)
         when Fixnum
           PKCS11::CK_MECHANISM.new(mechanism)
-        else
-          mechanism
-      end
-    end
-
-    def to_mechanism_int(mechanism) # :nodoc:
-      case mechanism
-        when String, Symbol
-          PKCS11::MECHANISMS[string_to_handle('CKM_', mechanism)]
         else
           mechanism
       end

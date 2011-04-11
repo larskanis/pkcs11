@@ -6,6 +6,7 @@ Manifest.txt
 README.rdoc
 Rakefile
 ext/extconf.rb
+ext/generate_constants.rb
 ext/generate_structs.rb
 ext/generate_thread_funcs.rb
 ext/include/cryptoki.h
@@ -18,6 +19,8 @@ ext/include/pkcs11t.h
 ext/pk11.c
 ext/pk11.h
 ext/pk11_const.c
+ext/pk11_const_macros.h
+ext/pk11_struct_macros.h
 lib/pkcs11.rb
 lib/pkcs11/extensions.rb
 lib/pkcs11/helper.rb

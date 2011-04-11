@@ -44,9 +44,18 @@ class TestPkcs11Slot < Test::Unit::TestCase
     assert_equal false, slot.mechanisms.empty?, 'There should be some mechanisms'
     slot.mechanisms.each do |m|
       info = slot.mechanism_info(m)
-      assert_equal CK_MECHANISM_INFO, info.class, 'Mechanism info should a CK_MECHANISM_INFO'
+      assert_equal CK_MECHANISM_INFO, info.class, 'Mechanism info should get a CK_MECHANISM_INFO'
       assert info.inspect =~ /ulMaxKeySize=/, 'Mechanism info should tell about max key size'
     end
+  end
+
+  def test_mechanism_info
+    info1 = slot.mechanism_info(:DES3_CBC)
+    assert_equal CK_MECHANISM_INFO, info1.class, 'Mechanism info should get a CK_MECHANISM_INFO'
+    assert info1.inspect =~ /ulMinKeySize=/, 'Mechanism info should tell about min key size'
+    
+    info2 = slot.mechanism_info(CKM_DES3_CBC)
+    assert_equal info1.to_hash, info2.to_hash, 'Mechanism infos should be equal'
   end
 
   def test_session
