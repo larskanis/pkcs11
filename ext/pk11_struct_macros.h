@@ -118,9 +118,9 @@ static VALUE
 set_bool(VALUE obj, VALUE value, off_t offset)
 {
   char *ptr = (char*)DATA_PTR(obj);
-	if(value == Qfalse) *(CK_BBOOL*)(ptr+offset) = 0;
-	else if(value == Qtrue) *(CK_BBOOL*)(ptr+offset) = 1;
-	else rb_raise(rb_eArgError, "arg must be true or false");
+  if(value == Qfalse) *(CK_BBOOL*)(ptr+offset) = 0;
+  else if(value == Qtrue) *(CK_BBOOL*)(ptr+offset) = 1;
+  else rb_raise(rb_eArgError, "arg must be true or false");
   return value;
 }
 
@@ -221,6 +221,46 @@ set_struct_ptr(VALUE obj, VALUE klass, const char *struct_name, VALUE value, con
   rb_iv_set(obj, name, value);
   return value;
 }
+
+static VALUE
+get_struct_ptr_array(VALUE obj, VALUE klass, off_t offset, off_t offset_len, int sizeofstruct)
+{
+  unsigned long i;
+  char *ptr = DATA_PTR(obj);
+  char *p = *(char **)(ptr+offset);
+  unsigned long l = *(unsigned long*)(ptr+offset_len);
+  VALUE ary = rb_ary_new();
+  for (i = 0; i < l; i++){
+    void *mem = xmalloc(sizeofstruct);
+    memcpy(mem, p + sizeofstruct * i, sizeofstruct);
+    VALUE new_obj = Data_Wrap_Struct(klass, 0, -1, mem);
+    rb_ary_push(ary, new_obj);
+  }
+  return ary;
+}
+
+static VALUE
+set_struct_ptr_array(VALUE obj, VALUE klass, const char *struct_name, VALUE value, const char *name, off_t offset, off_t offset_len, int sizeofstruct)
+{
+  int i;
+  VALUE str_buf;
+  char *ptr = DATA_PTR(obj);
+  Check_Type(value, T_ARRAY);
+
+  str_buf = rb_str_buf_new(sizeofstruct * RARRAY_LEN(value));
+
+  for (i = 0; i < RARRAY_LEN(value); i++){
+    VALUE entry = rb_ary_entry(value, i);
+    if (!rb_obj_is_kind_of(entry, klass))
+      rb_raise(rb_eArgError, "arg must be array of PKCS11::%s", struct_name);
+    memcpy(RSTRING_PTR(str_buf) + sizeofstruct * i, DATA_PTR(entry), sizeofstruct);
+  }
+  *(CK_VOID_PTR*)(ptr+offset) = RSTRING_PTR(str_buf);
+  *(unsigned long*)(ptr+offset_len) = RARRAY_LEN(value);
+  rb_iv_set(obj, name, str_buf);
+  return value;
+}
+
 
 #define OFFSET_OF(s, f) ((off_t)((char*)&(((s*)0)->f) - (char*)0))
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
@@ -342,6 +382,15 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
   return set_struct_ptr(o, klass, #k, v, #f, OFFSET_OF(s, f)); \
 }
+
+#define PKCS11_IMPLEMENT_STRUCT_PTR_ARRAY_ACCESSOR(s, k, f, l) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  return get_struct_ptr_array(o, c##k, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  return set_struct_ptr_array(o, c##k, #k, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
+}
+
 
 /**************************************************/
 /* struct/attribute definition                    */

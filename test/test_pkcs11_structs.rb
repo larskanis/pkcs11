@@ -4,7 +4,7 @@ require "test/helper"
 
 class TestPkcs11Structs < Test::Unit::TestCase
   include PKCS11
-  
+
   def setup
   end
 
@@ -98,7 +98,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     s.pServerRandom = nil
     assert_nil s.pServerRandom
   end
-  
+
   def test_STRUCT_PTR_ACCESSOR
     s = CK_SSL3_KEY_MAT_PARAMS.new
     assert_nil s.pReturnedKeyMaterial
@@ -120,6 +120,22 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_equal 123, s.pulOutputLen
     s.pulOutputLen = nil
     assert_nil s.pulOutputLen
+  end
+
+  def test_STRUCT_ARRAY_ACCESSOR
+    s = CK_OTP_PARAMS.new
+    assert_equal [], s.pParams
+    s1 = CK_OTP_PARAM.new
+    s1.type = CK_OTP_VALUE
+    s1.pValue = "\0xyz"
+    s2 = CK_OTP_PARAM.new
+    s2.type = CK_OTP_PIN
+    s2.pValue = "1234"
+    s.pParams = [s1, s2]
+    assert_equal [s1.to_hash, s2.to_hash], s.pParams.map{|e| e.to_hash }
+    GC.start
+    assert_raise(ArgumentError){ s.pParams = [s1, s2, nil] }
+    assert_equal [s1.to_hash, s2.to_hash], s.pParams.map{|e| e.to_hash }
   end
 
   def test_CStruct

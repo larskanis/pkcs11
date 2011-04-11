@@ -51,7 +51,7 @@ class StructParser
       c_src.scan(/struct\s+([A-Z_0-9]+)\s*\{(.*?)\}/m) do |struct|
         struct_text = $2
         struct = CStruct.new( $1, [] )
-        
+
         struct_text.scan(/^\s+([A-Z_0-9]+)\s+([\w_]+)\s*(\[\s*(\d+)\s*\])?/) do |elem|
           struct.attrs << Attribute.new($1, $2, $4)
         end
@@ -65,7 +65,7 @@ class StructParser
     @structs = parse_files(options.files)
     @structs_by_name = @structs.inject({}){|sum, v| sum[v.name]=v; sum }
     @std_structs_by_name = @structs_by_name.dup
-    
+
     write_files
   end
 
@@ -87,7 +87,17 @@ class StructParser
       fd_doc.puts"# @return [String] Binary copy of the C struct\ndef to_s; end"
       fd_doc.puts"# @return [Array<String>] Attributes of this struct\ndef members; end"
 
-      # try to find attributes belonging together
+      # find attributes belonging together for array of struct
+      struct.attrs.select{|attr| structs_by_name[attr.type.gsub(/_PTR$/,'')] }.each do |attr|
+        if attr.name=='pParams' && (len_attr = struct.attr_by_sign("CK_ULONG ulCount"))
+          fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ARRAY_ACCESSOR(#{struct.name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name}, #{len_attr.name});"
+          fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
+          fd_doc.puts"# @return [PKCS11::#{attr.type.gsub(/_PTR$/,'')}] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
+          len_attr.mark = true
+          attr.mark = true
+        end
+      end
+      # find string attributes belonging together
       struct.attrs.select{|attr| ['CK_BYTE_PTR', 'CK_VOID_PTR', 'CK_UTF8CHAR_PTR', 'CK_CHAR_PTR'].include?(attr.type) }.each do |attr|
         if len_attr=struct.attr_by_sign("CK_ULONG #{attr.name.gsub(/^p/, "ul")}Len")
           fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name});"
