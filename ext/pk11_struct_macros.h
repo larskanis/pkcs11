@@ -198,12 +198,17 @@ set_struct_inline(VALUE obj, VALUE klass, const char *struct_name, VALUE value, 
 }
 
 static VALUE
-get_struct_ptr(VALUE obj, VALUE klass, const char *name, off_t offset)
+get_struct_ptr(VALUE obj, VALUE klass, const char *name, off_t offset, int sizeofstruct)
 {
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
+  void *mem;
+  VALUE new_obj;
   if (!p) return Qnil;
-  return rb_iv_get(obj, name);
+  mem = xmalloc(sizeofstruct);
+  memcpy(mem, p, sizeofstruct);
+  new_obj = Data_Wrap_Struct(klass, 0, -1, mem);
+  return new_obj;
 }
 
 static VALUE
@@ -367,7 +372,7 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 
 #define PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(s, k, f) \
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_struct_ptr(o, c##k, #f, OFFSET_OF(s, f)); \
+  return get_struct_ptr(o, c##k, #f, OFFSET_OF(s, f), sizeof(k)); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_struct_ptr(o, c##k, #k, v, #f, OFFSET_OF(s, f)); \
@@ -376,7 +381,7 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 #define PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(s, k, f) \
 static VALUE c##s##_get_##f(VALUE o){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
-  return get_struct_ptr(o, klass, #f, OFFSET_OF(s, f)); \
+  return get_struct_ptr(o, klass, #f, OFFSET_OF(s, f), sizeof(k))); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
