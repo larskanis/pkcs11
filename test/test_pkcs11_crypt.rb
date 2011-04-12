@@ -42,13 +42,30 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     $pkcs11
   end
 
-  def test_endecrypt
+  def test_endecrypt_rsa
     plaintext1 = "secret text"
     cryptogram = session.encrypt( :RSA_PKCS, rsa_pub_key, plaintext1)
     assert cryptogram.length>10, 'The cryptogram should contain some data'
     assert_not_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
     
     plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
+    assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
+  end
+
+  def test_endecrypt_des
+    plaintext1 = "secret message "
+    cryptogram = session.encrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key, plaintext1)
+    assert_equal 16, cryptogram.length, 'The cryptogram should contain some data'
+    assert_not_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
+    
+    cryptogram2 = ''
+    cryptogram2 << session.encrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key ) do |cipher|
+      cryptogram2 << cipher.update(plaintext1[0, 8])
+      cryptogram2 << cipher.update(plaintext1[8..-1])
+    end
+    assert_equal cryptogram, cryptogram2, "Encrypt with and w/o block should be lead to the same result"
+    
+    plaintext2 = session.decrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key, cryptogram)
     assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
   end
 
