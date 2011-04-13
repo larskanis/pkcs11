@@ -381,7 +381,7 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 #define PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(s, k, f) \
 static VALUE c##s##_get_##f(VALUE o){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
-  return get_struct_ptr(o, klass, #f, OFFSET_OF(s, f), sizeof(k))); \
+  return get_struct_ptr(o, klass, #f, OFFSET_OF(s, f), sizeof(k)); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
