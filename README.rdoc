@@ -25,9 +25,14 @@ This installs the PKCS#11 extension either by compiling (Unix) or by using the p
 Cryptoki has a reputation to be complicated to implement and use.
 While this seems to be true for C it shouldn't for Ruby.
 
-{PKCS11.open} opens a PKCS#11 Unix *.so file or Windows-DLL. It requires
-a suitable PKCS #11 implementation.
+* {PKCS11.open} opens a PKCS#11 Unix *.so file or Windows-DLL with a suitable PKCS #11 implementation
+  and returns a {PKCS11::Library}.
+* {PKCS11::Library#slots} returns a list of {PKCS11::Slot} for all slots accessable by the library.
+* {PKCS11::Slot#open} opens a {PKCS11::Session} which is used for object handling
+  and cryptographic operations.
+* {PKCS11::Object} represents a key, data or certificate object.
 
+=== Example
   require "rubygems"
   require "pkcs11"
   include PKCS11
@@ -36,15 +41,18 @@ a suitable PKCS #11 implementation.
   p pkcs11.info
   session = pkcs11.active_slots.first.open
   session.login(:USER, "1234")
-  # ... crypto operations
+  secret_key = session.generate_key(:DES2_KEY_GEN,
+    :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>true, :TOKEN=>true, :LABEL=>'my key')
+  cryptogram = session.encrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key, "some plaintext")
   session.logout
   session.close
 
-This opens a {PKCS11::Session} to the first active slot of the device.
-A {PKCS11::Session} can be used for all cryptographic operations
-on the device.
+This opens a PKCS#11 library and prints it's information block.
+Then a {PKCS11::Session} to the first active slot of the device is opened and
+a login is done on the user account. Now, a 112 bit DES3 key is generated and
+some plaintext is encrypted with it. A 8-byte zero IV is used.
 
-Many usage examples can be found in the unit tests of the <tt>test</tt>
+Many more usage examples can be found in the unit tests of the <tt>test</tt>
 directory of the project or gem.
 
 Detail information for the API specification is provided by RSA Security Inc.
