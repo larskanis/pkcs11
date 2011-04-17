@@ -92,7 +92,7 @@ class StructParser
         if attr.name=='pParams' && (len_attr = struct.attr_by_sign("CK_ULONG ulCount"))
           fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ARRAY_ACCESSOR(#{struct.name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name}, #{len_attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-          fd_doc.puts"# @return [PKCS11::#{attr.type.gsub(/_PTR$/,'')}] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [Array<PKCS11::#{attr.type.gsub(/_PTR$/,'')}>] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
           len_attr.mark = true
           attr.mark = true
         end
