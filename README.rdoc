@@ -6,7 +6,7 @@
 This module allows Ruby programs to interface with "RSA Security Inc.
 PKCS #11 Cryptographic Token Interface (Cryptoki)".
 PKCS #11 is the de-facto standard to access cryptographic devices.
-You must have the PKCS #11 v2.20 implementation library installed in
+You must have a PKCS #11 v2.20 implementation library installed in
 order to use this module. Tested implementations of PKCS#11 librarys
 include:
 * OpenSC[http://www.opensc-project.org] supported Smart Cards
@@ -23,7 +23,7 @@ This installs the PKCS#11 extension either by compiling (Unix) or by using the p
 
 == Usage
 Cryptoki has a reputation to be complicated to implement and use.
-While this seems to be true for C it shouldn't for Ruby.
+While this seems to be true for C, it shouldn't for Ruby.
 
 * {PKCS11.open} opens a PKCS#11 Unix *.so file or Windows-DLL with a suitable PKCS #11 implementation
   and returns a {PKCS11::Library}.
@@ -31,6 +31,10 @@ While this seems to be true for C it shouldn't for Ruby.
 * {PKCS11::Slot#open} opens a {PKCS11::Session} which is used for object handling
   and cryptographic operations.
 * {PKCS11::Object} represents a key, data or certificate object.
+* all constants defined in PKCS#11 v2.20 are available in the module {PKCS11}
+  and contain the associated Integer value (CKA_KEY_TYPE, CKK_AES, CKM_SHA_1 etc.)
+* also all structs are available in the module {PKCS11} as proper ruby classes
+  ({PKCS11::CK_VERSION}, {PKCS11::CK_OTP_PARAMS} etc.)
 
 === Example
   require "rubygems"
@@ -50,7 +54,9 @@ While this seems to be true for C it shouldn't for Ruby.
 This opens a PKCS#11 library and prints it's information block.
 Then a {PKCS11::Session} to the first active slot of the device is opened and
 a login is done on the user account. Now, a 112 bit DES3 key is generated and
-some plaintext is encrypted with it. A 8-byte zero IV is used.
+some plaintext is encrypted with it. A 8-byte zero IV is used. In many cases method parameters
+can be Integer (like CKA_LABEL) or, as in the sample, Symbol (:LABEL) which is internally
+converted.
 
 Many more usage examples can be found in the unit tests of the <tt>test</tt>
 directory of the project or gem.
@@ -96,6 +102,9 @@ directory.
 * PKCS#11 v2.3
 
 == Development Status
+
+Any operation that is possible with PKCS#11 in C, should be likewise possible in Ruby.
+Otherwise it is considered as a bug in the binding.
 
   STATE   FUNCTION               NOTE
   ------  ---------------------  ----------------------------------------
