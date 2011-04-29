@@ -136,7 +136,7 @@ class StructParser
             fd_impl.puts "PKCS11_IMPLEMENT_BYTE_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Integer] accessor for #{attr.name} (CK_BYTE)\nattr_accessor :#{attr.name}"
-          when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', 'CK_COUNT', 'CK_SIZE', /CK_[A-Z_0-9]+_TYPE/
+          when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', /CK_[A-Z_0-9]+_TYPE/
             fd_impl.puts "PKCS11_IMPLEMENT_ULONG_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Integer] accessor for #{attr.name} (CK_ULONG)\nattr_accessor :#{attr.name}"
@@ -148,7 +148,7 @@ class StructParser
             fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Boolean]  Bool value\nattr_accessor :#{attr.name}"
-          when 'CK_ULONG_PTR', 'CK_COUNT_PTR'
+          when 'CK_ULONG_PTR'
             fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Integer, nil] accessor for #{attr.name} (CK_ULONG_PTR)\nattr_accessor :#{attr.name}"
