@@ -6,11 +6,16 @@ require 'hoe'
 require 'rake/extensiontask'
 require 'rbconfig'
 
-CLEAN.include 'ext/pk11_struct_def.inc'
-CLEAN.include 'ext/pk11_struct_impl.inc'
-CLEAN.include 'ext/pk11_const_def.inc'
-CLEAN.include 'ext/pk11_thread_funcs.h'
-CLEAN.include 'ext/pk11_thread_funcs.c'
+GENERATED_FILES = [
+  'ext/pk11_struct_impl.inc',
+  'ext/pk11_struct_def.inc',
+  'ext/pk11_const_def.inc',
+  'ext/pk11_struct.doc',
+  'ext/pk11_thread_funcs.h',
+  'ext/pk11_thread_funcs.c',
+]
+
+CLEAN.include GENERATED_FILES
 CLEAN.include 'lib/pkcs11_ext.so'
 CLEAN.include 'tmp'
 
@@ -29,12 +34,7 @@ hoe = Hoe.spec 'pkcs11' do
   self.extra_rdoc_files << self.readme_file << 'ext/pk11.c'
   spec_extras[:extensions] = 'ext/extconf.rb'
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
-  spec_extras[:files] << 'ext/pk11_struct_impl.inc'
-  spec_extras[:files] << 'ext/pk11_struct_def.inc'
-  spec_extras[:files] << 'ext/pk11_const_def.inc'
-  spec_extras[:files] << 'ext/pk11_struct.doc'
-  spec_extras[:files] << 'ext/pk11_thread_funcs.h'
-  spec_extras[:files] << 'ext/pk11_thread_funcs.c'
+  spec_extras[:files] += GENERATED_FILES
   spec_extras[:has_rdoc] = 'yard'
 end
 
