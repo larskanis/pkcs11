@@ -9,10 +9,18 @@ require 'rbconfig'
 SAFENET_SDK_DIR = ENV['SAFENET_SDK_DIR'] || '/opt/ETcpsdk'
 RUBY_PKCS11_EXT_DIR = File.expand_path('../ext')
 
-CLEAN.include 'ext/pk11s_struct_def.inc'
-CLEAN.include 'ext/pk11s_struct_impl.inc'
-CLEAN.include 'ext/pk11s_const_def.inc'
-CLEAN.include 'lib/pkcs11_ext.so'
+GENERATED_FILES = [
+  'ext/pk11s_struct_impl.inc',
+  'ext/pk11s_struct_def.inc',
+  'ext/pk11s_const_def.inc',
+  'ext/pk11s_struct.doc',
+  'ext/pk11_struct_macros.h',
+  'ext/pk11_const_macros.h',
+  'ext/pk11_version.h',
+]
+
+CLEAN.include GENERATED_FILES
+CLEAN.include 'lib/pkcs11_safenet_ext.so'
 CLEAN.include 'tmp'
 
 def pkcs11_version
@@ -37,13 +45,7 @@ hoe = Hoe.spec 'pkcs11-safenet' do
   self.extra_rdoc_files << self.readme_file << 'ext/pk11s.c'
   spec_extras[:extensions] = 'ext/extconf.rb'
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
-  spec_extras[:files] << 'ext/pk11s_struct_impl.inc'
-  spec_extras[:files] << 'ext/pk11s_struct_def.inc'
-  spec_extras[:files] << 'ext/pk11s_const_def.inc'
-  spec_extras[:files] << 'ext/pk11s_struct.doc'
-  spec_extras[:files] << 'ext/pk11_struct_macros.h'
-  spec_extras[:files] << 'ext/pk11_const_macros.h'
-  spec_extras[:files] << 'ext/pk11_version.h'
+  spec_extras[:files] += GENERATED_FILES
   spec_extras[:has_rdoc] = 'yard'
 end
 
@@ -55,18 +57,17 @@ Rake::ExtensionTask.new('pkcs11_safenet_ext', hoe.spec) do |ext|
   ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
 
   ext.config_options << "--with-safenet-sdk-dir=#{SAFENET_SDK_DIR.inspect}"
-  ext.config_options << "--with-ruby-pkcs11-include=#{RUBY_PKCS11_EXT_DIR}"
 end
 
-file 'ext/pk11_struct_macros.h' do |t|
-  cp File.join(RUBY_PKCS11_EXT_DIR, 'pk11_struct_macros.h'), t.name
+def copy_from_base_task(filename)
+  file File.join('ext', filename) => File.join(RUBY_PKCS11_EXT_DIR, filename) do |t|
+    cp t.prerequisites.first, t.name, :verbose=>true
+  end
 end
-file 'ext/pk11_const_macros.h' do |t|
-  cp File.join(RUBY_PKCS11_EXT_DIR, 'pk11_const_macros.h'), t.name
-end
-file 'ext/pk11_version.h' do |t|
-  cp File.join(RUBY_PKCS11_EXT_DIR, 'pk11_version.h'), t.name
-end
+
+copy_from_base_task 'pk11_struct_macros.h'
+copy_from_base_task 'pk11_const_macros.h'
+copy_from_base_task 'pk11_version.h'
 
 file 'ext/extconf.rb' => ['ext/pk11s_struct_def.inc', 'ext/pk11s_const_def.inc', 'ext/pk11_struct_macros.h', 'ext/pk11_const_macros.h', 'ext/pk11_version.h']
 file 'ext/pk11s_struct_def.inc' => 'ext/generate_structs.rb' do
