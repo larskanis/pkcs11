@@ -32,6 +32,7 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:files] << 'ext/pk11_struct_impl.inc'
   spec_extras[:files] << 'ext/pk11_struct_def.inc'
   spec_extras[:files] << 'ext/pk11_const_def.inc'
+  spec_extras[:files] << 'ext/pk11_struct.doc'
   spec_extras[:files] << 'ext/pk11_thread_funcs.h'
   spec_extras[:files] << 'ext/pk11_thread_funcs.c'
   spec_extras[:has_rdoc] = 'yard'
