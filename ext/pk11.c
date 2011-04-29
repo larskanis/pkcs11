@@ -1,13 +1,12 @@
 #include "pk11.h"
 #include "pk11_struct_macros.h"
+#include "pk11_version.h"
 
 #if defined(compile_for_windows)
   #include <winbase.h> /* for LoadLibrary() */
 #else
   #include <dlfcn.h>
 #endif
-
-static const char *VERSION = "0.2.2";
 
 static ID sNEW;
 static VALUE mPKCS11;
