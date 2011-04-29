@@ -65,7 +65,7 @@ file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 
 desc "Generate static HTML documentation with YARD"
 task :yardoc do
-  sh "yardoc"
+  sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11-safenet/lib/**/*.rb pkcs11-safenet/ext/*.c pkcs11-safenet/ext/*.doc"
 end
 
 desc "Publish YARD to wherever you want."
