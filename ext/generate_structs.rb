@@ -99,7 +99,7 @@ class StructParser
       end
       # find string attributes belonging together
       struct.attrs.select{|attr| ['CK_BYTE_PTR', 'CK_VOID_PTR', 'CK_UTF8CHAR_PTR', 'CK_CHAR_PTR'].include?(attr.type) }.each do |attr|
-        if len_attr=struct.attr_by_sign("CK_ULONG #{attr.name.gsub(/^p/, "ul")}Len")
+        if len_attr=struct.attr_by_sign("CK_ULONG #{attr.name.gsub(/^p([A-Z])/){ "ul"+$1 }}Len")
           fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
           fd_doc.puts"# @return [String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
