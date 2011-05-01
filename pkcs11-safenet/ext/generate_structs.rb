@@ -4,7 +4,7 @@
 
 require 'rubygems'
 require 'pkcs11'
-require '../ext/generate_structs.rb'
+require File.expand_path(File.join(File.dirname(__FILE__), '../../ext/generate_structs'))
 
 module PKCS11
 module Safenet
