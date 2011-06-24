@@ -68,6 +68,7 @@ module Safenet
           libctsw_so = "libct#{so_path}.so"
           libctsw_so_paths = [
             "/opt/ETcpsdk/lib/linux-i386",
+            "/opt/ETcpsdk/lib/linux-x86_64",
             "/opt/PTK/lib",
           ]
         end
