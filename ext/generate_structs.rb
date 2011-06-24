@@ -47,6 +47,12 @@ class StructParser
     end
   end
 
+  class Attribute
+    def type_noptr
+      type.gsub(/_PTR$/,'')
+    end
+  end
+
   def parse_files(files)
     structs = []
     files.each do |file_h|
@@ -93,12 +99,12 @@ class StructParser
       fd_doc.puts"# @return [Array<String>] Attributes of this struct\ndef members; end"
 
       # find attributes belonging together for array of struct
-      struct.attrs.select{|attr| structs_by_name[attr.type.gsub(/_PTR$/,'')] || std_structs_by_name[attr.type.gsub(/_PTR$/,'')] }.each do |attr|
+      struct.attrs.select{|attr| structs_by_name[attr.type_noptr] || std_structs_by_name[attr.type_noptr] }.each do |attr|
         if array_attribute_names.include?(attr.name) && (len_attr = struct.attr_by_sign("CK_ULONG ulCount") || struct.attr_by_sign("CK_ULONG count") || struct.attr_by_sign("CK_ULONG #{attr.name}Count"))
-          std_struct = "PKCS11_" if std_structs_by_name[attr.type.gsub(/_PTR$/,'')]
-          fd_impl.puts "PKCS11_IMPLEMENT_#{std_struct}STRUCT_PTR_ARRAY_ACCESSOR(#{struct.name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name}, #{len_attr.name});"
+          std_struct = "PKCS11_" if std_structs_by_name[attr.type_noptr]
+          fd_impl.puts "PKCS11_IMPLEMENT_#{std_struct}STRUCT_PTR_ARRAY_ACCESSOR(#{struct.name}, #{attr.type_noptr}, #{attr.name}, #{len_attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-          fd_doc.puts"# @return [Array<PKCS11::#{attr.type.gsub(/_PTR$/,'')}>] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [Array<PKCS11::#{attr.type_noptr}>] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
           len_attr.mark = true
           attr.mark = true
         end
@@ -164,18 +170,18 @@ class StructParser
               fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct.name}, #{attr.type}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
               fd_doc.puts"# @return [#{struct_module}::#{attr.type}] inline struct\nattr_accessor :#{attr.name}"
-            elsif (attr_noptr=attr.type.gsub(/_PTR$/,'')) && structs_by_name[attr_noptr]
-              fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr_noptr}, #{attr.name});"
+            elsif structs_by_name[attr.type_noptr]
+              fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr.type_noptr}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-              fd_doc.puts"# @return [#{struct_module}::#{attr_noptr}, nil] pointer to struct\nattr_accessor :#{attr.name}"
+              fd_doc.puts"# @return [#{struct_module}::#{attr.type_noptr}, nil] pointer to struct\nattr_accessor :#{attr.name}"
             elsif std_structs_by_name[attr.type]
               fd_impl.puts "PKCS11_IMPLEMENT_PKCS11_STRUCT_ACCESSOR(#{struct.name}, #{attr.type}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
               fd_doc.puts"# @return [PKCS11::#{attr.type}] inline struct (see pkcs11.gem)\nattr_accessor :#{attr.name}"
-            elsif (attr_noptr=attr.type.gsub(/_PTR$/,'')) && std_structs_by_name[attr_noptr]
-              fd_impl.puts "PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr_noptr}, #{attr.name});"
+            elsif std_structs_by_name[attr.type_noptr]
+              fd_impl.puts "PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr.type_noptr}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-              fd_doc.puts"# @return [PKCS11::#{attr_noptr}, nil] pointer to struct (see pkcs11.gem)\nattr_accessor :#{attr.name}"
+              fd_doc.puts"# @return [PKCS11::#{attr.type_noptr}, nil] pointer to struct (see pkcs11.gem)\nattr_accessor :#{attr.name}"
             else
               fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
               fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
