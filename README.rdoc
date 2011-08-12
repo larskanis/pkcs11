@@ -65,6 +65,10 @@ Detail information for the API specification is provided by RSA Security Inc.
 Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133. Browsable HTML
 can be found at http://www.cryptsoft.com/pkcs11doc.
 
+=== Vendor extensions
+Some vendors extend their libraries beyond the standard, in it's own way.
+This can be used by vendor specific packages:
+* Safenet ProtectServer: {file:pkcs11_protect_server/README_PROTECT_SERVER.rdoc}
 
 == Cross compiling for mswin32
 
@@ -98,7 +102,7 @@ directory.
 == ToDo
 
 * encoding support for Ruby 1.9
-* support for proprietary extensions of different vendors
+* support for proprietary extensions of different vendors (done for Safenet-ProtectServer)
 * PKCS#11 v2.3
 
 == Development Status

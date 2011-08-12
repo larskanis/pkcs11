@@ -2,7 +2,6 @@
 
 * Homepage: http://github.com/larskanis/pkcs11
 * API documentation: http://pkcs11.rubyforge.org/pkcs11/
-* API documentation of Ruby-PKCS#11: http://pkcs11.rubyforge.org/pkcs11/
 * Safenet[http://www.safenet-inc.com] - Protect Server HSM
 
 This ruby gem is an add-on to ruby-pkcs11[http://github.com/larskanis/pkcs11] .
