@@ -5,7 +5,7 @@
 require File.expand_path(File.join(File.dirname(__FILE__), '../../ext/generate_constants'))
 
 module PKCS11
-module Safenet
+module ProtectServer
 class ConstantParser < PKCS11::ConstantParser
   ConstGroups = [
     ConstTemplate.new(/#define\s+(CKM_[A-Z_0-9]+)\s+(.+)/, 'PKCS11_DEFINE_MECHANISM'),
@@ -37,5 +37,5 @@ end
 
 
 if $0==__FILE__
-  PKCS11::Safenet::ConstantParser.run(ARGV)
+  PKCS11::ProtectServer::ConstantParser.run(ARGV)
 end

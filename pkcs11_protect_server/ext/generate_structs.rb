@@ -7,7 +7,7 @@ require 'pkcs11'
 require File.expand_path(File.join(File.dirname(__FILE__), '../../ext/generate_structs'))
 
 module PKCS11
-module Safenet
+module ProtectServer
 class StructParser < PKCS11::StructParser
 
   SIZE_CONSTANTS = {
@@ -31,7 +31,7 @@ class StructParser < PKCS11::StructParser
   ULONG_PTR_TYPES = %w[CK_COUNT_PTR]
 
   def struct_module
-    'PKCS11::Safenet'
+    'PKCS11::ProtectServer'
   end
 
   def array_attribute_names; %w[attributes mechanism certAttr hCert]; end
@@ -71,5 +71,5 @@ end
 
 
 if $0==__FILE__
-  PKCS11::Safenet::StructParser.run(ARGV)
+  PKCS11::ProtectServer::StructParser.run(ARGV)
 end

@@ -7,5 +7,5 @@ $: << File.join(File.dirname(__FILE__), major_minor)
 
 require 'rubygems'
 require 'pkcs11'
-require 'pkcs11_safenet_ext'
-require 'pkcs11_safenet/extensions'
+require 'pkcs11_protect_server_ext'
+require 'pkcs11_protect_server/extensions'

@@ -51,6 +51,8 @@ file 'ext/pk11_struct_def.inc' => 'ext/generate_structs.rb' do
   sh "#{Config::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --doc ext/pk11_struct.doc ext/include/pkcs11t.h"
 end
 file 'ext/pk11_struct_impl.inc' => 'ext/pk11_struct_def.inc'
+file 'ext/pk11_struct.doc' => 'ext/pk11_struct_def.inc'
+
 file 'ext/pk11_const_def.inc' => 'ext/generate_constants.rb' do
   sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11_const_def.inc ext/include/pkcs11t.h"
 end
@@ -65,7 +67,7 @@ file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 
 desc "Generate static HTML documentation with YARD"
 task :yardoc do
-  sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11-safenet/lib/**/*.rb pkcs11-safenet/ext/*.c pkcs11-safenet/ext/*.doc"
+  sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11_protect_server/lib/**/*.rb pkcs11_protect_server/ext/*.c pkcs11_protect_server/ext/*.doc"
 end
 
 desc "Publish YARD to wherever you want."

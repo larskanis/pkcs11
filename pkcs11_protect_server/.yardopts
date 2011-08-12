@@ -1,0 +1,1 @@
+--title "PKCS#11-ProtectServer/Ruby Interface" --no-private lib/**/*.rb ext/*.c ext/*.doc

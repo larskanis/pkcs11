@@ -14,9 +14,9 @@
 #include "pk11s_struct_impl.inc"
 
 static VALUE mPKCS11;
-static VALUE mSafenet;
-static VALUE eSafenetError;
-static VALUE cSafenetCStruct;
+static VALUE mProtectServer;
+static VALUE eProtectServerError;
+static VALUE cProtectServerCStruct;
 static VALUE cPkcs11CStruct;
 
 static VALUE vOBJECT_CLASSES;
@@ -24,30 +24,30 @@ static VALUE vATTRIBUTES;
 static VALUE vMECHANISMS;
 static VALUE vRETURN_VALUES;
 
-#define MODULE_FOR_STRUCTS mSafenet
-#define MODULE_FOR_CONSTS mSafenet
-#define BASECLASS_FOR_ERRORS eSafenetError
-#define BASECLASS_FOR_STRUCTS cSafenetCStruct
+#define MODULE_FOR_STRUCTS mProtectServer
+#define MODULE_FOR_CONSTS mProtectServer
+#define BASECLASS_FOR_ERRORS eProtectServerError
+#define BASECLASS_FOR_STRUCTS cProtectServerCStruct
 
 void
-Init_pkcs11_safenet_ext()
+Init_pkcs11_protect_server_ext()
 {
   VALUE eError;
 
   mPKCS11 = rb_const_get(rb_cObject, rb_intern("PKCS11"));
-  mSafenet = rb_define_module_under(mPKCS11, "Safenet");
+  mProtectServer = rb_define_module_under(mPKCS11, "ProtectServer");
 
   /* Library version */
-  rb_define_const( mSafenet, "VERSION", rb_str_new2(VERSION) );
+  rb_define_const( mProtectServer, "VERSION", rb_str_new2(VERSION) );
 
   eError = rb_const_get(mPKCS11, rb_intern("Error"));
-  /* Document-class: PKCS11::Safenet::Error
+  /* Document-class: PKCS11::ProtectServer::Error
    *
-   * Base class for all Safenet specific exceptions (CKR_*)  */
-  eSafenetError = rb_define_class_under(mSafenet, "Error", eError);
+   * Base class for all ProtectServer specific exceptions (CKR_*)  */
+  eProtectServerError = rb_define_class_under(mProtectServer, "Error", eError);
 
   cPkcs11CStruct = rb_const_get(mPKCS11, rb_intern("CStruct")); \
-  cSafenetCStruct = rb_define_class_under(mSafenet, "CStruct", cPkcs11CStruct);
+  cProtectServerCStruct = rb_define_class_under(mProtectServer, "CStruct", cPkcs11CStruct);
 
   #include "pk11s_struct_def.inc"
 
@@ -55,10 +55,10 @@ Init_pkcs11_safenet_ext()
   vATTRIBUTES = rb_hash_new();
   vMECHANISMS = rb_hash_new();
   vRETURN_VALUES = rb_hash_new();
-  rb_define_const(mSafenet, "OBJECT_CLASSES", vOBJECT_CLASSES);
-  rb_define_const(mSafenet, "ATTRIBUTES", vATTRIBUTES);
-  rb_define_const(mSafenet, "MECHANISMS", vMECHANISMS);
-  rb_define_const(mSafenet, "RETURN_VALUES", vRETURN_VALUES);
+  rb_define_const(mProtectServer, "OBJECT_CLASSES", vOBJECT_CLASSES);
+  rb_define_const(mProtectServer, "ATTRIBUTES", vATTRIBUTES);
+  rb_define_const(mProtectServer, "MECHANISMS", vMECHANISMS);
+  rb_define_const(mProtectServer, "RETURN_VALUES", vRETURN_VALUES);
 
   #include "pk11s_const_def.inc"
 

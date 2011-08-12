@@ -6,7 +6,7 @@ require 'hoe'
 require 'rake/extensiontask'
 require 'rbconfig'
 
-SAFENET_SDK_DIR = ENV['SAFENET_SDK_DIR'] || '/opt/ETcpsdk'
+PROTECT_SERVER_SDK_DIR = ENV['PROTECT_SERVER_SDK_DIR'] || '/opt/ETcpsdk'
 RUBY_PKCS11_EXT_DIR = File.expand_path('../ext')
 
 GENERATED_FILES = [
@@ -20,7 +20,7 @@ GENERATED_FILES = [
 ]
 
 CLEAN.include GENERATED_FILES
-CLEAN.include 'lib/pkcs11_safenet_ext.so'
+CLEAN.include 'lib/pkcs11_protect_server_ext.so'
 CLEAN.include 'tmp'
 
 def pkcs11_version
@@ -29,14 +29,14 @@ def pkcs11_version
   File.read_utf(file)[version_re, 2]
 end
 
-hoe = Hoe.spec 'pkcs11-safenet' do
+hoe = Hoe.spec 'pkcs11_protect_server' do
   developer('Lars Kanis', 'kanis@comcard.de')
   extra_deps << ['pkcs11', "= #{pkcs11_version}"]
   extra_dev_deps << ['yard', '>= 0.6']
   extra_dev_deps << ['rake-compiler', '>= 0.7']
 
-  self.url = 'http://github.com/larskanis/pkcs11-safenet'
-  self.summary = 'Safenet extensions for PKCS#11-Ruby'
+  self.url = 'http://github.com/larskanis/pkcs11'
+  self.summary = 'Safenet-ProtectServer extensions for PKCS#11-Ruby'
   self.description = 'This module allows Ruby programs to use vendor extensions for Safenet Protect Server.'
   self.version = pkcs11_version
 
@@ -51,12 +51,12 @@ end
 
 ENV['RUBY_CC_VERSION'] ||= '1.8.6:1.9.2'
 
-Rake::ExtensionTask.new('pkcs11_safenet_ext', hoe.spec) do |ext|
+Rake::ExtensionTask.new('pkcs11_protect_server_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
   ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
 
-  ext.config_options << "--with-safenet-sdk-dir=#{SAFENET_SDK_DIR.inspect}"
+  ext.config_options << "--with-protect-server-sdk-dir=#{PROTECT_SERVER_SDK_DIR.inspect}"
 end
 
 def copy_from_base_task(filename)
@@ -71,11 +71,13 @@ copy_from_base_task 'pk11_version.h'
 
 file 'ext/extconf.rb' => ['ext/pk11s_struct_def.inc', 'ext/pk11s_const_def.inc', 'ext/pk11_struct_macros.h', 'ext/pk11_const_macros.h', 'ext/pk11_version.h']
 file 'ext/pk11s_struct_def.inc' => 'ext/generate_structs.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11s_struct_def.inc --impl ext/pk11s_struct_impl.inc --doc ext/pk11s_struct.doc #{File.join(SAFENET_SDK_DIR, 'include/ctvdef.h').inspect}"
+  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11s_struct_def.inc --impl ext/pk11s_struct_impl.inc --doc ext/pk11s_struct.doc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
 end
 file 'ext/pk11s_struct_impl.inc' => 'ext/pk11s_struct_def.inc'
+file 'ext/pk11s_struct.doc' => 'ext/pk11s_struct_def.inc'
+
 file 'ext/pk11s_const_def.inc' => 'ext/generate_constants.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11s_const_def.inc #{File.join(SAFENET_SDK_DIR, 'include/ctvdef.h').inspect}"
+  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11s_const_def.inc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
 end
 file 'ext/pk11s.c' => ['ext/pk11s_struct_def.inc', 'ext/pk11s_struct_impl.inc', 'ext/pk11s_const_def.inc']
 

@@ -1,7 +1,7 @@
 = PKCS #11/Ruby Interface for Safenet Protect Server HSM
 
-* Homepage: http://github.com/larskanis/pkcs11-safenet
-* API documentation: http://pkcs11.rubyforge.org/pkcs11-safenet/
+* Homepage: http://github.com/larskanis/pkcs11
+* API documentation: http://pkcs11.rubyforge.org/pkcs11/
 * API documentation of Ruby-PKCS#11: http://pkcs11.rubyforge.org/pkcs11/
 * Safenet[http://www.safenet-inc.com] - Protect Server HSM
 
@@ -12,20 +12,20 @@ The module works on the Unix like operating systems and win32.
 
 == Requirements
 
-* Safenet PTKC-SDK to compile the module
+* ProtectServer PTKC-SDK to compile the module
 * pkcs11 gem installed (use: <tt>gem install pkcs11</tt> )
 
 == Installation
 
-  gem install pkcs11-safenet -- --with-safenet-sdk-dir=/path/to/ETcpsdk
+  gem install pkcs11_protect_server -- --with-protect-server-sdk-dir=/path/to/ETcpsdk
 
-This installs the Safenet-PKCS#11 extension along with pkcs11-gem either by compiling (Unix)
+This installs the ProtectServer-PKCS#11 extension along with pkcs11-gem either by compiling (Unix)
 or by using the precompiled gem for Win32.
 
-  git clone git://github.com/larskanis/pkcs11-safenet.git
-  cd pkcs11-safenet
-  rake gem SAFENET_SDK_DIR=/path/to/ETcpsdk
-  gem install -l pkg/pkcs11-safenet -- --with-safenet-sdk-dir=/path/to/ETcpsdk
+  git clone git://github.com/larskanis/pkcs11.git
+  cd pkcs11_protect_server
+  rake gem PROTECT_SERVER_SDK_DIR=/path/to/ETcpsdk
+  gem install -l pkg/pkcs11_protect_server -- --with-protect-server-sdk-dir=/path/to/ETcpsdk
 
 Downloads and installs the gem from git source.
 
@@ -34,9 +34,9 @@ Downloads and installs the gem from git source.
 Open the software emulation library and login to a session:
 
   require "rubygems"
-  require "pkcs11_safenet"
+  require "pkcs11_protect_server"
 
-  pkcs11 = PKCS11::Safenet::Library.new(:sw)
+  pkcs11 = PKCS11::ProtectServer::Library.new(:sw)
   p pkcs11.info
   session = pkcs11.active_slots.last.open
   session.login(:USER, "1234")
@@ -44,12 +44,12 @@ Open the software emulation library and login to a session:
   session.logout
   session.close
 
-{PKCS11::Safenet::Library#initialize} tries to find the library file in
+{PKCS11::ProtectServer::Library#initialize} tries to find the library file in
 the standard installation directory on Windows or Linux.
 
 == Cross compiling for mswin32
 
-Using rake-compiler a cross compiled pkcs11-safenet-gem can be build on a linux host for
+Using rake-compiler a cross compiled pkcs11_protect_server.gem can be build on a linux host for
 the win32 platform. There are no runtime dependencies to any but the standard Windows DLLs.
 
 Install mingw32. On a debian based system this should work:
@@ -68,17 +68,17 @@ Download and cross compile ruby for win32:
 
   rake-compiler cross-ruby VERSION=1.8.6-p287
 
-Download and cross compile pkcs11-safenet for win32:
+Download and cross compile pkcs11_protect_server for win32:
 
-  rake cross native gem SAFENET_SDK_DIR=/path/to/ETcpsdk
+  rake cross native gem PROTECT_SERVER_SDK_DIR=/path/to/ETcpsdk
 
-If everything works, there should be pkcs11-safenet-VERSION-x86-mswin32.gem in the pkg
+If everything works, there should be pkcs11_protect_server-VERSION-x86-mswin32.gem in the pkg
 directory.
 
 
 == ToDo
 
-* implement Safenet specific function calls
+* implement ProtectServer specific function calls
 * implement possibility to use callbacks
 * add all structs and constants
 

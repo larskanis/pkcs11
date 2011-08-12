@@ -1,8 +1,8 @@
 require "test/unit"
-require "pkcs11_safenet"
+require "pkcs11_protect_server"
 require "test/helper"
 
-class TestPkcs11SafenetCrypt < Test::Unit::TestCase
+class TestPkcs11ProtectServerCrypt < Test::Unit::TestCase
   include PKCS11
   attr_reader :slots
   attr_reader :slot
@@ -58,7 +58,7 @@ class TestPkcs11SafenetCrypt < Test::Unit::TestCase
   end
 
   def test_bad_parity
-    assert_raise(Safenet::CKR_ET_NOT_ODD_PARITY) do
+    assert_raise(ProtectServer::CKR_ET_NOT_ODD_PARITY) do
       session.create_object(
         :CLASS=>CKO_SECRET_KEY,
         :KEY_TYPE=>CKK_DES2,
@@ -68,11 +68,11 @@ class TestPkcs11SafenetCrypt < Test::Unit::TestCase
   end
 
   def test_derive_des_cbc
-    pa = Safenet::CK_DES3_CBC_PARAMS.new
+    pa = ProtectServer::CK_DES3_CBC_PARAMS.new
     pa.data = "1"*16
     pa.iv = "2"*8
 
-    new_key1 = session.derive_key( {Safenet::CKM_DES3_DERIVE_CBC => pa}, secret_key,
+    new_key1 = session.derive_key( {ProtectServer::CKM_DES3_DERIVE_CBC => pa}, secret_key,
       :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
     assert_not_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key shouldn\'t have equal key value'
 

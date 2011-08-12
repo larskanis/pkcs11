@@ -1,1 +1,0 @@
---title "PKCS#11-Safenet/Ruby Interface" --no-private lib/**/*.rb ext/*.c ext/*.doc

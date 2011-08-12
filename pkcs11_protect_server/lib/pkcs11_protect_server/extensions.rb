@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 module PKCS11
-module Safenet
+module ProtectServer
   # Derive CK_ATTRIBUTE to get converted attributes.
   class CK_ATTRIBUTE < PKCS11::CK_ATTRIBUTE
     ATTRIBUTES = {
@@ -27,7 +27,7 @@ module Safenet
     end
   end
 
-  # A Safenet::Library instance holds a handle to the opened +cryptoki.dll+ or +cryptoki.so+ file.
+  # A ProtectServer::Library instance holds a handle to the opened +cryptoki.dll+ or +cryptoki.so+ file.
   #
   # This class is derived from
   # PKCS11::Library[http://pkcs11.rubyforge.org/pkcs11/PKCS11/Library.html] of pkcs11.gem.
@@ -78,7 +78,7 @@ module Safenet
           so_path = paths.find{|path| File.exist?(path) }
         end
 
-        raise "#{libctsw_so} not found - please install Safenet PTK-C or set ENV['CRYPTOKI_SO']" unless so_path
+        raise "#{libctsw_so} not found - please install ProtectServer PTK-C or set ENV['CRYPTOKI_SO']" unless so_path
       end
 
       @so_path = so_path
@@ -86,7 +86,7 @@ module Safenet
     end
 
     def vendor_const_get(name)
-      return Safenet.const_get(name) if Safenet.const_defined?(name)
+      return ProtectServer.const_get(name) if ProtectServer.const_defined?(name)
       super
     end
 
@@ -95,14 +95,14 @@ module Safenet
     end
 
     def vendor_raise_on_return_value(rv)
-      if ex=Safenet::RETURN_VALUES[rv]
+      if ex=ProtectServer::RETURN_VALUES[rv]
         raise(ex, rv.to_s)
       end
       super
     end
 
     def vendor_class_CK_ATTRIBUTE
-      Safenet::CK_ATTRIBUTE
+      ProtectServer::CK_ATTRIBUTE
     end
   end
 end

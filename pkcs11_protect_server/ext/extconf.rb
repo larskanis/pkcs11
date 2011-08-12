@@ -1,8 +1,8 @@
 require "mkmf"
 require "rubygems"
 
-inc, lib = dir_config('safenet-sdk', '/opt/ETcpsdk/include', '/opt/ETcpsdk/lib')
-puts "using Safenet-SDK include:#{inc} lib:#{lib}"
+inc, lib = dir_config('protect-server-sdk', '/opt/ETcpsdk/include', '/opt/ETcpsdk/lib')
+puts "using ProtectServer-SDK include:#{inc} lib:#{lib}"
 
 # inc, lib = dir_config('ruby-pkcs11')
 # inc ||= Gem.required_location('pkcs11', '../ext')
@@ -13,4 +13,4 @@ puts "using Safenet-SDK include:#{inc} lib:#{lib}"
 find_header('pk11_struct_macros.h')
 find_header('pk11_const_macros.h')
 
-create_makefile("pkcs11_safenet_ext");
+create_makefile("pkcs11_protect_server_ext");
