@@ -89,11 +89,12 @@ Install the rake-compiler:
 
 Download and cross compile ruby for win32:
 
-  rake-compiler cross-ruby VERSION=1.8.6-p287
+  rake-compiler cross-ruby VERSION=1.8.7-p352
+  rake-compiler cross-ruby VERSION=1.9.2-p290
 
-Download and cross compile pkcs11 for win32:
+Download and cross compile pkcs11 for win32 (MRI 1.8+1.9 fat gem):
 
-  rake cross native gem
+  rake cross native gem RUBY_CC_VERSION=1.8.7:1.9.2
 
 If everything works, there should be pkcs11-VERSION-x86-mswin32.gem in the pkg
 directory.

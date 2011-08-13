@@ -65,7 +65,8 @@ Install the rake-compiler:
 
 Download and cross compile ruby for win32:
 
-  rake-compiler cross-ruby VERSION=1.8.6-p287
+  rake-compiler cross-ruby VERSION=1.8.7-p352
+  rake-compiler cross-ruby VERSION=1.9.2-p290
 
 Download and cross compile pkcs11_protect_server for win32:
 
