@@ -40,7 +40,7 @@ hoe = Hoe.spec 'pkcs11_protect_server' do
   self.description = 'This module allows Ruby programs to use vendor extensions for Safenet Protect Server.'
   self.version = pkcs11_version
 
-  self.readme_file = 'README.rdoc'
+  self.readme_file = 'README_PROTECT_SERVER.rdoc'
   self.history_file = '../History.txt'
   self.extra_rdoc_files << self.readme_file << 'ext/pk11s.c'
   spec_extras[:extensions] = 'ext/extconf.rb'

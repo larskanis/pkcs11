@@ -1,4 +1,5 @@
 .autotest
+.gemtest
 .yardopts
 History.txt
 MIT-LICENSE

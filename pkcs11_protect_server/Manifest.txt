@@ -1,6 +1,7 @@
+.gemtest
 .yardopts
 Manifest.txt
-README.rdoc
+README_PROTECT_SERVER.rdoc
 Rakefile
 ext/extconf.rb
 ext/generate_constants.rb
