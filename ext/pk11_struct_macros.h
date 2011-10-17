@@ -396,6 +396,16 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_struct_ptr_array(o, c##k, #k, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
 }
 
+#define PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ARRAY_ACCESSOR(s, k, f, l) \
+static VALUE c##s##_get_##f(VALUE o){ \
+  VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
+  return get_struct_ptr_array(o, klass, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
+} \
+static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
+  VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
+  return set_struct_ptr_array(o, klass, #k, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
+}
+
 
 /**************************************************/
 /* struct/attribute definition                    */

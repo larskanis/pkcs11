@@ -61,7 +61,7 @@ module PKCS11
     #    obtained includes only those slots with a token present (true), or
     #    all slots (false);
     # @return [Array<Slot>]
-    def C_GetSlotList(tokenPresent=true)
+    def C_GetSlotList(tokenPresent=false)
       slots = unwrapped_C_GetSlotList(tokenPresent)
       slots.map{|slot|
         Slot.new self, slot

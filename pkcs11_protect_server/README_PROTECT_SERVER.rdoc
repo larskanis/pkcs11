@@ -1,0 +1,89 @@
+= PKCS #11/Ruby Interface for Safenet Protect Server HSM
+
+* Homepage: http://github.com/larskanis/pkcs11
+* API documentation: http://pkcs11.rubyforge.org/pkcs11/
+* Safenet[http://www.safenet-inc.com] - Protect Server HSM
+
+This ruby gem is an add-on to ruby-pkcs11[http://github.com/larskanis/pkcs11] .
+It allowes to use Protect Server specific extensions, which are beyond the PKCS#11 standard.
+That means CKA_EXPORT, CKM_DES3_DERIVE_CBC, structs like CK_DES3_CBC_PARAMS, special functions and so on.
+The module works on the Unix like operating systems and win32.
+
+== Requirements
+
+* ProtectServer PTKC-SDK to compile the module
+* pkcs11 gem installed (use: <tt>gem install pkcs11</tt> )
+
+== Installation
+
+  gem install pkcs11_protect_server -- --with-protect-server-sdk-dir=/path/to/ETcpsdk
+
+This installs the ProtectServer-PKCS#11 extension along with pkcs11-gem either by compiling (Unix)
+or by using the precompiled gem for Win32.
+
+  git clone git://github.com/larskanis/pkcs11.git
+  cd pkcs11_protect_server
+  rake gem PROTECT_SERVER_SDK_DIR=/path/to/ETcpsdk
+  gem install -l pkg/pkcs11_protect_server -- --with-protect-server-sdk-dir=/path/to/ETcpsdk
+
+Downloads and installs the gem from git source.
+
+== Usage
+
+Open the software emulation library and login to a session:
+
+  require "rubygems"
+  require "pkcs11_protect_server"
+
+  pkcs11 = PKCS11::ProtectServer::Library.new(:sw)
+  p pkcs11.info
+  session = pkcs11.active_slots.last.open
+  session.login(:USER, "1234")
+  # ... crypto operations
+  session.logout
+  session.close
+
+{PKCS11::ProtectServer::Library#initialize} tries to find the library file in
+the standard installation directory on Windows or Linux.
+
+== Cross compiling for mswin32
+
+Using rake-compiler a cross compiled pkcs11_protect_server.gem can be build on a linux host for
+the win32 platform. There are no runtime dependencies to any but the standard Windows DLLs.
+
+Install mingw32. On a debian based system this should work:
+
+  apt-get install mingw32
+
+On MacOS X, if you have MacPorts installed:
+
+  port install i386-mingw32-gcc
+
+Install the rake-compiler:
+
+  gem install rake-compiler
+
+Download and cross compile ruby for win32:
+
+  rake-compiler cross-ruby VERSION=1.8.7-p352
+  rake-compiler cross-ruby VERSION=1.9.2-p290
+
+Download and cross compile pkcs11_protect_server for win32:
+
+  rake cross native gem PROTECT_SERVER_SDK_DIR=/path/to/ETcpsdk
+
+If everything works, there should be pkcs11_protect_server-VERSION-x86-mswin32.gem in the pkg
+directory.
+
+
+== ToDo
+
+* implement ProtectServer specific function calls
+* implement possibility to use callbacks
+* add all structs and constants
+
+== Authors
+* Lars Kanis <kanis@comcard.de>
+
+== Copying
+See MIT-LICENSE included in the package.

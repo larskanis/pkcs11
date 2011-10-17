@@ -1,4 +1,5 @@
 .autotest
+.gemtest
 .yardopts
 History.txt
 MIT-LICENSE
@@ -21,6 +22,7 @@ ext/pk11.h
 ext/pk11_const.c
 ext/pk11_const_macros.h
 ext/pk11_struct_macros.h
+ext/pk11_version.h
 lib/pkcs11.rb
 lib/pkcs11/extensions.rb
 lib/pkcs11/helper.rb
@@ -28,6 +30,19 @@ lib/pkcs11/library.rb
 lib/pkcs11/object.rb
 lib/pkcs11/session.rb
 lib/pkcs11/slot.rb
+pkcs11_protect_server/.yardopts
+pkcs11_protect_server/Manifest.txt
+pkcs11_protect_server/README_PROTECT_SERVER.rdoc
+pkcs11_protect_server/Rakefile
+pkcs11_protect_server/ext/extconf.rb
+pkcs11_protect_server/ext/generate_constants.rb
+pkcs11_protect_server/ext/generate_structs.rb
+pkcs11_protect_server/ext/pk11s.c
+pkcs11_protect_server/lib/pkcs11_protect_server.rb
+pkcs11_protect_server/lib/pkcs11_protect_server/extensions.rb
+pkcs11_protect_server/test/helper.rb
+pkcs11_protect_server/test/test_pkcs11_protect_server.rb
+pkcs11_protect_server/test/test_pkcs11_protect_server_crypt.rb
 sample/firefox_certs.rb
 sample/nssckbi.rb
 test/fixtures/softokn/cert8.db

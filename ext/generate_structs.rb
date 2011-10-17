@@ -36,11 +36,20 @@ class StructParser
   Attribute = Struct.new(:type, :name, :qual, :mark)
   IgnoreStructs = %w[CK_ATTRIBUTE CK_MECHANISM]
   OnlyAllocatorStructs = %w[CK_MECHANISM_INFO CK_C_INITIALIZE_ARGS CK_INFO CK_SLOT_INFO CK_TOKEN_INFO CK_SESSION_INFO]
-  STRUCT_MODULE = 'PKCS11'
+
+  def struct_module
+    'PKCS11'
+  end
 
   class CStruct
     def attr_by_sign(key)
       attrs.find{|a| a.type+" "+a.name==key }
+    end
+  end
+
+  class Attribute
+    def type_noptr
+      type.gsub(/_PTR$/,'')
     end
   end
 
@@ -69,6 +78,8 @@ class StructParser
     write_files
   end
 
+  def array_attribute_names; ['pParams']; end
+
   def write_files
     File.open(options.def, "w") do |fd_def|
     File.open(options.impl, "w") do |fd_impl|
@@ -82,24 +93,25 @@ class StructParser
         fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_WITH_ALLOCATOR(#{struct.name});"
       end
       fd_def.puts "PKCS11_DEFINE_STRUCT(#{struct.name});"
-      fd_doc.puts"class #{STRUCT_MODULE}::#{struct.name} < #{STRUCT_MODULE}::CStruct"
+      fd_doc.puts"class #{struct_module}::#{struct.name} < #{struct_module}::CStruct"
       fd_doc.puts"# Size of corresponding C struct in bytes\nSIZEOF_STRUCT=Integer"
       fd_doc.puts"# @return [String] Binary copy of the C struct\ndef to_s; end"
       fd_doc.puts"# @return [Array<String>] Attributes of this struct\ndef members; end"
 
       # find attributes belonging together for array of struct
-      struct.attrs.select{|attr| structs_by_name[attr.type.gsub(/_PTR$/,'')] }.each do |attr|
-        if attr.name=='pParams' && (len_attr = struct.attr_by_sign("CK_ULONG ulCount"))
-          fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ARRAY_ACCESSOR(#{struct.name}, #{attr.type.gsub(/_PTR$/,'')}, #{attr.name}, #{len_attr.name});"
+      struct.attrs.select{|attr| structs_by_name[attr.type_noptr] || std_structs_by_name[attr.type_noptr] }.each do |attr|
+        if array_attribute_names.include?(attr.name) && (len_attr = struct.attr_by_sign("CK_ULONG ulCount") || struct.attr_by_sign("CK_ULONG count") || struct.attr_by_sign("CK_ULONG #{attr.name}Count"))
+          std_struct = "PKCS11_" if std_structs_by_name[attr.type_noptr]
+          fd_impl.puts "PKCS11_IMPLEMENT_#{std_struct}STRUCT_PTR_ARRAY_ACCESSOR(#{struct.name}, #{attr.type_noptr}, #{attr.name}, #{len_attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-          fd_doc.puts"# @return [Array<PKCS11::#{attr.type.gsub(/_PTR$/,'')}>] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [Array<PKCS11::#{attr.type_noptr}>] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
           len_attr.mark = true
           attr.mark = true
         end
       end
       # find string attributes belonging together
       struct.attrs.select{|attr| ['CK_BYTE_PTR', 'CK_VOID_PTR', 'CK_UTF8CHAR_PTR', 'CK_CHAR_PTR'].include?(attr.type) }.each do |attr|
-        if len_attr=struct.attr_by_sign("CK_ULONG #{attr.name.gsub(/^p/, "ul")}Len")
+        if len_attr=struct.attr_by_sign("CK_ULONG #{attr.name.gsub(/^p([A-Z])/){ "ul"+$1 }}Len")
           fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
           fd_doc.puts"# @return [String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
@@ -136,7 +148,7 @@ class StructParser
             fd_impl.puts "PKCS11_IMPLEMENT_BYTE_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Integer] accessor for #{attr.name} (CK_BYTE)\nattr_accessor :#{attr.name}"
-          when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', 'CK_COUNT', 'CK_SIZE', /CK_[A-Z_0-9]+_TYPE/
+          when 'CK_ULONG', 'CK_FLAGS', 'CK_SLOT_ID', 'CK_STATE', /CK_[A-Z_0-9]+_TYPE/
             fd_impl.puts "PKCS11_IMPLEMENT_ULONG_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Integer] accessor for #{attr.name} (CK_ULONG)\nattr_accessor :#{attr.name}"
@@ -148,7 +160,7 @@ class StructParser
             fd_impl.puts "PKCS11_IMPLEMENT_BOOL_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Boolean]  Bool value\nattr_accessor :#{attr.name}"
-          when 'CK_ULONG_PTR', 'CK_COUNT_PTR'
+          when 'CK_ULONG_PTR'
             fd_impl.puts "PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(#{struct.name}, #{attr.name});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
             fd_doc.puts"# @return [Integer, nil] accessor for #{attr.name} (CK_ULONG_PTR)\nattr_accessor :#{attr.name}"
@@ -157,19 +169,19 @@ class StructParser
             if structs_by_name[attr.type]
               fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_ACCESSOR(#{struct.name}, #{attr.type}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-              fd_doc.puts"# @return [#{STRUCT_MODULE}::#{attr.type}] inline struct\nattr_accessor :#{attr.name}"
-            elsif (attr_noptr=attr.type.gsub(/_PTR$/,'')) && structs_by_name[attr_noptr]
-              fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr_noptr}, #{attr.name});"
+              fd_doc.puts"# @return [#{struct_module}::#{attr.type}] inline struct\nattr_accessor :#{attr.name}"
+            elsif structs_by_name[attr.type_noptr]
+              fd_impl.puts "PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr.type_noptr}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-              fd_doc.puts"# @return [#{STRUCT_MODULE}::#{attr_noptr}, nil] pointer to struct\nattr_accessor :#{attr.name}"
+              fd_doc.puts"# @return [#{struct_module}::#{attr.type_noptr}, nil] pointer to struct\nattr_accessor :#{attr.name}"
             elsif std_structs_by_name[attr.type]
               fd_impl.puts "PKCS11_IMPLEMENT_PKCS11_STRUCT_ACCESSOR(#{struct.name}, #{attr.type}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
               fd_doc.puts"# @return [PKCS11::#{attr.type}] inline struct (see pkcs11.gem)\nattr_accessor :#{attr.name}"
-            elsif (attr_noptr=attr.type.gsub(/_PTR$/,'')) && std_structs_by_name[attr_noptr]
-              fd_impl.puts "PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr_noptr}, #{attr.name});"
+            elsif std_structs_by_name[attr.type_noptr]
+              fd_impl.puts "PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(#{struct.name}, #{attr.type_noptr}, #{attr.name});"
               fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-              fd_doc.puts"# @return [PKCS11::#{attr_noptr}, nil] pointer to struct (see pkcs11.gem)\nattr_accessor :#{attr.name}"
+              fd_doc.puts"# @return [PKCS11::#{attr.type_noptr}, nil] pointer to struct (see pkcs11.gem)\nattr_accessor :#{attr.name}"
             else
               fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
               fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"

@@ -1,3 +1,13 @@
+=== 0.2.1 / 2011-04-21
+
+* add some more CK_ULONG and CK_BOOL attributes
+* add array of structs accessor used in CK_OTP_PARAMS
+* refactured inc-file generation
+* bit more documentation
+* bugfix: print CKR-values as unsigned long
+* bugfix: Slot#mechanism_info didn't work with Symbol
+
+
 === 0.2.0 / 2011-01-18
 
 * switch API documentation to YARD instead of RDOC

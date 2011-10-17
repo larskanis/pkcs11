@@ -6,11 +6,16 @@ require 'hoe'
 require 'rake/extensiontask'
 require 'rbconfig'
 
-CLEAN.include 'ext/pk11_struct_def.inc'
-CLEAN.include 'ext/pk11_struct_impl.inc'
-CLEAN.include 'ext/pk11_const_def.inc'
-CLEAN.include 'ext/pk11_thread_funcs.h'
-CLEAN.include 'ext/pk11_thread_funcs.c'
+GENERATED_FILES = [
+  'ext/pk11_struct_impl.inc',
+  'ext/pk11_struct_def.inc',
+  'ext/pk11_const_def.inc',
+  'ext/pk11_struct.doc',
+  'ext/pk11_thread_funcs.h',
+  'ext/pk11_thread_funcs.c',
+]
+
+CLEAN.include GENERATED_FILES
 CLEAN.include 'lib/pkcs11_ext.so'
 CLEAN.include 'tmp'
 
@@ -28,16 +33,12 @@ hoe = Hoe.spec 'pkcs11' do
   self.readme_file = 'README.rdoc'
   self.extra_rdoc_files << self.readme_file << 'ext/pk11.c'
   spec_extras[:extensions] = 'ext/extconf.rb'
-  spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
-  spec_extras[:files] << 'ext/pk11_struct_impl.inc'
-  spec_extras[:files] << 'ext/pk11_struct_def.inc'
-  spec_extras[:files] << 'ext/pk11_const_def.inc'
-  spec_extras[:files] << 'ext/pk11_thread_funcs.h'
-  spec_extras[:files] << 'ext/pk11_thread_funcs.c'
+  spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/).reject{|f| f=~/^pkcs11_/ }
+  spec_extras[:files] += GENERATED_FILES
   spec_extras[:has_rdoc] = 'yard'
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.6:1.9.2'
+ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.2'
 
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
@@ -50,6 +51,8 @@ file 'ext/pk11_struct_def.inc' => 'ext/generate_structs.rb' do
   sh "#{Config::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --doc ext/pk11_struct.doc ext/include/pkcs11t.h"
 end
 file 'ext/pk11_struct_impl.inc' => 'ext/pk11_struct_def.inc'
+file 'ext/pk11_struct.doc' => 'ext/pk11_struct_def.inc'
+
 file 'ext/pk11_const_def.inc' => 'ext/generate_constants.rb' do
   sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11_const_def.inc ext/include/pkcs11t.h"
 end
@@ -64,7 +67,7 @@ file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 
 desc "Generate static HTML documentation with YARD"
 task :yardoc do
-  sh "yardoc"
+  sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11_protect_server/lib/**/*.rb pkcs11_protect_server/ext/*.c pkcs11_protect_server/ext/*.doc - pkcs11_protect_server/README_PROTECT_SERVER.rdoc"
 end
 
 desc "Publish YARD to wherever you want."
