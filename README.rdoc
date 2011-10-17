@@ -55,7 +55,7 @@ This opens a PKCS#11 library and prints it's information block.
 Then a {PKCS11::Session} to the first active slot of the device is opened and
 a login is done on the user account. Now, a 112 bit DES3 key is generated and
 some plaintext is encrypted with it. A 8-byte zero IV is used. In many cases method parameters
-can be Integer (like CKA_LABEL) or, as in the sample, Symbol (:LABEL) which is internally
+can be Integer (like PKCS11::CKA_LABEL) or, as in the sample, Symbol (:LABEL) which is internally
 converted.
 
 Many more usage examples can be found in the unit tests of the <tt>test</tt>
@@ -64,6 +64,18 @@ directory of the project or gem.
 Detail information for the API specification is provided by RSA Security Inc.
 Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133. Browsable HTML
 can be found at http://www.cryptsoft.com/pkcs11doc.
+
+
+=== Threading
+
+The pkcs11 binding fully supports native, background Ruby threads.
+This of course only applies to Rubinius and Ruby 1.9.x or higher since
+earlier versions of Ruby do not support native threads.
+
+Calling the Cryptoki library from multiple threads simultaneously,
+requires to open it with flag PKCS11::CKF_OS_LOCKING_OK.
+Application-supplied synchronization primitives
+(CreateMutex, DestroyMutex, LockMutex, UnlockMutex) are not supported.
 
 
 == Cross compiling for mswin32
