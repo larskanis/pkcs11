@@ -5,7 +5,7 @@ def find_softokn
     lLIBSOFTOKEN3_SO = "softokn3.dll"
 
     # Try to find the firefox path.
-    unless ENV['SOFTOKN_PATH']
+    unless so_path = ENV['SOFTOKN_PATH']
       require 'win32/registry'
       begin
         firefox_path = Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\firefox.exe'){|reg|
