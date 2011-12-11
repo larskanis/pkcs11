@@ -1,7 +1,6 @@
 require "test/unit"
 require "pkcs11"
 require "test/helper"
-require "openssl"
 
 class TestPkcs11Thread < Test::Unit::TestCase
   include PKCS11
