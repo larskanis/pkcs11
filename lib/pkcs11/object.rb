@@ -80,7 +80,7 @@ module PKCS11
       template
     end
     alias attributes= C_SetAttributeValue
-    
+
     # Obtains the value of one or more attributes of the object in a single call.
     #
     # @param [Array<String, Symbol, Integer>, Hash, String, Integer] attribute attribute names
@@ -98,7 +98,7 @@ module PKCS11
     def C_GetAttributeValue(*template)
       case template.length
         when 0
-          return PKCS11::ATTRIBUTES.values.map{|attr|
+          return @pk.vendor_all_attribute_names.map{|attr|
             begin
               attributes(PKCS11.const_get(attr))
             rescue PKCS11::Error
@@ -148,7 +148,7 @@ module PKCS11
       self
     end
     alias destroy C_DestroyObject
-    
+
     # Gets the size of an object in bytes.
     # @return [Integer]
     def C_GetObjectSize()

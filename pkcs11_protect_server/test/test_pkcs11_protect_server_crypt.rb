@@ -98,5 +98,6 @@ class TestPkcs11ProtectServerCrypt < Test::Unit::TestCase
     assert_equal 5, secret_key[:USAGE_COUNT], 'CKA_USAGE_COUNT should be usable'
 
     assert_equal false, secret_key[:IMPORT], 'CKA_IMPORT should default to false'
+    assert_not_nil secret_key.attributes.find{|a| a.type==ProtectServer::CKA_EXPORT}, 'CKA_EXPORT should be returned for Object#attributes'
   end
 end

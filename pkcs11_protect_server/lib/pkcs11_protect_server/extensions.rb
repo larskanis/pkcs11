@@ -90,6 +90,10 @@ module ProtectServer
       super
     end
 
+    def vendor_all_attribute_names
+      return ProtectServer::ATTRIBUTES.values + super
+    end
+
     def vendor_mechanism_parameter_struct(mech)
       MechanismParameters[mech] || super
     end

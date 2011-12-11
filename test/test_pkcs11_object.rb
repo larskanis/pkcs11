@@ -54,6 +54,7 @@ class TestPkcs11Object < Test::Unit::TestCase
     end
 
     assert object.attributes.length>=4, 'There should be at least the 4 stored attributes readable'
+    assert_not_nil object.attributes.find{|a| a.type==CKA_CLASS}, 'CKA_CLASS should be returned for Object#attributes'
   end
 
   def test_accessor

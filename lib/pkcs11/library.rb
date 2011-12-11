@@ -96,6 +96,12 @@ module PKCS11
       PKCS11.const_get(name)
     end
 
+    # Return an array of all known CKA_* attributes as String.
+    # This method could be overloaded for vendor specific extensions.
+    def vendor_all_attribute_names
+      return ATTRIBUTES.values
+    end
+
     # Return the parameter struct of a given mechanism.
     # This method could be overloaded for vendor specific extensions.
     #
