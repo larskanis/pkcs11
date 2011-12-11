@@ -16,7 +16,7 @@ class TestPkcs11 < Test::Unit::TestCase
   def pk
     @pk
   end
-  
+
   def test_info
     info = pk.info
     assert info.inspect =~ /cryptokiVersion=/, 'There should be a version in the library info'
@@ -34,14 +34,14 @@ class TestPkcs11 < Test::Unit::TestCase
 
     @pk = PKCS11.open
     pk.load_library(find_softokn)
-    
+
     pk.C_GetFunctionList
-    
+
     pargs = PKCS11::CK_C_INITIALIZE_ARGS.new
     pargs.flags = 0
     pargs.pReserved = softokn_params.join(" ")
     pk.C_Initialize(pargs)
-    
+
     pk.info
   end
 end

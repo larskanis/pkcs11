@@ -14,11 +14,11 @@ class TestPkcs11Object < Test::Unit::TestCase
     $pkcs11 ||= open_softokn
     @slots = pk.active_slots
     @slot = slots.last
-    
+
     flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
     @session = slot.C_OpenSession(flags)
 #     @session.login(:USER, "")
-    
+
     # Create session object for tests.
     @object = session.create_object(
       :CLASS=>CKO_DATA,
@@ -82,7 +82,7 @@ class TestPkcs11Object < Test::Unit::TestCase
   def test_size
     assert object.size, 'There should be an object size'
   end
-  
+
   def test_copy_without_params
     new_obj = object.copy
     new_obj[:APPLICATION] = 'Copied object'
@@ -96,7 +96,7 @@ class TestPkcs11Object < Test::Unit::TestCase
     assert_equal 'Copied object', new_obj[:APPLICATION], "Application should be changed"
     assert_equal 'My Application', object[:APPLICATION], "Original object should be unchanged"
   end
-  
+
   def test_destroy
     object.destroy
 
