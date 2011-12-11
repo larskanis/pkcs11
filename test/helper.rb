@@ -1,4 +1,4 @@
-require "openssl"
+require "pkcs11"
 
 def find_softokn
   if RUBY_PLATFORM =~ /mswin|mingw/
@@ -21,15 +21,22 @@ def find_softokn
   else
     lLIBSOFTOKEN3_SO = "libsoftokn3.so"
     lLIBNSS_PATHS = %w(
-      /usr/lib64 /usr/lib/ /usr/lib64/nss /usr/lib/nss
+      /usr/lib64
+      /usr/lib
+      /usr/lib64/nss
+      /usr/lib/nss
+      /usr/lib/i386-linux-gnu/nss
+      /usr/lib/x86_64-linux-gnu/nss
     )
     unless so_path = ENV['SOFTOKN_PATH']
       paths = lLIBNSS_PATHS.collect{|path| File.join(path, lLIBSOFTOKEN3_SO) }
-      so_path = paths.find{|path| File.exist?(path) }
+      so_path = paths.find do |path|
+        File.exist?(path) && open_softokn(path).close rescue false
+      end
     end
   end
 
-  raise "#{lLIBSOFTOKEN3_SO} not found - please install firefox or set ENV['SOFTOKN_PATH']" unless so_path
+  raise "#{lLIBSOFTOKEN3_SO} not found - please install firefox or libnss3 or set ENV['SOFTOKN_PATH']" unless so_path
   so_path
 end
 
@@ -42,9 +49,10 @@ def softokn_params
   ]
 end
 
-def open_softokn
-  so_path = find_softokn
-  nNSS_INIT_ARGS = softokn_params
+def softokn_params_string
+  softokn_params.join(" ")
+end
 
-  PKCS11.open(so_path, :flags=>0, :pReserved=>nNSS_INIT_ARGS.join(" "))
+def open_softokn(so_path=nil)
+  PKCS11.open(so_path || find_softokn, :flags=>0, :pReserved=>softokn_params_string)
 end
