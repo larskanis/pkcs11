@@ -79,13 +79,14 @@ get_ulong_ptr(VALUE obj, off_t offset)
 static VALUE
 set_ulong_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
 {
+  VALUE new_obj;
   CK_ULONG_PTR *ptr = (CK_ULONG_PTR *)((char*)DATA_PTR(obj) + offset);
   if (NIL_P(value)){
     rb_iv_set(obj, name, value);
     *ptr = NULL_PTR;
     return value;
   }
-  VALUE new_obj = Data_Make_Struct(rb_cInteger, CK_ULONG, 0, free, *ptr);
+  new_obj = Data_Make_Struct(rb_cInteger, CK_ULONG, 0, free, *ptr);
   rb_iv_set(obj, name, new_obj);
   **ptr = NUM2ULONG(value);
   return value;
@@ -236,9 +237,10 @@ get_struct_ptr_array(VALUE obj, VALUE klass, off_t offset, off_t offset_len, int
   unsigned long l = *(unsigned long*)(ptr+offset_len);
   VALUE ary = rb_ary_new();
   for (i = 0; i < l; i++){
+    VALUE new_obj;
     void *mem = xmalloc(sizeofstruct);
     memcpy(mem, p + sizeofstruct * i, sizeofstruct);
-    VALUE new_obj = Data_Wrap_Struct(klass, 0, -1, mem);
+    new_obj = Data_Wrap_Struct(klass, 0, -1, mem);
     rb_ary_push(ary, new_obj);
   }
   return ary;

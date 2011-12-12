@@ -10,10 +10,11 @@
 
 #define PKCS11_DEFINE_CONST_GROUP(group, name, value) \
   do { \
-    VALUE rvalue = ULONG2NUM(value); \
+    VALUE rvalue, str, old; \
+    rvalue = ULONG2NUM(value); \
     rb_define_const(MODULE_FOR_CONSTS, name, rvalue); \
-    VALUE str = rb_obj_freeze(rb_str_new2(name)); \
-    VALUE old = rb_hash_aref(group, rvalue); \
+    str = rb_obj_freeze(rb_str_new2(name)); \
+    old = rb_hash_aref(group, rvalue); \
     if (!NIL_P(old)) rb_warning("%s is equal to %s", RSTRING_PTR(old), name); \
     rb_hash_aset(group, rvalue, str); \
   } while(0)
