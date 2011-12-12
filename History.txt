@@ -1,3 +1,13 @@
+=== 0.2.2 / 2011-12-12
+
+* add ability to change PKCS11 base methods in order to use vendor defined attributes, return codes and mechanisms
+* restructured C code to avoid duplicated code in vendor extension gems
+* add gem pkcs11_protect_server to cover many ProtectServer specific extensions
+* update test/helper to find newer libsoftokn3
+* add task for generating combined docs of PKCS11 and PKCS11::ProtectServer
+* changed PKCS11#slots to return all slots of the device by default
+* add ability to set/get multiple attributes with Object#[] and Object#[]=
+
 === 0.2.1 / 2011-04-21
 
 * add some more CK_ULONG and CK_BOOL attributes
