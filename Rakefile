@@ -68,7 +68,7 @@ file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 task :docs_of_vendor_extensions do
   Dir['pkcs11_*'].each do |dir|
     chdir(dir) do
-      sh "rake #{dir}:doc_files"
+      sh "rake #{dir.sub(/^pkcs11_/,'')}:doc_files"
     end
   end
 end

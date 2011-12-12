@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -*- ruby -*-
 
-namespace :pkcs11_protect_server do
+namespace :protect_server do
 
 require 'rubygems'
 require 'hoe'
