@@ -89,13 +89,13 @@ module PKCS11
     def to_attributes(template)
       case template
         when Array
-          template.map{|v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', v), nil) }
+          template.map{|v| @pk.vendor_class_CK_ATTRIBUTE.new(string_to_handle('CKA_', v), nil) }
         when Hash
-          template.map{|k,v| PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', k), v) }
+          template.map{|k,v| @pk.vendor_class_CK_ATTRIBUTE.new(string_to_handle('CKA_', k), v) }
         when String, Symbol
-          [PKCS11::CK_ATTRIBUTE.new(string_to_handle('CKA_', template), nil)]
+          [@pk.vendor_class_CK_ATTRIBUTE.new(string_to_handle('CKA_', template), nil)]
         when Integer
-          [PKCS11::CK_ATTRIBUTE.new(template, nil)]
+          [@pk.vendor_class_CK_ATTRIBUTE.new(template, nil)]
         else
           template
       end
