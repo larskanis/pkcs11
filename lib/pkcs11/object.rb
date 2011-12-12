@@ -111,7 +111,7 @@ module PKCS11
         when 0
           return @pk.vendor_all_attribute_names.map{|attr|
             begin
-              attributes(PKCS11.const_get(attr))
+              attributes(@pk.vendor_const_get(attr))
             rescue PKCS11::Error
             end
           }.flatten.compact
