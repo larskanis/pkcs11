@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # -*- ruby -*-
 
+namespace :pkcs11_protect_server do
+
 require 'rubygems'
 require 'hoe'
 require 'rake/extensiontask'
@@ -80,5 +82,9 @@ file 'ext/pk11s_const_def.inc' => 'ext/generate_constants.rb' do
   sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11s_const_def.inc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
 end
 file 'ext/pk11s.c' => ['ext/pk11s_struct_def.inc', 'ext/pk11s_struct_impl.inc', 'ext/pk11s_const_def.inc']
+
+task :doc_files => 'ext/pk11s_struct.doc'
+
+end # namespace :pkcs11_protect_server
 
 # vim: syntax=ruby

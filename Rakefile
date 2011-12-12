@@ -65,8 +65,16 @@ end
 file 'ext/pk11_thread_funcs.c' => 'ext/pk11_thread_funcs.h'
 file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 
+task :docs_of_vendor_extensions do
+  Dir['pkcs11_*'].each do |dir|
+    chdir(dir) do
+      sh "rake #{dir}:doc_files"
+    end
+  end
+end
+
 desc "Generate static HTML documentation with YARD"
-task :yardoc do
+task :yardoc=>['ext/pk11_struct.doc', :docs_of_vendor_extensions] do
   sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11_protect_server/lib/**/*.rb pkcs11_protect_server/ext/*.c pkcs11_protect_server/ext/*.doc - pkcs11_protect_server/README_PROTECT_SERVER.rdoc"
 end
 
