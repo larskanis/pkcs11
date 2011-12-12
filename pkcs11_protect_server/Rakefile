@@ -73,13 +73,13 @@ copy_from_base_task 'pk11_version.h'
 
 file 'ext/extconf.rb' => ['ext/pk11s_struct_def.inc', 'ext/pk11s_const_def.inc', 'ext/pk11_struct_macros.h', 'ext/pk11_const_macros.h', 'ext/pk11_version.h']
 file 'ext/pk11s_struct_def.inc' => 'ext/generate_structs.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11s_struct_def.inc --impl ext/pk11s_struct_impl.inc --doc ext/pk11s_struct.doc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
+  sh "#{RbConfig::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11s_struct_def.inc --impl ext/pk11s_struct_impl.inc --doc ext/pk11s_struct.doc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
 end
 file 'ext/pk11s_struct_impl.inc' => 'ext/pk11s_struct_def.inc'
 file 'ext/pk11s_struct.doc' => 'ext/pk11s_struct_def.inc'
 
 file 'ext/pk11s_const_def.inc' => 'ext/generate_constants.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11s_const_def.inc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
+  sh "#{RbConfig::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11s_const_def.inc #{File.join(PROTECT_SERVER_SDK_DIR, 'include/ctvdef.h').inspect}"
 end
 file 'ext/pk11s.c' => ['ext/pk11s_struct_def.inc', 'ext/pk11s_struct_impl.inc', 'ext/pk11s_const_def.inc']
 

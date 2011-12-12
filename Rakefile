@@ -48,19 +48,19 @@ end
 
 file 'ext/extconf.rb' => ['ext/pk11_struct_def.inc', 'ext/pk11_thread_funcs.c']
 file 'ext/pk11_struct_def.inc' => 'ext/generate_structs.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --doc ext/pk11_struct.doc ext/include/pkcs11t.h"
+  sh "#{RbConfig::CONFIG['ruby_install_name']} ext/generate_structs.rb --def ext/pk11_struct_def.inc --impl ext/pk11_struct_impl.inc --doc ext/pk11_struct.doc ext/include/pkcs11t.h"
 end
 file 'ext/pk11_struct_impl.inc' => 'ext/pk11_struct_def.inc'
 file 'ext/pk11_struct.doc' => 'ext/pk11_struct_def.inc'
 
 file 'ext/pk11_const_def.inc' => 'ext/generate_constants.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11_const_def.inc ext/include/pkcs11t.h"
+  sh "#{RbConfig::CONFIG['ruby_install_name']} ext/generate_constants.rb --const ext/pk11_const_def.inc ext/include/pkcs11t.h"
 end
 file 'ext/pk11.c' => ['ext/pk11_struct_def.inc', 'ext/pk11_struct_impl.inc', 'ext/pk11_struct_macros.h']
 file 'ext/pk11_const.c' => ['ext/pk11_const_def.inc', 'ext/pk11_const_macros.h']
 
 file 'ext/pk11_thread_funcs.h' => 'ext/generate_thread_funcs.rb' do
-  sh "#{Config::CONFIG['ruby_install_name']} ext/generate_thread_funcs.rb --impl ext/pk11_thread_funcs.c --decl ext/pk11_thread_funcs.h ext/include/pkcs11f.h"
+  sh "#{RbConfig::CONFIG['ruby_install_name']} ext/generate_thread_funcs.rb --impl ext/pk11_thread_funcs.c --decl ext/pk11_thread_funcs.h ext/include/pkcs11f.h"
 end
 file 'ext/pk11_thread_funcs.c' => 'ext/pk11_thread_funcs.h'
 file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
