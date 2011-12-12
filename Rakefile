@@ -43,7 +43,7 @@ ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.2'
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
-  ext.cross_platform = ['i386-mswin32', 'i386-mingw32']     # forces the Windows platform instead of the default one
+  ext.cross_platform = ['i386-mingw32']     # forces the Windows platform instead of the default one
 end
 
 file 'ext/extconf.rb' => ['ext/pk11_struct_def.inc', 'ext/pk11_thread_funcs.c']
