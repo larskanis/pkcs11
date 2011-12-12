@@ -60,6 +60,9 @@ class TestPkcs11Object < Test::Unit::TestCase
   def test_accessor
     assert_equal 'value', object[:VALUE], "Value should be readable"
     assert_equal CKO_DATA, object[:CLASS], "Class should be readable"
+    assert_equal ['value', CKO_DATA], object[:VALUE, :CLASS], "multiple values should be readable"
+    assert_equal ['value', CKO_DATA], object[[:VALUE, :CLASS]], "multiple values should be readable"
+    assert_equal [], object[[]], "multiple values should be readable"
   end
 
   def test_attribute
@@ -71,13 +74,24 @@ class TestPkcs11Object < Test::Unit::TestCase
   def test_set_attribute
     object[:VALUE] = 'value2'
     assert_equal 'value2', object[:VALUE], "Value should have changed"
+
+    object[:VALUE] = ['value3']
+    assert_equal 'value3', object[:VALUE], "Value should have changed"
   end
 
   def test_set_attributes
-    object.attributes = {:VALUE => 'value2', PKCS11::CKA_APPLICATION => 'app2'}
+    object.attributes = {:VALUE => 'value4', PKCS11::CKA_APPLICATION => 'app4'}
+    assert_equal 'value4', object[:VALUE], "Value should have changed"
+    assert_equal 'app4', object[:APPLICATION], "App should have changed"
 
-    assert_equal 'value2', object[:VALUE], "Value should have changed"
-    assert_equal 'app2', object[:APPLICATION], "App should have changed"
+    object[:VALUE, PKCS11::CKA_APPLICATION] = 'value5', 'app5'
+    assert_equal 'value5', object[:VALUE], "Value should have changed"
+    assert_equal 'app5', object[:APPLICATION], "App should have changed"
+    assert_raise(ArgumentError) do
+      object[:VALUE, PKCS11::CKA_APPLICATION, :CLASS] = 'value5', 'app5'
+    end
+
+    assert_nothing_raised{ object[] = [] }
   end
 
   def test_size

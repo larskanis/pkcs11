@@ -26,13 +26,15 @@ module PKCS11
       "#<#{self.class} #{@obj.inspect}>"
     end
 
-    # Get the value of one attribute of the object.
+    # Get the value of one or several attributes of the object.
     #
-    # @param [String, Symbol, Integer] attribute can be String or Symbol of the attribute constant
-    #             or the attribute number as Integer.
+    # @param [String, Symbol, Integer, Array] attribute can be String or Symbol
+    #             of the attribute(s) constant or the attribute(s) number as Integer.
     #
-    # @return [String, Integer, Boolean, nil] the attribute value as String, Integer or true/false
-    #   depending on the attribute type.
+    # @return [String, Integer, Boolean, Array, nil] the attribute value as String,
+    #   Integer or true/false depending on the attribute type.
+    #   If called with more than one parameter or with an Array, a Array
+    #   of attribute values is returned.
     # Unknown attributes (out of PKCS#11 v2.2) are not converted to adequate
     # ruby objects but returned as String.
     # That is true/false will be returned as "\\001" respectively "\\000".
@@ -40,18 +42,23 @@ module PKCS11
     # @example
     #     object[:VALUE] # => "\000\000\000\000\000\000\000\000"
     #     object[:MODULUS_BITS] # => 768
+    #     object[:MODULUS_BITS, :LABEL] # => [1024, "MyKey"]
     #
     # See PKCS#11 for attribute definitions.
-    def [](attribute)
-      attrs = C_GetAttributeValue( [attribute] )
-      attrs.first.value unless attrs.empty?
+    def [](*attributes)
+      attrs = C_GetAttributeValue( attributes.flatten )
+      if attrs.length>1 || attributes.first.kind_of?(Array)
+        attrs.map(&:value)
+      else
+        attrs.first.value unless attrs.empty?
+      end
     end
 
-    # Modifies the value of one attribute the object.
+    # Modifies the value of one or several attributes of the object.
     #
-    # @param [String, Symbol, Integer] attribute can be String or Symbol of the attribute constant
+    # @param [String, Symbol, Integer] attribute  can be String or Symbol of the attribute constant
     #             or the attribute value as Integer.
-    # @param [String, Integer, Boolean, nil] value value the attribute will be set to.
+    # @param [String, Integer, Boolean, Array, nil] value  value(s) the attribute(s) will be set to.
     #
     # Following value conversations are done from Ruby to C:
     #   true   -> 0x01
@@ -62,12 +69,16 @@ module PKCS11
     # @example
     #     object[:VALUE] = "\000\000\000\000\000\000\000\000"
     #     object[:MODULUS_BITS] = 768
+    #     object[:MODULUS_BITS, :LABEL] = 1024, 'MyKey'
     #
     # See PKCS#11 for attribute definitions.
     # @return value
-    def []=(attribute, value)
-      C_SetAttributeValue( attribute => value )
-      value
+    def []=(*attributes)
+      values = attributes.pop
+      values = [values] unless values.kind_of?(Array)
+      raise ArgumentError, "different number of attributes to set (#{attributes.length}) and given values (#{values.length})" unless attributes.length == values.length
+      map = values.each.with_index.inject({}){|s, v| s[attributes[v[1]]] = v[0]; s }
+      C_SetAttributeValue( map )
     end
 
     # Modifies the value of one or more attributes of the object in a single call.
