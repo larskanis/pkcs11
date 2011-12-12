@@ -30,6 +30,7 @@ lib/pkcs11/library.rb
 lib/pkcs11/object.rb
 lib/pkcs11/session.rb
 lib/pkcs11/slot.rb
+pkcs11_protect_server/.gemtest
 pkcs11_protect_server/.yardopts
 pkcs11_protect_server/Manifest.txt
 pkcs11_protect_server/README_PROTECT_SERVER.rdoc
@@ -43,8 +44,6 @@ pkcs11_protect_server/lib/pkcs11_protect_server/extensions.rb
 pkcs11_protect_server/test/helper.rb
 pkcs11_protect_server/test/test_pkcs11_protect_server.rb
 pkcs11_protect_server/test/test_pkcs11_protect_server_crypt.rb
-sample/firefox_certs.rb
-sample/nssckbi.rb
 test/fixtures/softokn/cert8.db
 test/fixtures/softokn/key3.db
 test/fixtures/softokn/secmod.db
