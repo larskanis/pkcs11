@@ -36,6 +36,7 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/).reject{|f| f=~/^pkcs11_/ }
   spec_extras[:files] += GENERATED_FILES
   spec_extras[:has_rdoc] = 'yard'
+  self.rdoc_locations << "larskanis@rack.rubyforge.org:/var/www/gforge-projects/pkcs11/pkcs11/"
 end
 
 ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.2'
