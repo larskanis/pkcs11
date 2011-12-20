@@ -244,9 +244,9 @@ pkcs11_initialize(int argc, VALUE *argv, VALUE self)
 
   rb_scan_args(argc, argv, "02", &path, &init_args);
   if( !NIL_P(path) ){
-    pkcs11_load_library(self, path);
-    pkcs11_C_GetFunctionList(self);
-    pkcs11_C_Initialize(1, &init_args, self);
+    rb_funcall(self, rb_intern("load_library"), 1, path);
+    rb_funcall(self, rb_intern("C_GetFunctionList"), 0);
+    rb_funcall2(self, rb_intern("C_Initialize"), 1, &init_args);
   }
 
   return self;
