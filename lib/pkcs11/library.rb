@@ -35,6 +35,11 @@ module PKCS11
     #   pkcs11.C_GetFunctionList
     #   pkcs11.C_Initialize(args)
     def initialize(so_path=nil, args={})
+      unwrapped_initialize(so_path, args)
+    end
+
+    alias unwrapped_C_Initialize C_Initialize
+    def C_Initialize(args=nil)
       case args
         when Hash
           pargs = CK_C_INITIALIZE_ARGS.new
@@ -42,7 +47,7 @@ module PKCS11
         else
           pargs = args
       end
-      unwrapped_initialize(so_path, pargs)
+      unwrapped_C_Initialize(pargs)
     end
 
     alias unwrapped_C_GetInfo C_GetInfo
