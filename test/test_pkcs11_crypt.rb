@@ -19,7 +19,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     @slot = slots.last
     @session = slot.open
 #     session.login(:USER, "")
-    
+
     @rsa_pub_key = session.find_objects(:CLASS => CKO_PUBLIC_KEY,
                         :KEY_TYPE => CKK_RSA).first
     @rsa_priv_key = session.find_objects(:CLASS => CKO_PRIVATE_KEY,
@@ -47,7 +47,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     cryptogram = session.encrypt( :RSA_PKCS, rsa_pub_key, plaintext1)
     assert cryptogram.length>10, 'The cryptogram should contain some data'
     assert_not_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
-    
+
     plaintext2 = session.decrypt( :RSA_PKCS, rsa_priv_key, cryptogram)
     assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
   end
@@ -57,14 +57,14 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     cryptogram = session.encrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key, plaintext1)
     assert_equal 16, cryptogram.length, 'The cryptogram should contain some data'
     assert_not_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
-    
+
     cryptogram2 = ''
     cryptogram2 << session.encrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key ) do |cipher|
       cryptogram2 << cipher.update(plaintext1[0, 8])
       cryptogram2 << cipher.update(plaintext1[8..-1])
     end
     assert_equal cryptogram, cryptogram2, "Encrypt with and w/o block should be lead to the same result"
-    
+
     plaintext2 = session.decrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key, cryptogram)
     assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
   end
@@ -82,7 +82,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
     valid = session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, plaintext)
     assert  valid, 'The signature should be correct'
-    
+
     assert_raise(CKR_SIGNATURE_INVALID, 'The signature should be invalid on different text') do
       session.verify( :SHA1_RSA_PKCS, rsa_pub_key, signature, "modified text")
     end
@@ -150,7 +150,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
       {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
     assert_equal true, key[:LOCAL], 'Keys created on the token should be marked as local'
     assert_equal CKK_DES2, key[:KEY_TYPE], 'Should be a 2 key 3des key'
-		
+
 		# other ways to use mechanisms
     key = session.generate_key(CKM_DES2_KEY_GEN,
       {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
@@ -165,7 +165,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
       {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
       {:PRIVATE=>true, :SUBJECT=>'test', :ID=>[123].pack("n"),
        :SENSITIVE=>true, :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true, :TOKEN=>false, :LOCAL=>true})
-    
+
     assert_equal true, priv_key[:LOCAL], 'Private keys created on the token should be marked as local'
     assert_equal priv_key[:CLASS], CKO_PRIVATE_KEY
     assert_equal pub_key[:CLASS], CKO_PUBLIC_KEY
@@ -183,7 +183,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
 
     # Derive secret DES key for side 1 with OpenSSL
     new_key1 = key1.compute_key(OpenSSL::BN.new pub_key2[:VALUE], 2)
-    
+
     # Derive secret DES key for side 2 with softokn3
     new_key2 = session.derive_key( {:DH_PKCS_DERIVE=>key1.pub_key.to_s(2)}, priv_key2,
       :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :VALUE_LEN=>16, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
