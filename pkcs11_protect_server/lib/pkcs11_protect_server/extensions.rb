@@ -58,6 +58,15 @@ module ProtectServer
     #
     # See also PKCS11::Library#initialize[http://pkcs11.rubyforge.org/pkcs11/PKCS11/Library.html#initialize-instance_method] of pkcs11.gem
     def initialize(so_path = nil, args = {})
+      super(so_path, args)
+    end
+
+    def load_library(so_path)
+      @so_path = resolve_so_path(so_path)
+      super(@so_path)
+    end
+
+    def resolve_so_path(so_path)
       if [:sw, :hsm].include?(so_path)
         if RUBY_PLATFORM =~ /mswin|mingw/
           libctsw_so = "cryptoki.dll"
@@ -80,10 +89,9 @@ module ProtectServer
 
         raise "#{libctsw_so} not found - please install ProtectServer PTK-C or set ENV['CRYPTOKI_SO']" unless so_path
       end
-
-      @so_path = so_path
-      super(so_path, args)
+      return so_path
     end
+    private :resolve_so_path
 
     def vendor_const_get(name)
       return ProtectServer.const_get(name) if ProtectServer.const_defined?(name)

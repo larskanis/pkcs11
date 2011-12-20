@@ -47,4 +47,13 @@ class TestPkcs11ProtectServer < Test::Unit::TestCase
     pk = PKCS11::ProtectServer::Library.new(so_path, :flags=>0)
     pk.close
   end
+
+  def test_loading2
+    pk = PKCS11::ProtectServer::Library.new
+    pk.load_library(:sw)
+    pk.C_GetFunctionList
+    pk.C_Initialize(:flags=>0)
+    pk.info
+    pk.close
+  end
 end
