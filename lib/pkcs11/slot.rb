@@ -29,22 +29,13 @@ module PKCS11
       @pk.C_GetSlotInfo(@slot)
     end
     alias info C_GetSlotInfo
-    
+
     # Obtains information about a particular token in the system.
     # @return [PKCS11::CK_TOKEN_INFO]
     def C_GetTokenInfo
       @pk.C_GetTokenInfo(@slot)
     end
     alias token_info C_GetTokenInfo
-    
-    # Waits for a slot event, such as token insertion or token removal, to
-    # occur.
-    # @param flags determines whether or not the C_WaitForSlotEvent call blocks (i.e., waits
-    #   for a slot event to occur);
-    def C_WaitForSlotEvent(flags)
-      @pk.C_WaitForSlotEvent(@slot, flags)
-    end
-    alias wait_for_event C_WaitForSlotEvent
 
     # C_GetMechanismList is used to obtain a list of mechanism types supported by a token.
     # @return [Array<PKCS11::CKM_*>]
@@ -75,7 +66,7 @@ module PKCS11
       self
     end
     alias init_token C_InitToken
-    
+
     # Opens a Session between an application and a token in a particular slot.
     #
     # @param [Integer] flags  indicates the type of session. Default is read-only,
@@ -99,7 +90,7 @@ module PKCS11
       end
     end
     alias open C_OpenSession
-    
+
     # Closes all sessions an application has with a token.
     # @return [PKCS11::Slot]
     def C_CloseAllSessions

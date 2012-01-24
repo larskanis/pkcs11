@@ -86,6 +86,20 @@ module PKCS11
       slots(false)
     end
 
+    alias unwrapped_C_WaitForSlotEvent C_WaitForSlotEvent
+
+    # Waits for a slot event, such as token insertion or token removal, to occur.
+    #
+    # @param [Integer] flags  determines whether or not the C_WaitForSlotEvent call blocks (i.e., waits
+    #    for a slot event to occur);
+    #    At present, the only flag defined for use in the flags argument is PKCS11::CKF_DONT_BLOCK
+    # @return [Slot, nil] the slot that the event occurred in; nil if no event occured (CKR_NO_EVENT)
+    def C_WaitForSlotEvent(flags=0)
+      slot = unwrapped_C_WaitForSlotEvent(flags)
+      slot ? Slot.new(self, slot) : nil
+    end
+    alias wait_for_slot_event C_WaitForSlotEvent
+
     # Finalize and unload the library. If not called explicit, the library is freed by the GC.
     def close
       self.C_Finalize

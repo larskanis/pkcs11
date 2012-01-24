@@ -57,4 +57,15 @@ class TestPkcs11 < Test::Unit::TestCase
     pk.info
     pk.close
   end
+
+  def test_wait_for_slot_event
+    open
+    # Softokn's C_WaitForSlotEvent() currently raises PKCS11::CKR_FUNCTION_NOT_SUPPORTED.
+    # So just check, that the call goes to softokn at all.
+    begin
+      pk.wait_for_slot_event
+    rescue PKCS11::Error
+    end
+    close
+  end
 end
