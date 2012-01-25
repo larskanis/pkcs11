@@ -1,3 +1,9 @@
+=== 0.2.3 / 2012-01-25
+
+* fix C_WaitForSlotEvent to be a Library- instead of a Slot-method
+* allow :sw/:hsm to ProtectServer::Library#load_library in the same way as #initialize
+* allow Hash argument to Library#C_Initialize in the same way as #initialize
+
 === 0.2.2 / 2011-12-12
 
 * add ability to change PKCS11 base methods in order to use vendor defined attributes, return codes and mechanisms
