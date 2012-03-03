@@ -39,6 +39,9 @@ module PKCS11
     end
 
     alias unwrapped_C_Initialize C_Initialize
+    # Initialize a pkcs11 dynamic library.
+    #
+    # @param [Hash, CK_C_INITIALIZE_ARGS] args  A Hash or CK_C_INITIALIZE_ARGS instance with load params.
     def C_Initialize(args=nil)
       case args
         when Hash
