@@ -33,7 +33,7 @@ While this seems to be true for C, it shouldn't for Ruby.
 * {PKCS11::Object} represents a key, data or certificate object.
 * all constants defined in PKCS#11 v2.20 are available in the module {PKCS11}
   and contain the associated Integer value (CKA_KEY_TYPE, CKK_AES, CKM_SHA_1 etc.)
-* also all structs are available in the module {PKCS11} as proper ruby classes
+* also all PKCS#11 v2.20 structs are available in the module {PKCS11} as proper ruby classes
   ({PKCS11::CK_VERSION}, {PKCS11::CK_OTP_PARAMS} etc.)
 
 === Example
@@ -42,7 +42,7 @@ While this seems to be true for C, it shouldn't for Ruby.
   include PKCS11
 
   pkcs11 = PKCS11.open("/path/to/pkcs11.so")
-  p pkcs11.info
+  p pkcs11.info  # => #<PKCS11::CK_INFO cryptokiVersion=...>
   session = pkcs11.active_slots.first.open
   session.login(:USER, "1234")
   secret_key = session.generate_key(:DES2_KEY_GEN,
@@ -51,10 +51,10 @@ While this seems to be true for C, it shouldn't for Ruby.
   session.logout
   session.close
 
-This opens a PKCS#11 library and prints it's information block.
-Then a {PKCS11::Session} to the first active slot of the device is opened and
-a login is done on the user account. Now, a 112 bit DES3 key is generated and
-some plaintext is encrypted with it. A 8-byte zero IV is used. In many cases method parameters
+This opens a {PKCS11::Library PKCS#11 library} and prints it's {PKCS11::CK_INFO information block}.
+Then a {PKCS11::Session} to the first {PKCS11::Library#active_slots active slot} of the device is opened and
+a {PKCS11::Session#login login} is done on the user account. Now, a 112 bit DES3 {PKCS11::Object key object} is generated and
+some plaintext is {PKCS11::Session#encrypt encrypted} with it. A 8-byte zero IV is used. In many cases method parameters
 can be Integer (like PKCS11::CKA_LABEL) or, as in the sample, Symbol (:LABEL) which is internally
 converted.
 
@@ -76,7 +76,7 @@ The pkcs11 binding fully supports native, background Ruby threads.
 This of course only applies to Rubinius and Ruby 1.9.x or higher since
 earlier versions of Ruby do not support native threads.
 
-Calling the Cryptoki library from multiple threads simultaneously,
+According to the standard, calling the Cryptoki library from multiple threads simultaneously,
 requires to open it with flag PKCS11::CKF_OS_LOCKING_OK.
 Application-supplied synchronization primitives
 (CreateMutex, DestroyMutex, LockMutex, UnlockMutex) are not supported.
