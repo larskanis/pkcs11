@@ -188,7 +188,7 @@ class TestPkcs11Crypt < Test::Unit::TestCase
     new_key2 = session.derive_key( {:DH_PKCS_DERIVE=>key1.pub_key.to_s(2)}, priv_key2,
       :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :VALUE_LEN=>16, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
 
-    assert_equal new_key1[0,16], new_key2[:VALUE], 'Exchanged session key should be equal'
+    assert_equal new_key1[-16..-1], new_key2[:VALUE], 'Exchanged session key should be equal'
   end
 
   def test_derive_key2
