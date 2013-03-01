@@ -150,4 +150,17 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_equal ["2010", "12", "31"], s.values, 'values of CK_DATE'
     assert_equal( {:day=>"31", :month=>"12", :year=>"2010"}, s.to_hash, 'CK_DATE as hash' )
   end
+
+  def test_bignum_attribute
+    bignum = [-1].pack("l_").unpack("L_")[0]
+    attr = CK_ATTRIBUTE.new(CKA_KEY_TYPE, bignum)
+    assert_equal bignum, attr.value, "The bignum value should set"
+  end
+
+  def test_bignum_mechanism
+    bignum = [-1].pack("l_").unpack("L_")[0]
+    mech = CK_MECHANISM.new(bignum-1, bignum)
+    assert_equal bignum-1, mech.mechanism, "The bignum mechanism should set"
+    assert_equal [-1].pack("l_"), mech.pParameter, "The bignum parameter is retrieved as String"
+  end
 end
