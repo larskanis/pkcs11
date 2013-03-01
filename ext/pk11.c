@@ -1376,6 +1376,7 @@ ck_attr_initialize(int argc, VALUE *argv, VALUE self)
     attr->ulValueLen = 0;
     break;
   case T_FIXNUM:
+  case T_BIGNUM:
     attr->pValue = (CK_BYTE_PTR)malloc(sizeof(CK_OBJECT_CLASS));
     *((CK_OBJECT_CLASS*)attr->pValue) = NUM2ULONG(value);
     attr->ulValueLen = sizeof(CK_OBJECT_CLASS);
@@ -1531,6 +1532,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
     m->ulParameterLen = RSTRING_LEN(value);
     break;
   case T_FIXNUM:
+  case T_BIGNUM:
     ulong_val = NUM2ULONG(value);
     value = rb_obj_freeze(rb_str_new((char*)&ulong_val, sizeof(ulong_val)));
     m->pParameter = RSTRING_PTR(value);
