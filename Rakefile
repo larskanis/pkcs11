@@ -39,12 +39,12 @@ hoe = Hoe.spec 'pkcs11' do
   self.rdoc_locations << "larskanis@rack.rubyforge.org:/var/www/gforge-projects/pkcs11/pkcs11/"
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.2'
+ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.3:2.0.0'
 
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
-  ext.cross_platform = ['i386-mingw32']     # forces the Windows platform instead of the default one
+  ext.cross_platform = ['i386-mingw32', 'x64-mingw32']     # forces the Windows platform instead of the default one
 end
 
 file 'ext/extconf.rb' => ['ext/pk11_struct_def.inc', 'ext/pk11_thread_funcs.c']
@@ -65,6 +65,17 @@ file 'ext/pk11_thread_funcs.h' => 'ext/generate_thread_funcs.rb' do
 end
 file 'ext/pk11_thread_funcs.c' => 'ext/pk11_thread_funcs.h'
 file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
+
+task 'copy:pkcs11_ext:i386-mingw32:1.9.3' do |t|
+  sh "i686-w64-mingw32-strip -S tmp/i386-mingw32/stage/lib/1.9/pkcs11_ext.so"
+end
+task 'copy:pkcs11_ext:i386-mingw32:2.0.0' do |t|
+  sh "i686-w64-mingw32-strip -S tmp/i386-mingw32/stage/lib/2.0/pkcs11_ext.so"
+end
+task 'copy:pkcs11_ext:x64-mingw32:2.0.0' do |t|
+  sh "x86_64-w64-mingw32-strip -S tmp/x64-mingw32/stage/lib/2.0/pkcs11_ext.so"
+end
+
 
 task :docs_of_vendor_extensions do
   Dir['pkcs11_*'].each do |dir|
