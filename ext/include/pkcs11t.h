@@ -974,6 +974,9 @@ typedef CK_ULONG          CK_MECHANISM_TYPE;
 /* AES counter mode is new for PKCS #11 v2.20 amendment 3 */
 #define CKM_AES_CTR                    0x00001086
 
+/* AES Key Wrap Algorithm; RFC 3394 */
+#define CKM_AES_KEY_WRAP               0x00001090
+
 /* BlowFish and TwoFish are new for v2.20 */
 #define CKM_BLOWFISH_KEY_GEN           0x00001090
 #define CKM_BLOWFISH_CBC               0x00001091
