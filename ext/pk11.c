@@ -166,7 +166,7 @@ pkcs11_load_library(VALUE self, VALUE path)
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
-    rb_raise(ePKCS11Error, error_text);
+    rb_raise(ePKCS11Error, "%s", error_text);
   }
 #else
   if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
@@ -199,7 +199,7 @@ pkcs11_C_GetFunctionList(VALUE self)
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
-    rb_raise(ePKCS11Error, error_text);
+    rb_raise(ePKCS11Error, "%s", error_text);
   }
 #else
   func = (CK_C_GetFunctionList)dlsym(ctx->module, "C_GetFunctionList");
