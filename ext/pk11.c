@@ -158,7 +158,7 @@ pkcs11_load_library(VALUE self, VALUE path)
   const char *so_path;
   pkcs11_ctx *ctx;
 
-  so_path = StringValuePtr(path);
+  so_path = StringValueCStr(path);
   Data_Get_Struct(self, pkcs11_ctx, ctx);
 #ifdef compile_for_windows
   if((ctx->module = LoadLibrary(so_path)) == NULL) {
@@ -375,7 +375,7 @@ pkcs11_C_InitToken(VALUE self, VALUE slot_id, VALUE pin, VALUE label)
   CK_C_InitToken func;
 
   StringValue(pin);
-  StringValue(label);
+  StringValueCStr(label);
   GetFunction(self, C_InitToken, func);
   CallFunction(C_InitToken, func, rv, NUM2HANDLE(slot_id),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(pin), RSTRING_LEN(pin),
