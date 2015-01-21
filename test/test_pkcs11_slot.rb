@@ -1,13 +1,13 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11"
 require "test/helper"
 
-class TestPkcs11Slot < Test::Unit::TestCase
+class TestPkcs11Slot < Minitest::Test
   include PKCS11
-  
+
   attr_reader :slots
   attr_reader :slot
-  
+
   def setup
     $pkcs11 ||= open_softokn
     @slots = pk.active_slots
@@ -39,7 +39,7 @@ class TestPkcs11Slot < Test::Unit::TestCase
     ti = slot.token_info
     assert ti.inspect =~ /serialNumber=/, 'Token info should contain a serialNumber'
   end
-  
+
   def test_mechanisms
     assert_equal false, slot.mechanisms.empty?, 'There should be some mechanisms'
     slot.mechanisms.each do |m|
@@ -53,7 +53,7 @@ class TestPkcs11Slot < Test::Unit::TestCase
     info1 = slot.mechanism_info(:DES3_CBC)
     assert_equal CK_MECHANISM_INFO, info1.class, 'Mechanism info should get a CK_MECHANISM_INFO'
     assert info1.inspect =~ /ulMinKeySize=/, 'Mechanism info should tell about min key size'
-    
+
     info2 = slot.mechanism_info(CKM_DES3_CBC)
     assert_equal info1.to_hash, info2.to_hash, 'Mechanism infos should be equal'
   end
@@ -63,7 +63,7 @@ class TestPkcs11Slot < Test::Unit::TestCase
     session = slot.open(flags){|_session|
       assert _session.info.inspect =~ /state=/, 'Session info should tell about it\'s state'
     }
-    
+
     session = slot.open(flags)
     assert session.info.inspect =~ /flags=/, 'Session info should tell about it\'s flags'
     session.close

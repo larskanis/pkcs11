@@ -1,8 +1,8 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11"
 require "test/helper"
 
-class TestPkcs11 < Test::Unit::TestCase
+class TestPkcs11 < Minitest::Test
   attr_reader :pk
 
   def open
@@ -33,7 +33,7 @@ class TestPkcs11 < Test::Unit::TestCase
     open
     pk.close
     pk.unload_library
-    assert_raise(PKCS11::Error){ pk.info }
+    assert_raises(PKCS11::Error){ pk.info }
 
     @pk = PKCS11.open
     pk.load_library(find_softokn)

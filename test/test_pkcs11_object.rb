@@ -1,8 +1,8 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11"
 require "test/helper"
 
-class TestPkcs11Object < Test::Unit::TestCase
+class TestPkcs11Object < Minitest::Test
   include PKCS11
 
   attr_reader :slots
@@ -54,7 +54,7 @@ class TestPkcs11Object < Test::Unit::TestCase
     end
 
     assert object.attributes.length>=4, 'There should be at least the 4 stored attributes readable'
-    assert_not_nil object.attributes.find{|a| a.type==CKA_CLASS}, 'CKA_CLASS should be returned for Object#attributes'
+    refute_nil object.attributes.find{|a| a.type==CKA_CLASS}, 'CKA_CLASS should be returned for Object#attributes'
   end
 
   def test_accessor
@@ -87,11 +87,11 @@ class TestPkcs11Object < Test::Unit::TestCase
     object[:VALUE, PKCS11::CKA_APPLICATION] = 'value5', 'app5'
     assert_equal 'value5', object[:VALUE], "Value should have changed"
     assert_equal 'app5', object[:APPLICATION], "App should have changed"
-    assert_raise(ArgumentError) do
+    assert_raises(ArgumentError) do
       object[:VALUE, PKCS11::CKA_APPLICATION, :CLASS] = 'value5', 'app5'
     end
 
-    assert_nothing_raised{ object[] = [] }
+    object[] = []
   end
 
   def test_size
@@ -115,7 +115,7 @@ class TestPkcs11Object < Test::Unit::TestCase
   def test_destroy
     object.destroy
 
-    assert_raise(CKR_OBJECT_HANDLE_INVALID, 'destroyed object shouldn\'t have any attributes') do
+    assert_raises(CKR_OBJECT_HANDLE_INVALID, 'destroyed object shouldn\'t have any attributes') do
       object[:VALUE]
     end
   end

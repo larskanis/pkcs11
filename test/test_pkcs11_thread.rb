@@ -1,8 +1,8 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11"
 require "test/helper"
 
-class TestPkcs11Thread < Test::Unit::TestCase
+class TestPkcs11Thread < Minitest::Test
   include PKCS11
 
   attr_reader :slots

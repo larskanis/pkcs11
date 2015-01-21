@@ -1,8 +1,8 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11"
 require "test/helper"
 
-class TestPkcs11Structs < Test::Unit::TestCase
+class TestPkcs11Structs < Minitest::Test
   include PKCS11
 
   def setup
@@ -19,7 +19,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_equal "12", s.day
     s.day = "9"
     assert_equal "9\0", s.day
-    assert_raise(TypeError){ s.day = nil }
+    assert_raises(TypeError){ s.day = nil }
   end
 
   def test_ULONG_ACCESSOR
@@ -29,7 +29,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_equal 1234567890, s.ulIVSizeInBits
     s.ulIVSizeInBits = 2345678901
     assert_equal 2345678901, s.ulIVSizeInBits
-    assert_raise(TypeError){ s.ulIVSizeInBits = nil }
+    assert_raises(TypeError){ s.ulIVSizeInBits = nil }
   end
 
   def test_BOOL_ACCESSOR
@@ -39,7 +39,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_equal true, s.bIsExport
     s.bIsExport = false
     assert_equal false, s.bIsExport
-    assert_raise(ArgumentError){ s.bIsExport = nil }
+    assert_raises(ArgumentError){ s.bIsExport = nil }
   end
 
   def test_STRING_PTR_ACCESSOR
@@ -70,7 +70,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     assert_equal 'clrnd', ri.pClientRandom
     assert_nil ri.pServerRandom
 
-    assert_raise(ArgumentError){ s.RandomInfo = nil }
+    assert_raises(ArgumentError){ s.RandomInfo = nil }
   end
 
   def test_gc_STRUCT_ACCESSOR
@@ -134,7 +134,7 @@ class TestPkcs11Structs < Test::Unit::TestCase
     s.pParams = [s1, s2]
     assert_equal [s1.to_hash, s2.to_hash], s.pParams.map{|e| e.to_hash }
     GC.start
-    assert_raise(ArgumentError){ s.pParams = [s1, s2, nil] }
+    assert_raises(ArgumentError){ s.pParams = [s1, s2, nil] }
     assert_equal [s1.to_hash, s2.to_hash], s.pParams.map{|e| e.to_hash }
 
     s.pParams = []
