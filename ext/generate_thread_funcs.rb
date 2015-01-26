@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # This quick and dirty parser for PKCS#11 functions generates
-# wrapper functions for using rb_thread_blocking_region()
-# of Ruby 1.9.
+# wrapper functions for using rb_thread_call_without_gvl()
+# of Ruby 1.9+
 
 require 'optparse'
 
@@ -26,11 +26,11 @@ fd_decl.puts <<-EOT
   #ifndef #{options.decl.gsub(/[^\w]/, "_").upcase}
   #define #{options.decl.gsub(/[^\w]/, "_").upcase}
   #include "pk11.h"
-  #ifdef HAVE_RB_THREAD_BLOCKING_REGION
+  #ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
 EOT
 fd_impl.puts <<-EOT
   #include #{File.basename(options.decl).inspect}
-  #ifdef HAVE_RB_THREAD_BLOCKING_REGION
+  #ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
 EOT
 ARGV.each do |file_h|
   c_src = IO.read(file_h)
@@ -48,14 +48,14 @@ ARGV.each do |file_h|
         struct { #{ func_params.map{|f| f.type+" "+f.name+";"}.join } } params;
         CK_RV retval;
       };
-      VALUE tbf_#{func_name}( void *data );
-      
+      void * tbf_#{func_name}( void *data );
+
     EOT
     fd_impl.puts <<-EOT
-      VALUE tbf_#{func_name}( void *data ){
+      void * tbf_#{func_name}( void *data ){
         struct tbr_#{func_name}_params *p = (struct tbr_#{func_name}_params*)data;
         p->retval = p->func( #{func_params.map{|f| "p->params."+f.name}.join(",") } );
-        return Qnil;
+        return NULL;
       }
 
     EOT

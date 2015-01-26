@@ -39,6 +39,11 @@ static VALUE aCK_MECHANISM_members;
 
 VALUE pkcs11_return_value_to_class(CK_RV, VALUE);
 
+#if defined(HAVE_RB_THREAD_CALL_WITHOUT_GVL)
+extern void *rb_thread_call_without_gvl(void *(*func)(void *), void *data1,
+         rb_unblock_function_t *ubf, void *data2);
+#endif
+
 static void
 pkcs11_raise(VALUE self, CK_RV rv)
 {
@@ -62,13 +67,13 @@ typedef struct {
   if (!sval) rb_raise(ePKCS11Error, #name " is not supported."); \
 }
 
-#ifdef HAVE_RB_THREAD_BLOCKING_REGION
+#ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
   #define CallFunction(name, func, rv, ...) \
   { \
     struct tbr_##name##_params params = { \
       func, {__VA_ARGS__}, CKR_FUNCTION_FAILED \
     }; \
-    rb_thread_blocking_region(tbf_##name, &params, RUBY_UBF_PROCESS, 0); \
+    rb_thread_call_without_gvl(tbf_##name, &params, RUBY_UBF_PROCESS, NULL); \
     rv = params.retval; \
   }
 
