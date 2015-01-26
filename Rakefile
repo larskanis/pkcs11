@@ -39,7 +39,7 @@ hoe = Hoe.spec 'pkcs11' do
   self.rdoc_locations << "larskanis@rack.rubyforge.org:/var/www/gforge-projects/pkcs11/pkcs11/"
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.3:2.0.0'
+ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.3:2.0.0:2.1.1:2.2.0'
 
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
@@ -66,16 +66,16 @@ end
 file 'ext/pk11_thread_funcs.c' => 'ext/pk11_thread_funcs.h'
 file 'ext/pk11.h' => 'ext/pk11_thread_funcs.h'
 
-task 'copy:pkcs11_ext:i386-mingw32:1.9.3' do |t|
-  sh "i686-w64-mingw32-strip -S tmp/i386-mingw32/stage/lib/1.9/pkcs11_ext.so"
-end
-task 'copy:pkcs11_ext:i386-mingw32:2.0.0' do |t|
-  sh "i686-w64-mingw32-strip -S tmp/i386-mingw32/stage/lib/2.0/pkcs11_ext.so"
-end
-task 'copy:pkcs11_ext:x64-mingw32:2.0.0' do |t|
-  sh "x86_64-w64-mingw32-strip -S tmp/x64-mingw32/stage/lib/2.0/pkcs11_ext.so"
-end
+# To reduce the gem file size strip mingw32 dlls before packaging
+ENV['RUBY_CC_VERSION'].to_s.split(':').each do |ruby_version|
+  task "tmp/x86-mingw32/stage/lib/#{ruby_version[/^\d+\.\d+/]}/pkcs11_ext.so" do |t|
+    sh "i686-w64-mingw32-strip -S tmp/x86-mingw32/stage/lib/#{ruby_version[/^\d+\.\d+/]}/pkcs11_ext.so"
+  end
 
+  task "tmp/x64-mingw32/stage/lib/#{ruby_version[/^\d+\.\d+/]}/pkcs11_ext.so" do |t|
+    sh "x86_64-w64-mingw32-strip -S tmp/x64-mingw32/stage/lib/#{ruby_version[/^\d+\.\d+/]}/pkcs11_ext.so"
+  end
+end
 
 task :docs_of_vendor_extensions do
   Dir['pkcs11_*'].each do |dir|
