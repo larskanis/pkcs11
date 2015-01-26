@@ -5,6 +5,14 @@ require "test/helper"
 class TestPkcs11 < Minitest::Test
   attr_reader :pk
 
+  def setup
+    if $pkcs11
+      $pkcs11.close
+      $pkcs11 = nil
+      GC.start
+    end
+  end
+
   def open
     @pk = open_softokn
   end

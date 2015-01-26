@@ -56,3 +56,5 @@ end
 def open_softokn(so_path=nil)
   PKCS11.open(so_path || find_softokn, :flags=>0, :pReserved=>softokn_params_string)
 end
+
+$pkcs11 = nil
