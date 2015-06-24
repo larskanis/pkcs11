@@ -1,0 +1,103 @@
+= PKCS #11/Ruby Interface for Safenet Luna HSM
+
+* Homepage: http://github.com/larskanis/pkcs11
+* API documentation: http://pkcs11.rubyforge.org/pkcs11/
+* Safenet[http://www.safenet-inc.com] - Luna HSM
+
+This ruby gem is an add-on to ruby-pkcs11[http://github.com/larskanis/pkcs11] .
+It allows to use Luna specific extensions, which are beyond the PKCS#11 standard.
+The module works on the Unix like operating systems and win32.
+
+== Requirements
+
+* Luna Client installed including the Luna Sofware Development Kit (SDK)
+* pkcs11 gem installed (use: <tt>gem install pkcs11</tt> )
+
+== Installation
+
+First check the permissions for the directories in the sdk.  It may be required to run:
+  chmod a+x <luna client include dir>
+  chmod a+x <luna client include dir>/RSA
+
+  gem install pkcs11_luna -- --with-luna-dir-include=<luna client include dir>
+
+This installs the Luna-PKCS#11 extension either by compiling (Unix)
+or by using the precompiled gem for Win32.
+
+  git clone git://github.com/larskanis/pkcs11.git
+  cd pkcs11_luna
+  gem install hoe rake-compiler minitest
+  rake gem LUNA_INCLUDE_DIR=<luna client include dir>
+  gem install --verbose  pkg/pkcs11_luna-<version>.gem -- --with-luna-dir-include=<luna client include dir>
+  
+  rake test
+  cd ../
+  rake test
+
+Downloads and installs the gem from git source.  If LUNA_INCLUDE_DIR and --with-luna-dir-include are not specified,
+  The default of /usr/safenet/lunaclient/samples/include is used.
+  
+
+== Usage
+
+Open the software emulation library and login to a session:
+
+  require "rubygems"
+  require "pkcs11_luna"
+
+  pkcs11 = PKCS11::Luna::Library.new
+  p pkcs11.info
+  session = pkcs11.active_slots.last.open
+  session.login(:USER, "1234")
+  # ... crypto operations
+  session.logout
+  session.close
+  
+  Look in the examples directories for some more usage examples.
+
+{PKCS11::Luna::Library#initialize} reads the crystoki.ini or /etc/Chrystoki.conf
+and parses the configuration file to determine what .so or .dll to use.  You may pass 
+the full path to the .dll or .so file.
+
+== Cross compiling for mswin32
+
+Using rake-compiler a cross compiled pkcs11_luna.gem can be build on a linux host for
+the win32 platform. There are no runtime dependencies to any but the standard Windows DLLs.
+
+Install mingw32. On a debian based system this should work:
+
+  apt-get install mingw32
+
+On MacOS X, if you have MacPorts installed:
+
+  port install i386-mingw32-gcc
+
+Install the rake-compiler:
+
+  gem install rake-compiler
+
+Download and cross compile ruby for win32:
+
+  rake-compiler cross-ruby VERSION=1.8.7-p352
+  rake-compiler cross-ruby VERSION=1.9.2-p290
+
+Download and cross compile pkcs11_luna for win32:
+
+  rake cross native gem LUNA_CLIENT_DIR=<luna client dir>
+
+If everything works, there should be pkcs11_luna-VERSION-x86-mswin32.gem in the pkg
+directory.
+
+
+== ToDo
+
+* implement Luna specific function calls
+* implement possibility to use callbacks
+* add all structs and constants
+
+== Authors
+* Lars Kanis <kanis@comcard.de>
+* Jonathan Patchell
+
+== Copying
+See MIT-LICENSE included in the package.

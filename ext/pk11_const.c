@@ -14,7 +14,7 @@ pkcs11_return_value_to_class(CK_RV rv, VALUE ePKCS11Error)
 {
   VALUE class;
 
-  class = rb_hash_aref(vRETURN_VALUES, INT2NUM(rv));
+  class = rb_hash_aref(vRETURN_VALUES, ULONG2NUM(rv));
   if (NIL_P(class)){
     class = ePKCS11Error;
   }

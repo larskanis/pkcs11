@@ -86,7 +86,7 @@ task "gem:windows" do
 end
 
 task :docs_of_vendor_extensions do
-  Dir['pkcs11_*'].each do |dir|
+  Dir['pkcs11_luna', 'pkcs11_protect_server'].each do |dir|
     chdir(dir) do
       sh "rake doc_files"
     end
@@ -95,7 +95,8 @@ end
 
 desc "Generate static HTML documentation with YARD"
 task :yardoc=>['ext/pk11_struct.doc', :docs_of_vendor_extensions] do
-  sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11_protect_server/lib/**/*.rb pkcs11_protect_server/ext/*.c pkcs11_protect_server/ext/*.doc - pkcs11_protect_server/README_PROTECT_SERVER.rdoc"
+  luna_docs = "pkcs11_luna/lib/**/*.rb pkcs11_luna/ext/*.c pkcs11_luna/ext/*.doc"
+  sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11_protect_server/lib/**/*.rb pkcs11_protect_server/ext/*.c pkcs11_protect_server/ext/*.doc #{luna_docs} - pkcs11_protect_server/README_PROTECT_SERVER.rdoc pkcs11_luna/README_LUNA.rdoc"
 end
 
 desc "Publish YARD to wherever you want."
