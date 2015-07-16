@@ -12,7 +12,7 @@ You must have a PKCS #11 v2.20 implementation library installed in
 order to use this module. Tested implementations of PKCS#11 librarys
 include:
 * OpenSC[http://www.opensc-project.org] supported Smart Cards
-* Safenet[http://www.safenet-inc.com] - Protect Server HSMs
+* Safenet[http://www.safenet-inc.com] - Protect Server and Luna HSMs
 * Mozilla_Soft_Token[https://developer.mozilla.org/en/PKCS11] which comes with every firefox installation
 
 This module works on the Unix like operating systems and win32.
@@ -71,6 +71,7 @@ can be found at http://www.cryptsoft.com/pkcs11doc.
 Some vendors extend their libraries beyond the standard, in it's own way.
 This can be used by vendor specific packages:
 * Safenet ProtectServer: {file:pkcs11_protect_server/README_PROTECT_SERVER.rdoc}
+* Safenet Luna: {file:pkcs11_luna/README_LUNA.rdoc}
 
 === Threading
 
