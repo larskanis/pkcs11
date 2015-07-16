@@ -21,6 +21,9 @@ CLEAN.include 'tmp'
 
 Hoe.plugin :bundler
 
+# Build a Manifest file to satisfy hoe.
+IO.write("Manifest.txt", `git ls-files`)
+
 hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
