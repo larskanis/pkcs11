@@ -44,8 +44,6 @@ hoe = Hoe.spec 'pkcs11' do
   self.rdoc_locations << "http://www.rubydoc.info/gems/pkcs11"
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.3:2.0.0:2.1.1:2.2.0'
-
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
