@@ -41,7 +41,7 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:files] = `git ls-files`.split("\n").reject{|f| f=~/^pkcs11_/ }
   spec_extras[:files] += GENERATED_FILES
   spec_extras[:has_rdoc] = 'yard'
-  self.rdoc_locations << "larskanis@rack.rubyforge.org:/var/www/gforge-projects/pkcs11/pkcs11/"
+  self.rdoc_locations << "http://www.rubydoc.info/gems/pkcs11"
 end
 
 ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.3:2.0.0:2.1.1:2.2.0'
