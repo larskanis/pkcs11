@@ -38,7 +38,7 @@ hoe = Hoe.spec 'pkcs11' do
   self.readme_file = 'README.rdoc'
   self.extra_rdoc_files << self.readme_file << 'ext/pk11.c'
   spec_extras[:extensions] = 'ext/extconf.rb'
-  spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/).reject{|f| f=~/^pkcs11_/ }
+  spec_extras[:files] = `git ls-files`.split("\n").reject{|f| f=~/^pkcs11_/ }
   spec_extras[:files] += GENERATED_FILES
   spec_extras[:has_rdoc] = 'yard'
   self.rdoc_locations << "larskanis@rack.rubyforge.org:/var/www/gforge-projects/pkcs11/pkcs11/"
