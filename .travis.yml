@@ -1,4 +1,5 @@
 language: ruby
+sudo: false
 rvm:
   - "1.9.3"
   - "2.2.0"
@@ -6,7 +7,4 @@ rvm:
 matrix:
   allow_failures:
     - rvm: rbx
-before_install:
-  - sudo apt-get install libnss3
-  - gem install hoe rake-compiler minitest
-script: rake compile test gem
+script: bundle exec rake compile test gem

@@ -19,12 +19,17 @@ CLEAN.include GENERATED_FILES
 CLEAN.include 'lib/pkcs11_ext.so'
 CLEAN.include 'tmp'
 
+Hoe.plugin :bundler
+
 hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
   developer('Lars Kanis', 'kanis@comcard.de')
   extra_dev_deps << ['yard', '>= 0.6']
-  extra_dev_deps << ['rake-compiler', '>= 0.7']
+  extra_dev_deps << ['rake-compiler', '~> 0.9.2']
+  extra_dev_deps << ['rake-compiler-dock', '~> 0.4.3']
+  extra_dev_deps << ['minitest', '~> 5.7']
+  extra_dev_deps << ['hoe-bundler', '~> 1.0']
 
   self.urls = ['http://github.com/larskanis/pkcs11']
   self.summary = 'PKCS#11 binding for Ruby'
