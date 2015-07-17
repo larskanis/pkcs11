@@ -9,35 +9,29 @@
 This module allows Ruby programs to interface with "RSA Security Inc.
 PKCS #11 Cryptographic Token Interface (Cryptoki)".
 PKCS #11 is the de-facto standard to access cryptographic devices.
-You must have a PKCS #11 v2.20 implementation library installed in
-order to use this module. Tested implementations of PKCS#11 librarys
-include:
+You must have a PKCS #11 v2.x implementation library installed in order to use this module. Tested implementations of PKCS#11 librarys include:
 * OpenSC[http://www.opensc-project.org] supported Smart Cards
 * Safenet[http://www.safenet-inc.com] - Protect Server and Luna HSMs
 * Mozilla_Soft_Token[https://developer.mozilla.org/en/PKCS11] which comes with every firefox installation
 
-This module works on the Unix like operating systems and win32.
+This module works on Unix like operating systems and on Windows.
 
 == Installation
 
-  gem install pkcs11
+  $ gem install pkcs11
 
-This installs the PKCS#11 extension either by compiling (Unix) or by using the precompiled gem for Win32.
+This installs the PKCS#11 extension either by compiling (Unix) or by using the precompiled gem for Windows.
 
 == Usage
 Cryptoki has a reputation to be complicated to implement and use.
 While this seems to be true for C, it shouldn't for Ruby.
 
-* {PKCS11.open} opens a PKCS#11 Unix *.so file or Windows-DLL with a suitable PKCS #11 implementation
-  and returns a {PKCS11::Library}.
+* {PKCS11.open} opens a PKCS#11 Unix *.so file or Windows-DLL with a suitable PKCS #11 implementation and returns a {PKCS11::Library}.
 * {PKCS11::Library#slots} returns a list of {PKCS11::Slot} for all slots accessable by the library.
-* {PKCS11::Slot#open} opens a {PKCS11::Session} which is used for object handling
-  and cryptographic operations.
+* {PKCS11::Slot#open} opens a {PKCS11::Session} which is used for object handling and cryptographic operations.
 * {PKCS11::Object} represents a key, data or certificate object.
-* all constants defined in PKCS#11 v2.20 are available in the module {PKCS11}
-  and contain the associated Integer value (CKA_KEY_TYPE, CKK_AES, CKM_SHA_1 etc.)
-* also all PKCS#11 v2.20 structs are available in the module {PKCS11} as proper ruby classes
-  ({PKCS11::CK_VERSION}, {PKCS11::CK_OTP_PARAMS} etc.)
+* all constants defined in PKCS#11 v2.40 are available in the module {PKCS11} and contain the associated Integer value (CKA_KEY_TYPE, CKK_AES, CKM_SHA_1 etc.)
+* also all PKCS#11 v2.40 structs are available in the module {PKCS11} as proper ruby classes ({PKCS11::CK_VERSION}, {PKCS11::CK_OTP_PARAMS} etc.)
 
 === Example
   require "rubygems"
@@ -55,18 +49,17 @@ While this seems to be true for C, it shouldn't for Ruby.
   end
 
 This opens a {PKCS11::Library PKCS#11 library} and prints it's {PKCS11::CK_INFO information block}.
-Then a {PKCS11::Session} to the first {PKCS11::Library#active_slots active slot} of the device is opened and
-a {PKCS11::Session#login login} is done on the user account. Now, a 112 bit DES3 {PKCS11::Object key object} is generated and
-some plaintext is {PKCS11::Session#encrypt encrypted} with it. A 8-byte zero IV is used. In many cases method parameters
-can be Integer (like PKCS11::CKA_LABEL) or, as in the sample, Symbol (:LABEL) which is internally
-converted.
+Then a {PKCS11::Session} to the first {PKCS11::Library#active_slots active slot} of the device is opened and a {PKCS11::Session#login login} is done on the user account.
+Now, a 112 bit DES3 {PKCS11::Object key object} is generated and some plaintext is {PKCS11::Session#encrypt encrypted} with it.
+A 8-byte zero IV is used.
+In many cases method parameters can be Integer (like PKCS11::CKA_LABEL) or, as in the sample, Symbol (:LABEL) which is internally converted.
 
-Many more usage examples can be found in the unit tests of the <tt>test</tt>
-directory of the project or gem.
+Many more usage examples can be found in the unit tests of the <tt>test</tt> directory of the project or gem.
 
-Detail information for the API specification is provided by RSA Security Inc.
-Please refer the URL: http://www.rsa.com/rsalabs/node.asp?id=2133. Browsable HTML
-can be found at http://www.cryptsoft.com/pkcs11doc.
+Detail information for the API specification is provided by the OASIS PKCS 11 Technical Committee.
+Please refer the URL: https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=pkcs11
+
+Browsable HTML can be found at http://www.cryptsoft.com/pkcs11doc.
 
 === Vendor extensions
 Some vendors extend their libraries beyond the standard, in it's own way.
@@ -77,50 +70,35 @@ This can be used by vendor specific packages:
 === Threading
 
 The pkcs11 binding fully supports native, background Ruby threads.
-This of course only applies to Rubinius and Ruby 1.9.x or higher since
-earlier versions of Ruby do not support native threads.
+This of course only applies to Rubinius and Ruby 1.9 or higher since earlier versions of Ruby do not support native threads.
 
-According to the standard, calling the Cryptoki library from multiple threads simultaneously,
-requires to open it with flag PKCS11::CKF_OS_LOCKING_OK.
-Application-supplied synchronization primitives
-(CreateMutex, DestroyMutex, LockMutex, UnlockMutex) are not supported.
+According to the standard, calling the Cryptoki library from multiple threads simultaneously, requires to open it with flag PKCS11::CKF_OS_LOCKING_OK.
+Application-supplied synchronization primitives (CreateMutex, DestroyMutex, LockMutex, UnlockMutex) are not supported.
 
 
-== Cross compiling for Windows
+== Compiling for Windows
 
-Using rake-compiler a cross compiled pkcs11-gem can be build on a linux host for
-the win32 platform. There are no runtime dependencies to any but the standard Windows DLLs.
+The pkcs11 source gem can be built on Windows (with help of the RubyInstaller's DevKit[http://rubyinstaller.org/add-ons/devkit/] ) .
+Use
 
-Install mingw32. On a debian based system this should work:
+    $ gem install pkcs11 --platform=ruby
 
-  apt-get install mingw32
+for installation.
+In addition precompiled binary Windows gems are provided for convenience.
+They are installed by default on Windows.
 
-On MacOS X, if you have MacPorts installed:
+The binary Windows gems can be compiled per rake-compiler-dock[https://github.com/rake-compiler/rake-compiler-dock] :
 
-  port install i386-mingw32-gcc
+    $ rake gem:windows
 
-Install the rake-compiler:
-
-  gem install rake-compiler
-
-Download and cross compile ruby for win32:
-
-  rake-compiler cross-ruby VERSION=1.8.7-p352
-  rake-compiler cross-ruby VERSION=1.9.2-p290
-
-Download and cross compile pkcs11 for win32 (MRI 1.8+1.9 fat gem):
-
-  rake cross native gem RUBY_CC_VERSION=1.8.7:1.9.2
-
-If everything works, there should be pkcs11-VERSION-x86-mingw32.gem in the pkg
-directory.
+If everything works, there should be some files kind of pkcs11-VERSION-ARCH-mingw32.gem in the pkg directory for installation.
 
 
 == ToDo
 
-* encoding support for Ruby 1.9
-* support for proprietary extensions of different vendors (done for Safenet-ProtectServer)
-* PKCS#11 v2.3
+* encoding support for Ruby 1.9+
+* support for proprietary extensions of other vendors
+* full support for PKCS#11 v2.40
 
 == Development Status
 
@@ -202,6 +180,7 @@ Otherwise it is considered as a bug in the binding.
 * Ryosuke Kutsuna <ryosuke@deer-n-horse.jp>
 * GOTOU Yuuzou <gotoyuzo@notwork.org>
 * Lars Kanis <kanis@comcard.de>
+* Jonathan Patchell <jonathan.patchell@safenet-inc.com>
 
 == Copying
 See MIT-LICENSE included in the package.
