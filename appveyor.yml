@@ -6,6 +6,12 @@ install:
   - gem --version
   - bundle install
 
+  # When running ruby-x86, we make use of the softokn3.dll that is part of the
+  # pre-installed firefox. The test helper will find it automatically.
+  # When running ruby-x64, we equally need a 64 bit softokn3.dll to test against.
+  # However it is not part of any installed software on appveyor, nor is it
+  # officially released as a windows binary, so we download and install a 64 bit
+  # firefox version and use it's softokn3.dll.
   - ps: |
         if ($env:isx64 -eq "1")
         {
