@@ -30,7 +30,6 @@ class TestPkcs11Thread < Minitest::Test
     th = Thread.new{
       loop do
         count += 1
-        sleep 0.01
       end
     }
     # This should take some seconds:
@@ -38,7 +37,7 @@ class TestPkcs11Thread < Minitest::Test
       {:MODULUS_BITS=>2048, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
       {})
     th.kill
-    assert_operator count, :>, 10, "The second thread should count further concurrent to the key generation"
+    assert_operator count, :>, 100000, "The second thread should count further concurrent to the key generation"
   end
 
 end
