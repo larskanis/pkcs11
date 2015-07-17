@@ -6,6 +6,15 @@ install:
   - gem --version
   - bundle install
 
+  - ps: |
+        if ($env:isx64 -eq "1")
+        {
+          $(new-object net.webclient).DownloadFile('http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/40.0b4/win64/en-US/Firefox%20Setup%2040.0b4.exe', 'C:\firefox-setup.exe')
+          cmd /c C:\firefox-setup.exe -ms
+          $env:SOFTOKN_PATH = 'C:\Program Files\Mozilla Firefox\softokn3.dll'
+          $env:PATH = 'C:\Program Files\Mozilla Firefox;' + $env:PATH
+        }
+
 build: off
 
 test_script:
@@ -18,5 +27,6 @@ environment:
     #- ruby_version: "200-x64"
     #- ruby_version: "21"
     #- ruby_version: "21-x64"
-    #- ruby_version: "22"
+    - ruby_version: "22"
     - ruby_version: "22-x64"
+      isx64: "1"
