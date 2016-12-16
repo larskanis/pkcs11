@@ -30,7 +30,7 @@ hoe = Hoe.spec 'pkcs11' do
   developer('Lars Kanis', 'kanis@comcard.de')
   extra_dev_deps << ['yard', '>= 0.6']
   extra_dev_deps << ['rake-compiler', '~> 0.9.2']
-  extra_dev_deps << ['rake-compiler-dock', '~> 0.4.3']
+  extra_dev_deps << ['rake-compiler-dock', '~> 0.6.0']
   extra_dev_deps << ['minitest', '~> 5.7']
   extra_dev_deps << ['hoe-bundler', '~> 1.0']
 
@@ -50,7 +50,7 @@ end
 Rake::ExtensionTask.new('pkcs11_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
-  ext.cross_platform = ['i386-mingw32', 'x64-mingw32']     # forces the Windows platform instead of the default one
+  ext.cross_platform = ['x86-mingw32', 'x64-mingw32', 'x86-linux', 'x86_64-linux']
 end
 
 file 'ext/extconf.rb' => ['ext/pk11_struct_def.inc', 'ext/pk11_thread_funcs.c']
@@ -83,8 +83,8 @@ ENV['RUBY_CC_VERSION'].to_s.split(':').each do |ruby_version|
   end
 end
 
-desc "Build windows binary gems per rake-compiler-dock."
-task "gem:windows" do
+desc "Build windows and Linux binary gems per rake-compiler-dock."
+task "gem:native" do
   require "rake_compiler_dock"
   RakeCompilerDock.sh <<-EOT
     rake cross native gem MAKE='nice make -j`nproc`'
