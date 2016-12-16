@@ -795,19 +795,19 @@ pkcs11_C_WaitForSlotEvent(VALUE self, VALUE flags)
 
 ///////////////////////////////////////
 
-typedef VALUE (*init_func)
+typedef CK_RV (*init_func)
     (CK_SESSION_HANDLE, CK_MECHANISM_PTR, CK_OBJECT_HANDLE);
-typedef VALUE (*crypt_func)
+typedef CK_RV (*crypt_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG, CK_BYTE_PTR, CK_ULONG_PTR);
-typedef VALUE (*crypt_update_func)
+typedef CK_RV (*crypt_update_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG, CK_BYTE_PTR, CK_ULONG_PTR);
-typedef VALUE (*crypt_final_func)
+typedef CK_RV (*crypt_final_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG_PTR);
-typedef VALUE (*sign_update_func)
+typedef CK_RV (*sign_update_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG);
-typedef VALUE (*verify_func)
+typedef CK_RV (*verify_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG, CK_BYTE_PTR, CK_ULONG);
-typedef VALUE (*verify_final_func)
+typedef CK_RV (*verify_final_func)
     (CK_SESSION_HANDLE, CK_BYTE_PTR, CK_ULONG);
 
 #define common_crypt(self, s, d, sz, f)            common_crypt_update(self, s, d, sz, f)
