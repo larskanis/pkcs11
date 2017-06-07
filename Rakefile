@@ -29,7 +29,7 @@ hoe = Hoe.spec 'pkcs11' do
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')
   developer('Lars Kanis', 'kanis@comcard.de')
   extra_dev_deps << ['yard', '>= 0.6']
-  extra_dev_deps << ['rake-compiler', '~> 0.9.2']
+  extra_dev_deps << ['rake-compiler', '~> 1.0']
   extra_dev_deps << ['rake-compiler-dock', '~> 0.6.0']
   extra_dev_deps << ['minitest', '~> 5.7']
   extra_dev_deps << ['hoe-bundler', '~> 1.0']

@@ -5,12 +5,12 @@
 source "https://rubygems.org/"
 
 
-gem "rdoc", "~>4.0", :group => [:development, :test]
 gem "yard", ">=0.6", :group => [:development, :test]
-gem "rake-compiler", "~>0.9.2", :group => [:development, :test]
+gem "rake-compiler", "~>1.0", :group => [:development, :test]
 gem "rake-compiler-dock", "~>0.6.0", :group => [:development, :test]
 gem "minitest", "~>5.7", :group => [:development, :test]
 gem "hoe-bundler", "~>1.0", :group => [:development, :test]
-gem "hoe", "~>3.13", :group => [:development, :test]
+gem "rdoc", "~>4.0", :group => [:development, :test]
+gem "hoe", "~>3.16", :group => [:development, :test]
 
 # vim: syntax=ruby
