@@ -35,7 +35,7 @@ hoe = Hoe.spec 'pkcs11_protect_server' do
   extra_dev_deps << ['yard', '>= 0.6']
   extra_dev_deps << ['rake-compiler', '>= 0.7']
 
-  self.url = 'http://github.com/larskanis/pkcs11'
+  self.urls = ['http://github.com/larskanis/pkcs11']
   self.summary = 'Safenet-ProtectServer extensions for PKCS#11-Ruby'
   self.description = 'This module allows Ruby programs to use vendor extensions for Safenet Protect Server.'
   self.version = pkcs11_version
