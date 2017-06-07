@@ -1,8 +1,8 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11_protect_server"
 require "test/helper"
 
-class TestPkcs11ProtectServer < Test::Unit::TestCase
+class TestPkcs11ProtectServer < Minitest::Test
   include PKCS11
 
   def test_CStruct
@@ -23,7 +23,7 @@ class TestPkcs11ProtectServer < Test::Unit::TestCase
     s.certAttr = [s1, s2]
     assert_equal [s1.to_hash, s2.to_hash], s.certAttr.map{|e| e.to_hash }
     GC.start
-    assert_raise(ArgumentError){ s.certAttr = [s1, s2, nil] }
+    assert_raises(ArgumentError){ s.certAttr = [s1, s2, nil] }
     assert_equal [s1.to_hash, s2.to_hash], s.certAttr.map{|e| e.to_hash }
 
     s.certAttr = []

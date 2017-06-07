@@ -1,8 +1,8 @@
-require "test/unit"
+require "minitest/autorun"
 require "pkcs11_protect_server"
 require "test/helper"
 
-class TestPkcs11ProtectServerCrypt < Test::Unit::TestCase
+class TestPkcs11ProtectServerCrypt < Minitest::Test
   include PKCS11
   attr_reader :slots
   attr_reader :slot
@@ -58,7 +58,7 @@ class TestPkcs11ProtectServerCrypt < Test::Unit::TestCase
   end
 
   def test_bad_parity
-    assert_raise(ProtectServer::CKR_ET_NOT_ODD_PARITY) do
+    assert_raises(ProtectServer::CKR_ET_NOT_ODD_PARITY) do
       session.create_object(
         :CLASS=>CKO_SECRET_KEY,
         :KEY_TYPE=>CKK_DES2,
@@ -74,7 +74,7 @@ class TestPkcs11ProtectServerCrypt < Test::Unit::TestCase
 
     new_key1 = session.derive_key( {ProtectServer::CKM_DES3_DERIVE_CBC => pa}, secret_key,
       :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
-    assert_not_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key shouldn\'t have equal key value'
+    refute_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key shouldn\'t have equal key value'
 
     new_key2 = session.derive_key( {:DES3_DERIVE_CBC => {:data=>"1"*16, :iv=>"2"*16}}, secret_key,
       :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
@@ -98,6 +98,6 @@ class TestPkcs11ProtectServerCrypt < Test::Unit::TestCase
     assert_equal 5, secret_key[:USAGE_COUNT], 'CKA_USAGE_COUNT should be usable'
 
     assert_equal false, secret_key[:IMPORT], 'CKA_IMPORT should default to false'
-    assert_not_nil secret_key.attributes.find{|a| a.type==ProtectServer::CKA_EXPORT}, 'CKA_EXPORT should be returned for Object#attributes'
+    refute_nil secret_key.attributes.find{|a| a.type==ProtectServer::CKA_EXPORT}, 'CKA_EXPORT should be returned for Object#attributes'
   end
 end
