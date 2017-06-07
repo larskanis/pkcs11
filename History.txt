@@ -1,3 +1,8 @@
+=== 0.2.6 / 2017-06-07
+
+* Update pkcs11 header files to PKCS11-v2.4.
+* Support binary Windows gems for Ruby-2.0 to 2.4.
+
 === 0.2.5 / 2015-01-26
 
 * Fix compatibility with Ruby-2.2
