@@ -28,6 +28,9 @@ test_script:
 
 environment:
   matrix:
+    - ruby_version: "24"
+    - ruby_version: "24-x64"
+      isx64: "1"
     - ruby_version: "193"
     #- ruby_version: "200"
     #- ruby_version: "200-x64"
