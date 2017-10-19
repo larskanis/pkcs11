@@ -64,7 +64,7 @@ module PKCS11
     #   true   -> 0x01
     #   false  -> 0x00
     #   nil    -> NULL pointer
-    #   Fixnum -> binary encoded unsigned long
+    #   Integer-> binary encoded unsigned long
     #
     # @example
     #     object[:VALUE] = "\000\000\000\000\000\000\000\000"

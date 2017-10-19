@@ -26,13 +26,13 @@ class TestPkcs11Slot < Minitest::Test
 
     assert sinfo.inspect =~ /manufacturerID=/, 'Slot info should tell about manufacturerID'
 
-    assert_equal Fixnum, sinfo.flags.class
+    assert_kind_of Integer, sinfo.flags
     assert sinfo.manufacturerID =~ /Mozilla/i, "It's the mozilla libaray we test against"
     assert sinfo.slotDescription =~ /Private Key/i, "It's the slot with users private keys"
-    assert_equal Fixnum, sinfo.hardwareVersion.major.class, "Version should be a number"
-    assert_equal Fixnum, sinfo.hardwareVersion.minor.class, "Version should be a number"
-    assert_equal Fixnum, sinfo.firmwareVersion.major.class, "Version should be a number"
-    assert_equal Fixnum, sinfo.firmwareVersion.minor.class, "Version should be a number"
+    assert_kind_of Integer, sinfo.hardwareVersion.major, "Version should be a number"
+    assert_kind_of Integer, sinfo.hardwareVersion.minor, "Version should be a number"
+    assert_kind_of Integer, sinfo.firmwareVersion.major, "Version should be a number"
+    assert_kind_of Integer, sinfo.firmwareVersion.minor, "Version should be a number"
   end
 
   def test_token_info
@@ -44,14 +44,14 @@ class TestPkcs11Slot < Minitest::Test
     assert_equal false, slot.mechanisms.empty?, 'There should be some mechanisms'
     slot.mechanisms.each do |m|
       info = slot.mechanism_info(m)
-      assert_equal CK_MECHANISM_INFO, info.class, 'Mechanism info should get a CK_MECHANISM_INFO'
+      assert_kind_of CK_MECHANISM_INFO, info, 'Mechanism info should get a CK_MECHANISM_INFO'
       assert info.inspect =~ /ulMaxKeySize=/, 'Mechanism info should tell about max key size'
     end
   end
 
   def test_mechanism_info
     info1 = slot.mechanism_info(:DES3_CBC)
-    assert_equal CK_MECHANISM_INFO, info1.class, 'Mechanism info should get a CK_MECHANISM_INFO'
+    assert_kind_of CK_MECHANISM_INFO, info1, 'Mechanism info should get a CK_MECHANISM_INFO'
     assert info1.inspect =~ /ulMinKeySize=/, 'Mechanism info should tell about min key size'
 
     info2 = slot.mechanism_info(CKM_DES3_CBC)

@@ -133,9 +133,7 @@ module PKCS11
           end
 
           PKCS11::CK_MECHANISM.new(mech, param)
-        when Fixnum
-          PKCS11::CK_MECHANISM.new(mechanism)
-        when Bignum
+        when Integer
           PKCS11::CK_MECHANISM.new(mechanism)
         else
           mechanism
