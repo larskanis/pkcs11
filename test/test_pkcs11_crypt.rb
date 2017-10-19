@@ -90,8 +90,14 @@ class TestPkcs11Crypt < Minitest::Test
 
   def create_openssl_cipher(pk11_key)
     rsa = OpenSSL::PKey::RSA.new
-    rsa.n = OpenSSL::BN.new pk11_key[:MODULUS], 2
-    rsa.e = OpenSSL::BN.new pk11_key[:PUBLIC_EXPONENT], 2
+    n = OpenSSL::BN.new pk11_key[:MODULUS], 2
+    e = OpenSSL::BN.new pk11_key[:PUBLIC_EXPONENT], 2
+    if rsa.respond_to?(:set_key)
+      rsa.set_key(n, e, nil)
+    else
+      rsa.n = n
+      rsa.e = e
+    end
     rsa
   end
 
