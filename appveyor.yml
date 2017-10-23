@@ -29,7 +29,9 @@ test_script:
 environment:
   matrix:
     - ruby_version: "24"
+      RUBY_DLL_PATH: "C:/Program Files (x86)/Mozilla Firefox"
     - ruby_version: "24-x64"
+      RUBY_DLL_PATH: "C:/Program Files/Mozilla Firefox"
       isx64: "1"
     - ruby_version: "193"
     #- ruby_version: "200"
