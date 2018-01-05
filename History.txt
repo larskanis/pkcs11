@@ -1,5 +1,6 @@
 === 0.2.7 / 2018-01-05
 
+* Add vendor extension for Safenet Luna called pkcs11_luna.
 * Fix warnings to Fixnum/Bignum in Ruby-2.4+.
 * Add binary Windows gems for Ruby-2.5.
 * Add a note about RUBY_DLL_PATH on Windows.
