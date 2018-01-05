@@ -1,3 +1,9 @@
+=== 0.2.7 / 2018-01-05
+
+* Fix warnings to Fixnum/Bignum in Ruby-2.4+.
+* Add binary Windows gems for Ruby-2.5.
+* Add a note about RUBY_DLL_PATH on Windows.
+
 === 0.2.6 / 2017-06-07
 
 * Update pkcs11 header files to PKCS11-v2.4.
