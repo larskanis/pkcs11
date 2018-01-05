@@ -51,8 +51,6 @@ hoe = Hoe.spec 'pkcs11_luna' do
   spec_extras[:has_rdoc] = 'yard'
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.3'
-
 Rake::ExtensionTask.new('pkcs11_luna_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)

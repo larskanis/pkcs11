@@ -49,8 +49,6 @@ hoe = Hoe.spec 'pkcs11_protect_server' do
   spec_extras[:has_rdoc] = 'yard'
 end
 
-ENV['RUBY_CC_VERSION'] ||= '1.8.7:1.9.2'
-
 Rake::ExtensionTask.new('pkcs11_protect_server_ext', hoe.spec) do |ext|
   ext.ext_dir = 'ext'
   ext.cross_compile = true                # enable cross compilation (requires cross compile toolchain)
