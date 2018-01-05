@@ -34,6 +34,10 @@ module PKCS11
     #   pkcs11.load_library(so_path)
     #   pkcs11.C_GetFunctionList
     #   pkcs11.C_Initialize(args)
+    #
+    # Note: When using RubyInstaller-2.4+ on Windows it might be required to add the path of dependent DLLs to the DLL search path.
+    # This can be done by the +RUBY_DLL_PATH+ environment variable.
+    # See https://github.com/oneclick/rubyinstaller2/wiki/For-gem-developers#user-content-dll-loading
     def initialize(so_path=nil, args={})
       unwrapped_initialize(so_path, args)
     end
