@@ -42,7 +42,6 @@ hoe = Hoe.spec 'pkcs11' do
   spec_extras[:extensions] = 'ext/extconf.rb'
   spec_extras[:files] = `git ls-files`.split("\n").reject{|f| f=~/^pkcs11_/ }
   spec_extras[:files] += GENERATED_FILES
-  spec_extras[:has_rdoc] = 'yard'
   self.rdoc_locations << "http://www.rubydoc.info/gems/pkcs11"
 end
 
