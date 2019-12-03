@@ -1,11 +1,11 @@
 language: ruby
 sudo: false
 rvm:
-  - "2.0"
-  - "2.5.1"
+  - "2.2"
+  - "2.5.7"
   - "ruby-head"
-  - rbx
+  - truffleruby
 matrix:
   allow_failures:
-    - rvm: rbx
+    - rvm: truffleruby
 script: bundle exec rake compile test gem
