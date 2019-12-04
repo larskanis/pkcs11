@@ -148,7 +148,7 @@ class TestPkcs11Structs < Minitest::Test
     assert s.inspect =~ /year="2010"/, 'There should be a year in CK_DATE'
     assert_equal ["year", "month", "day"], s.members, 'CK_DATE should contain some attributes'
     assert_equal ["2010", "12", "31"], s.values, 'values of CK_DATE'
-    assert_equal( {:day=>"31", :month=>"12", :year=>"2010"}, s.to_hash, 'CK_DATE as hash' )
+    assert_equal( {day: "31", month: "12", year: "2010"}, s.to_hash, 'CK_DATE as hash' )
   end
 
   def test_bignum_attribute

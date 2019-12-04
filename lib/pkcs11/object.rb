@@ -84,7 +84,7 @@ module PKCS11
     # Modifies the value of one or more attributes of the object in a single call.
     #
     # @example
-    #   object.attributes = {:SUBJECT => cert_subject, PKCS11::CKA_VALUE => cert_data}
+    #   object.attributes = {SUBJECT:  cert_subject, PKCS11::CKA_VALUE => cert_data}
     # @return template
     def C_SetAttributeValue(template={})
       @pk.C_SetAttributeValue(@sess, @obj, to_attributes(template))

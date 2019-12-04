@@ -21,10 +21,10 @@ class TestPkcs11Object < Minitest::Test
 
     # Create session object for tests.
     @object = session.create_object(
-      :CLASS=>CKO_DATA,
-      :TOKEN=>false,
-      :APPLICATION=>'My Application',
-      :VALUE=>'value')
+      CLASS: CKO_DATA,
+      TOKEN: false,
+      APPLICATION: 'My Application',
+      VALUE: 'value')
   end
 
   def teardown
@@ -42,7 +42,7 @@ class TestPkcs11Object < Minitest::Test
     assert_equal CKO_DATA, object.attributes(:CLASS).first.value, 'Resulting attribute should be Integer value CKO_DATA'
     assert_equal 3, object.attributes(:VALUE, :TOKEN, :PRIVATE).length, 'An object should have some attributes'
     assert_equal 3, object.attributes([:VALUE, :TOKEN, :APPLICATION]).length, 'Another way to retieve attributes'
-    assert_equal 2, object.attributes(:VALUE=>nil, :TOKEN=>nil).length, 'Third way to retieve attributes'
+    assert_equal 2, object.attributes(VALUE: nil, TOKEN: nil).length, 'Third way to retieve attributes'
 
     # The C language way to retrieve the attribute values:
     template = [
@@ -80,7 +80,7 @@ class TestPkcs11Object < Minitest::Test
   end
 
   def test_set_attributes
-    object.attributes = {:VALUE => 'value4', PKCS11::CKA_APPLICATION => 'app4'}
+    object.attributes = {VALUE:  'value4', PKCS11::CKA_APPLICATION => 'app4'}
     assert_equal 'value4', object[:VALUE], "Value should have changed"
     assert_equal 'app4', object[:APPLICATION], "App should have changed"
 
@@ -106,7 +106,7 @@ class TestPkcs11Object < Minitest::Test
   end
 
   def test_copy_with_params
-    new_obj = object.copy :APPLICATION=>'Copied object'
+    new_obj = object.copy APPLICATION: 'Copied object'
     assert_equal 'value', new_obj[:VALUE], "Value should be copied"
     assert_equal 'Copied object', new_obj[:APPLICATION], "Application should be changed"
     assert_equal 'My Application', object[:APPLICATION], "Original object should be unchanged"

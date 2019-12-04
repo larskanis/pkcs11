@@ -109,7 +109,7 @@ module PKCS11
     # @return [Array<PKCS11::Object>]
     #
     # @example prints subject of all certificates stored in the token:
-    #   session.find_objects(:CLASS => PKCS11::CKO_CERTIFICATE) do |obj|
+    #   session.find_objects(CLASS:  PKCS11::CKO_CERTIFICATE) do |obj|
     #     p OpenSSL::X509::Name.new(obj[:SUBJECT])
     #   end
     def find_objects(template={})
@@ -146,9 +146,9 @@ module PKCS11
     # @return [PKCS11::Object] the newly created object
     # @example Creating a 112 bit DES key from plaintext
     #     secret_key = session.create_object(
-    #       :CLASS=>PKCS11::CKO_SECRET_KEY, :KEY_TYPE=>PKCS11::CKK_DES2,
-    #       :ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true,
-    #       :VALUE=>'0123456789abcdef', :LABEL=>'test_secret_key')
+    #       CLASS: PKCS11::CKO_SECRET_KEY, KEY_TYPE: PKCS11::CKK_DES2,
+    #       ENCRYPT: true, WRAP: true, DECRYPT: true, UNWRAP: true,
+    #       VALUE: '0123456789abcdef', LABEL: 'test_secret_key')
     def C_CreateObject(template={})
       handle = @pk.C_CreateObject(@sess, to_attributes(template))
       Object.new @pk, @sess, handle
@@ -302,12 +302,12 @@ module PKCS11
     #
     # @example for using single part operation
     #   iv = "12345678"
-    #   cryptogram = session.encrypt( {:DES_CBC_PAD=>iv}, key, "block 1block 2" )
+    #   cryptogram = session.encrypt( {DES_CBC_PAD: iv}, key, "block 1block 2" )
     #
     # @example for using multi part operation
     #   iv = "12345678"
     #   cryptogram = ''
-    #   cryptogram << session.encrypt( {:DES_CBC_PAD=>iv}, key ) do |cipher|
+    #   cryptogram << session.encrypt( {DES_CBC_PAD: iv}, key ) do |cipher|
     #     cryptogram << cipher.update("block 1")
     #     cryptogram << cipher.update("block 2")
     #   end
@@ -649,7 +649,7 @@ module PKCS11
     # @return [PKCS11::Object]  key Object of the new created key.
     # @example generate 112 bit DES key
     #     key = session.generate_key(:DES2_KEY_GEN,
-    #       {:ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true})
+    #       {ENCRYPT: true, WRAP: true, DECRYPT: true, UNWRAP: true})
     def C_GenerateKey(mechanism, template={})
       obj = @pk.C_GenerateKey(@sess, to_mechanism(mechanism), to_attributes(template))
       Object.new @pk, @sess, obj
@@ -664,8 +664,8 @@ module PKCS11
     # @return [Array<PKCS11::Object>]  an two-items array of new created public and private key Object.
     # @example
     #     pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
-    #       {:ENCRYPT=>true, :VERIFY=>true, :WRAP=>true, :MODULUS_BITS=>768, :PUBLIC_EXPONENT=>3},
-    #       {:SUBJECT=>'test', :ID=>"ID", :DECRYPT=>true, :SIGN=>true, :UNWRAP=>true})
+    #       {ENCRYPT: true, VERIFY: true, WRAP: true, MODULUS_BITS: 768, PUBLIC_EXPONENT: 3},
+    #       {SUBJECT: 'test', ID: "ID", DECRYPT: true, SIGN: true, UNWRAP: true})
     def C_GenerateKeyPair(mechanism, pubkey_template={}, privkey_template={})
       objs = @pk.C_GenerateKeyPair(@sess, to_mechanism(mechanism), to_attributes(pubkey_template), to_attributes(privkey_template))
       objs.map{|obj| Object.new @pk, @sess, obj }
@@ -682,7 +682,7 @@ module PKCS11
     # @example Wrapping a secret key
     #     wrapped_key_value = session.wrap_key(:DES3_ECB, secret_key, secret_key)
     # @example Wrapping a private key
-    #     wrapped_key_value = session.wrap_key({:DES3_CBC_PAD=>"\0"*8}, secret_key, rsa_priv_key)
+    #     wrapped_key_value = session.wrap_key({DES3_CBC_PAD: "\0"*8}, secret_key, rsa_priv_key)
     def C_WrapKey(mechanism, wrapping_key, wrapped_key, out_size=nil)
       @pk.C_WrapKey(@sess, to_mechanism(mechanism), wrapping_key, wrapped_key, out_size)
     end
@@ -698,7 +698,7 @@ module PKCS11
     # @see Session#C_WrapKey
     # @example
     #     unwrapped_key = session.unwrap_key(:DES3_ECB, secret_key, wrapped_key_value,
-    #         :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true)
+    #         CLASS: CKO_SECRET_KEY, KEY_TYPE: CKK_DES2, ENCRYPT: true, DECRYPT: true)
     def C_UnwrapKey(mechanism, wrapping_key, wrapped_key, template={})
       obj = @pk.C_UnwrapKey(@sess, to_mechanism(mechanism), wrapping_key, wrapped_key, to_attributes(template))
       Object.new @pk, @sess, obj
@@ -713,8 +713,8 @@ module PKCS11
     # @return [PKCS11::Object]  key object of the new created key.
     # @example Derive a AES key by XORing with some derivation data
     #     deriv_data = "\0"*16
-    #     new_key = session.derive_key( {CKM_XOR_BASE_AND_DATA => {:pData => deriv_data}}, secret_key,
-    #       :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :VALUE_LEN=>16, :ENCRYPT=>true )
+    #     new_key = session.derive_key( {CKM_XOR_BASE_AND_DATA => {pData:  deriv_data}}, secret_key,
+    #       CLASS: CKO_SECRET_KEY, KEY_TYPE: CKK_AES, VALUE_LEN: 16, ENCRYPT: true )
     def C_DeriveKey(mechanism, base_key, template={})
       obj = @pk.C_DeriveKey(@sess, to_mechanism(mechanism), base_key, to_attributes(template))
       Object.new @pk, @sess, obj

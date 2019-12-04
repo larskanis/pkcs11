@@ -34,7 +34,7 @@ class TestPkcs11Thread < Minitest::Test
     }
     # This should take some seconds:
     _pub_key, _priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
-      {:MODULUS_BITS=>2048, :PUBLIC_EXPONENT=>[3].pack("N"), :TOKEN=>false},
+      {MODULUS_BITS: 2048, PUBLIC_EXPONENT: [3].pack("N"), TOKEN: false},
       {})
     th.kill
     assert_operator count, :>, 100000, "The second thread should count further concurrent to the key generation"

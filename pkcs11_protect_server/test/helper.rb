@@ -1,5 +1,5 @@
 def open_ctsw
-  PKCS11::ProtectServer::Library.new(:sw, :flags=>0)
+  PKCS11::ProtectServer::Library.new(:sw, flags: 0)
 end
 
 def adjust_parity(data)

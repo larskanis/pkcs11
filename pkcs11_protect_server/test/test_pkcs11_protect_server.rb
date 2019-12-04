@@ -12,7 +12,7 @@ class TestPkcs11ProtectServer < Minitest::Test
     assert_match( /m=3/, s.inspect, 'There should be a n value in CK_SECRET_SHARE_PARAMS')
     assert_equal ["n", "m"], s.members, 'CK_SECRET_SHARE_PARAMS should contain some attributes'
     assert_equal [2, 3], s.values, 'values of CK_SECRET_SHARE_PARAMS'
-    assert_equal( {:n=>2, :m=>3}, s.to_hash, 'CK_SECRET_SHARE_PARAMS as hash' )
+    assert_equal( {n: 2, m: 3}, s.to_hash, 'CK_SECRET_SHARE_PARAMS as hash' )
   end
 
   def test_CK_PKCS12_PBE_IMPORT_PARAMS
@@ -39,12 +39,12 @@ class TestPkcs11ProtectServer < Minitest::Test
   end
 
   def test_loading
-    pk = PKCS11::ProtectServer::Library.new(:sw, :flags=>0)
+    pk = PKCS11::ProtectServer::Library.new(:sw, flags: 0)
     so_path = pk.so_path
     pk.close
     assert !so_path.empty?, "Used path shouldn't be empty"
 
-    pk = PKCS11::ProtectServer::Library.new(so_path, :flags=>0)
+    pk = PKCS11::ProtectServer::Library.new(so_path, flags: 0)
     pk.close
   end
 
@@ -52,7 +52,7 @@ class TestPkcs11ProtectServer < Minitest::Test
     pk = PKCS11::ProtectServer::Library.new
     pk.load_library(:sw)
     pk.C_GetFunctionList
-    pk.C_Initialize(:flags=>0)
+    pk.C_Initialize(flags: 0)
     pk.info
     pk.close
   end

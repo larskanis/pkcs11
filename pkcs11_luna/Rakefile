@@ -59,7 +59,7 @@ end
 
 def copy_from_base_task(filename)
   file File.join('ext', filename) => File.join(RUBY_PKCS11_EXT_DIR, filename) do |t|
-    cp t.prerequisites.first, t.name, :verbose=>true
+    cp t.prerequisites.first, t.name, verbose: true
   end
 end
 
@@ -81,6 +81,6 @@ file 'ext/pk11l_const_def.inc' => 'ext/generate_constants.rb' do
 end
 file 'ext/pk11l.c' => ['ext/pk11l_struct_def.inc', 'ext/pk11l_struct_impl.inc', 'ext/pk11l_const_def.inc']
 
-task :doc_files => 'ext/pk11l_struct.doc'
+task doc_files:  'ext/pk11l_struct.doc'
 
 # vim: syntax=ruby

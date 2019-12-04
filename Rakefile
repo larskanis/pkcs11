@@ -98,13 +98,13 @@ task :docs_of_vendor_extensions do
 end
 
 desc "Generate static HTML documentation with YARD"
-task :yardoc=>['ext/pk11_struct.doc', :docs_of_vendor_extensions] do
+task yardoc: ['ext/pk11_struct.doc', :docs_of_vendor_extensions] do
   luna_docs = "pkcs11_luna/lib/**/*.rb pkcs11_luna/ext/*.c pkcs11_luna/ext/*.doc"
   sh "yardoc --title \"PKCS#11/Ruby Interface\" --no-private lib/**/*.rb ext/*.c ext/*.doc pkcs11_protect_server/lib/**/*.rb pkcs11_protect_server/ext/*.c pkcs11_protect_server/ext/*.doc #{luna_docs} - pkcs11_protect_server/README_PROTECT_SERVER.rdoc pkcs11_luna/README_LUNA.rdoc"
 end
 
 desc "Publish YARD to wherever you want."
-task :publish_yard => [:yardoc] do
+task publish_yard:  [:yardoc] do
   rdoc_locations = hoe.rdoc_locations
   warn "no rdoc_location values" if rdoc_locations.empty?
   rdoc_locations.each do |dest|

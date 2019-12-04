@@ -39,12 +39,12 @@ class TestPkcs11ProtectServerCrypt < Minitest::Test
     assert_equal CKS_RO_USER_FUNCTIONS, session.info.state, "Session should be in USER state"
 
     @secret_key = session.create_object(
-      :CLASS=>CKO_SECRET_KEY,
-      :KEY_TYPE=>CKK_DES2,
-      :ENCRYPT=>true, :WRAP=>true, :DECRYPT=>true, :UNWRAP=>true, :TOKEN=>false, :DERIVE=>true,
-      :USAGE_COUNT=>0, :EXPORTABLE=>true,
-      :VALUE=>adjust_parity("0123456789abcdef"),
-      :LABEL=>'test_secret_key')
+      CLASS: CKO_SECRET_KEY,
+      KEY_TYPE: CKK_DES2,
+      ENCRYPT: true, WRAP: true, DECRYPT: true, UNWRAP: true, TOKEN: false, DERIVE: true,
+      USAGE_COUNT: 0, EXPORTABLE: true,
+      VALUE: adjust_parity("0123456789abcdef"),
+      LABEL: 'test_secret_key')
   end
 
   def teardown
@@ -60,10 +60,10 @@ class TestPkcs11ProtectServerCrypt < Minitest::Test
   def test_bad_parity
     assert_raises(ProtectServer::CKR_ET_NOT_ODD_PARITY) do
       session.create_object(
-        :CLASS=>CKO_SECRET_KEY,
-        :KEY_TYPE=>CKK_DES2,
-        :VALUE=>"0123456789abcdef",
-        :LABEL=>'test_secret_key2')
+        CLASS: CKO_SECRET_KEY,
+        KEY_TYPE: CKK_DES2,
+        VALUE: "0123456789abcdef",
+        LABEL: 'test_secret_key2')
     end
   end
 
@@ -73,14 +73,14 @@ class TestPkcs11ProtectServerCrypt < Minitest::Test
     pa.iv = "2"*8
 
     new_key1 = session.derive_key( {ProtectServer::CKM_DES3_DERIVE_CBC => pa}, secret_key,
-      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+      CLASS: CKO_SECRET_KEY, KEY_TYPE: CKK_DES2, ENCRYPT: true, DECRYPT: true, SENSITIVE: false )
     refute_equal secret_key[:VALUE], new_key1[:VALUE], 'Derived key shouldn\'t have equal key value'
 
-    new_key2 = session.derive_key( {:DES3_DERIVE_CBC => {:data=>"1"*16, :iv=>"2"*16}}, secret_key,
-      :CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_DES2, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>false )
+    new_key2 = session.derive_key( {DES3_DERIVE_CBC:  {data: "1"*16, iv: "2"*16}}, secret_key,
+      CLASS: CKO_SECRET_KEY, KEY_TYPE: CKK_DES2, ENCRYPT: true, DECRYPT: true, SENSITIVE: false )
     assert_equal new_key1[:VALUE], new_key2[:VALUE], 'Both derived key should be equal'
 
-    encrypted_key_value = session.encrypt( {:DES3_CBC => "2"*8}, secret_key, "1"*16)
+    encrypted_key_value = session.encrypt( {DES3_CBC:  "2"*8}, secret_key, "1"*16)
     encrypted_key_value = adjust_parity(encrypted_key_value)
     assert_equal new_key1[:VALUE], encrypted_key_value, 'Encrypted data should equal derived key value'
 

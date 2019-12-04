@@ -20,7 +20,7 @@ class TestPkcs11LunaCrypt < Minitest::Test
   end
   
   def destroy_object(session, label)
-    session.find_objects(:LABEL=>label) do |obj|
+    session.find_objects(LABEL: label) do |obj|
       obj.destroy
     end
   end
@@ -38,10 +38,10 @@ class TestPkcs11LunaCrypt < Minitest::Test
     #DER encoding of OID 1.3.132.0.10 secp256k1
     curve_oid_der = [0x06, 0x05, 0x2B, 0x81, 0x04, 0x00, 0x0A].pack("C*")
         
-    attributes_public = {:TOKEN=>true, :ENCRYPT=>true, :VERIFY=>true, :WRAP=>true,
-      :EC_PARAMS=>curve_oid_der, :LABEL=>pub_label}
-    attributes_private = {:TOKEN=>true, :DECRYPT=>true, :SIGN=>true, 
-      :DERIVE=>true, :UNWRAP=>true, :SENSITIVE=>true, :LABEL=>priv_label}
+    attributes_public = {TOKEN: true, ENCRYPT: true, VERIFY: true, WRAP: true,
+      EC_PARAMS: curve_oid_der, LABEL: pub_label}
+    attributes_private = {TOKEN: true, DECRYPT: true, SIGN: true,
+      DERIVE: true, UNWRAP: true, SENSITIVE: true, LABEL: priv_label}
                              
     pub_key1, priv_key1 = @session.generate_key_pair(:EC_KEY_PAIR_GEN, attributes_public, attributes_private)    
     pub_key2, priv_key2 = @session.generate_key_pair(:EC_KEY_PAIR_GEN, attributes_public, attributes_private)
@@ -50,10 +50,10 @@ class TestPkcs11LunaCrypt < Minitest::Test
     
     ec_point1 = pub_key1.attributes(:EC_POINT)[0].value
     ec_point2 = pub_key2.attributes(:EC_POINT)[0].value
-    mechanism = {:ECDH1_DERIVE=>{:kdf=>Luna::CKD_SHA512_KDF, :pSharedData=>shared_data}}
+    mechanism = {ECDH1_DERIVE: {kdf: Luna::CKD_SHA512_KDF, pSharedData: shared_data}}
       
-    derive_attributes = {:CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :TOKEN=>true, :SENSITIVE=>true, :PRIVATE=>true,
-    :ENCRYPT=>true, :DECRYPT=>true, :SIGN=>true, :VERIFY=>true, :VALUE_LEN=>32, :LABEL=>derived_label+'1'}
+    derive_attributes = {CLASS: CKO_SECRET_KEY, KEY_TYPE: CKK_AES, TOKEN: true, SENSITIVE: true, PRIVATE: true,
+    ENCRYPT: true, DECRYPT: true, SIGN: true, VERIFY: true, VALUE_LEN: 32, LABEL: derived_label+'1'}
     
     assert_raises(Luna::CKR_ECC_POINT_INVALID) do
       @session.derive_key(mechanism, priv_key1, derive_attributes)
@@ -67,8 +67,8 @@ class TestPkcs11LunaCrypt < Minitest::Test
     
     iv = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].pack('C*')
     message = "Text to encrypt"
-    cipher_text = @session.encrypt({:AES_CBC_PAD=>iv}, derived_key1, message)
-    decrypted = @session.decrypt({:AES_CBC_PAD=>iv}, derived_key2, cipher_text)
+    cipher_text = @session.encrypt({AES_CBC_PAD: iv}, derived_key1, message)
+    decrypted = @session.decrypt({AES_CBC_PAD: iv}, derived_key2, cipher_text)
     assert_equal(decrypted, message)    
   end
   
@@ -76,15 +76,15 @@ class TestPkcs11LunaCrypt < Minitest::Test
     label = "Test AES Key"
     destroy_object(@session, label)
     key = @session.generate_key(:AES_KEY_GEN,
-      :CLASS=>CKO_SECRET_KEY, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>true, 
-      :TOKEN=>true, :VALUE_LEN=>32, :LABEL=>label)
+      CLASS: CKO_SECRET_KEY, ENCRYPT: true, DECRYPT: true, SENSITIVE: true,
+      TOKEN: true, VALUE_LEN: 32, LABEL: label)
       
     assert key[Luna::CKA_FINGERPRINT_SHA256].size == 32
       
     message = "Text to encrypt"
     iv = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].pack('C*')
-    cipher_text = @session.encrypt({:AES_CBC_PAD=>iv}, key, message)
-    decrypted_text = @session.decrypt({:AES_CBC_PAD=>iv}, key, cipher_text)
+    cipher_text = @session.encrypt({AES_CBC_PAD: iv}, key, message)
+    decrypted_text = @session.decrypt({AES_CBC_PAD: iv}, key, cipher_text)
     assert_equal(message, decrypted_text)
   end
   
@@ -94,10 +94,10 @@ class TestPkcs11LunaCrypt < Minitest::Test
     destroy_object(@session, pub_label)
     destroy_object(@session, priv_label)
     
-    pub_attr = {:ENCRYPT=>true, :VERIFY=>true, 
-      :MODULUS_BITS=>2048, :TOKEN=>true, :WRAP=>true, :LABEL=>pub_label}
-    priv_attr = {:DECRYPT=>true, :SIGN=>true, :SENSITIVE=>true, :PRIVATE=>true, 
-          :TOKEN=>true, :UNWRAP=>true, :LABEL=>priv_label}
+    pub_attr = {ENCRYPT: true, VERIFY: true,
+      MODULUS_BITS: 2048, TOKEN: true, WRAP: true, LABEL: pub_label}
+    priv_attr = {DECRYPT: true, SIGN: true, SENSITIVE: true, PRIVATE: true,
+          TOKEN: true, UNWRAP: true, LABEL: priv_label}
     
     pub_key, priv_key = @session.generate_key_pair(:RSA_FIPS_186_3_AUX_PRIME_KEY_PAIR_GEN, pub_attr, priv_attr)    
   end
@@ -121,8 +121,8 @@ class TestPkcs11LunaCrypt < Minitest::Test
     label = "Ruby AES Key"
     destroy_object(@session, label)
     key = @session.generate_key(:AES_KEY_GEN,
-      :CLASS=>CKO_SECRET_KEY, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>true, 
-      :TOKEN=>true, :EXTRACTABLE=>true, :VALUE_LEN=>32, :LABEL=>label)
+      CLASS: CKO_SECRET_KEY, ENCRYPT: true, DECRYPT: true, SENSITIVE: true,
+      TOKEN: true, EXTRACTABLE: true, VALUE_LEN: 32, LABEL: label)
     
     return key
   end
@@ -137,15 +137,15 @@ class TestPkcs11LunaCrypt < Minitest::Test
     label = "Unwrapped AES Key"
     destroy_object(@session, label)
     
-    attributes = {:CLASS=>CKO_SECRET_KEY, :KEY_TYPE=>CKK_AES, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>true, 
-    :TOKEN=>true, :VALUE_LEN=>32, :LABEL=>label}
+    attributes = {CLASS: CKO_SECRET_KEY, KEY_TYPE: CKK_AES, ENCRYPT: true, DECRYPT: true, SENSITIVE: true,
+    TOKEN: true, VALUE_LEN: 32, LABEL: label}
     
     unwrapped_key = @session.unwrap_key(:RSA_PKCS, priv_key, wrapped, attributes)
     
     message = "Encrypt/Decrypt with a wrapped and unwrapped key"
     iv = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].pack('C*')
-    cipher_text = @session.encrypt({:AES_CBC_PAD=>iv}, aes_key, message)
-    decrypted_text = @session.decrypt({:AES_CBC_PAD=>iv}, unwrapped_key, cipher_text)
+    cipher_text = @session.encrypt({AES_CBC_PAD: iv}, aes_key, message)
+    decrypted_text = @session.decrypt({AES_CBC_PAD: iv}, unwrapped_key, cipher_text)
     assert_equal(message, decrypted_text)
   end
   
@@ -160,12 +160,12 @@ class TestPkcs11LunaCrypt < Minitest::Test
     label = "DES Key"
     destroy_object(@session, label)
     des_key = @session.generate_key(:DES3_KEY_GEN,
-          :CLASS=>CKO_SECRET_KEY, :SIGN=>true, :VERIFY=>true, :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>true, 
-          :TOKEN=>true, :EXTRACTABLE=>true, :LABEL=>label)
+          CLASS: CKO_SECRET_KEY, SIGN: true, VERIFY: true, ENCRYPT: true, DECRYPT: true, SENSITIVE: true,
+          TOKEN: true, EXTRACTABLE: true, LABEL: label)
           
     data = "Data to be signed."
-    signature = @session.sign({:DES3_CMAC_GENERAL=>8}, des_key, data)
-    @session.verify({:DES3_CMAC_GENERAL=>8}, des_key, signature, data)      
+    signature = @session.sign({DES3_CMAC_GENERAL: 8}, des_key, data)
+    @session.verify({DES3_CMAC_GENERAL: 8}, des_key, signature, data)
   end
   
   def get_data
@@ -180,7 +180,7 @@ class TestPkcs11LunaCrypt < Minitest::Test
     key = generate_aes_key("Ruby AES Key")
     
     iv = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].pack('C*')
-    mechanism = {:AES_CBC_PAD=>iv}
+    mechanism = {AES_CBC_PAD: iv}
     
     chunk_size = 1024
     plaintext = get_data

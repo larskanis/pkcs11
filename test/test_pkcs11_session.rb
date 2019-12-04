@@ -32,11 +32,11 @@ class TestPkcs11Session < Minitest::Test
   end
 
   def test_find_objects
-    obj = session.find_objects(:CLASS => CKO_CERTIFICATE)
+    obj = session.find_objects(CLASS:  CKO_CERTIFICATE)
     assert obj.length>2, 'There should be some certificates in the test database'
     assert_equal PKCS11::Object, obj.first.class, 'Retuned objects should be class Object'
 
-    session.find_objects(:CLASS => CKO_CERTIFICATE) do |obj2|
+    session.find_objects(CLASS:  CKO_CERTIFICATE) do |obj2|
       assert obj2[:SUBJECT], 'A certificate should have a subject'
       assert OpenSSL::X509::Name.new(obj2[:SUBJECT]).to_s =~ /\/CN=/i, 'Every certificate should have a CN in the subject'
     end
@@ -58,24 +58,24 @@ class TestPkcs11Session < Minitest::Test
 
   def test_create_data_object
     _obj = session.create_object(
-      :CLASS=>CKO_DATA,
-      :TOKEN=>false,
-      :APPLICATION=>'My Application',
-      :VALUE=>'value')
+      CLASS: CKO_DATA,
+      TOKEN: false,
+      APPLICATION: 'My Application',
+      VALUE: 'value')
   end
 
   def test_create_certificate_object
-    obj1 = session.find_objects(:CLASS => CKO_CERTIFICATE, :ID=>TestCert_ID).first
+    obj1 = session.find_objects(CLASS:  CKO_CERTIFICATE, ID: TestCert_ID).first
 
     obj = session.create_object(
-      :CLASS=>CKO_CERTIFICATE,
-      :SUBJECT=>obj1[:SUBJECT],
-      :TOKEN=>false,
-      :LABEL=>'test_create_object',
-      :CERTIFICATE_TYPE=>CKC_X_509,
-      :ISSUER=>obj1[:ISSUER],
-      :VALUE=>obj1[:VALUE],
-      :SERIAL_NUMBER=>'12345'
+      CLASS: CKO_CERTIFICATE,
+      SUBJECT: obj1[:SUBJECT],
+      TOKEN: false,
+      LABEL: 'test_create_object',
+      CERTIFICATE_TYPE: CKC_X_509,
+      ISSUER: obj1[:ISSUER],
+      VALUE: obj1[:VALUE],
+      SERIAL_NUMBER: '12345'
     )
 
     assert_equal '12345', obj[:SERIAL_NUMBER], 'Value as created'
@@ -85,12 +85,12 @@ class TestPkcs11Session < Minitest::Test
     rsa = OpenSSL::PKey::RSA.generate(512)
 
     obj = session.create_object(
-      :CLASS=>CKO_PUBLIC_KEY,
-      :KEY_TYPE=>CKK_RSA,
-      :TOKEN=>false,
-      :MODULUS=>rsa.n.to_s(2),
-      :PUBLIC_EXPONENT=>rsa.e.to_s(2),
-      :LABEL=>'test_create_public_key_object')
+      CLASS: CKO_PUBLIC_KEY,
+      KEY_TYPE: CKK_RSA,
+      TOKEN: false,
+      MODULUS: rsa.n.to_s(2),
+      PUBLIC_EXPONENT: rsa.e.to_s(2),
+      LABEL: 'test_create_public_key_object')
 
     assert_equal 'test_create_public_key_object', obj[:LABEL], 'Value as created'
   end

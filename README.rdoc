@@ -43,8 +43,8 @@ While this seems to be true for C, it shouldn't for Ruby.
   pkcs11.active_slots.first.open do |session|
     session.login(:USER, "1234")
     secret_key = session.generate_key(:DES2_KEY_GEN,
-      :ENCRYPT=>true, :DECRYPT=>true, :SENSITIVE=>true, :TOKEN=>true, :LABEL=>'my key')
-    cryptogram = session.encrypt( {:DES3_CBC_PAD=>"\0"*8}, secret_key, "some plaintext")
+      ENCRYPT: true, DECRYPT: true, SENSITIVE: true, TOKEN: true, LABEL: 'my key')
+    cryptogram = session.encrypt( {DES3_CBC_PAD: "\0"*8}, secret_key, "some plaintext")
     session.logout
   end
 

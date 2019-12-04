@@ -61,7 +61,7 @@ class TestPkcs11 < Minitest::Test
     pk = PKCS11.open
     pk.load_library(find_softokn)
     pk.C_GetFunctionList
-    pk.C_Initialize(:flags=>0, :pReserved=>softokn_params_string)
+    pk.C_Initialize(flags: 0, pReserved: softokn_params_string)
     pk.info
     pk.close
   end

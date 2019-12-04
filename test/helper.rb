@@ -59,7 +59,7 @@ def open_softokn(so_path=nil)
     $stderr.puts "Using #{so} with params #{softokn_params_string.inspect}"
     $first_open = false
   end
-  PKCS11.open(so, :flags=>0, :pReserved=>softokn_params_string)
+  PKCS11.open(so, flags: 0, pReserved: softokn_params_string)
 end
 
 $pkcs11 = nil
