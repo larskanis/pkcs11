@@ -98,7 +98,6 @@ If everything works, there should be some files kind of pkcs11-VERSION-ARCH-ming
 
 * encoding support for Ruby 1.9+
 * support for proprietary extensions of other vendors
-* full support for PKCS#11 v2.40
 
 == Development Status
 
