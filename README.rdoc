@@ -65,7 +65,7 @@ Browsable HTML can be found at http://www.cryptsoft.com/pkcs11doc.
 Some vendors extend their libraries beyond the standard, in it's own way.
 This can be used by vendor specific packages:
 * Safenet ProtectServer: {http://www.rubydoc.info/gems/pkcs11_protect_server/}
-* Safenet Luna: {file:pkcs11_luna/README_LUNA.rdoc}
+* Safenet Luna: {http://www.rubydoc.info/gems/pkcs11_luna/}
 
 === Threading
 
