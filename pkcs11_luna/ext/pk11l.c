@@ -1,4 +1,5 @@
 #include <ruby.h>
+#include <ruby/thread.h>
 
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
@@ -50,11 +51,6 @@ static VALUE vRETURN_VALUES;
 #define BASECLASS_FOR_ERRORS eLunaError
 #define BASECLASS_FOR_STRUCTS cLunaCStruct
 
-#if defined(HAVE_RB_THREAD_CALL_WITHOUT_GVL)
-extern void *rb_thread_call_without_gvl(void *(*func)(void *), void *data1,
-         rb_unblock_function_t *ubf, void *data2);
-#endif
-
 #define PKCS11_DEFINE_METHOD(name, args) \
   rb_define_method(cPKCS11, #name, pkcs11_luna_##name, args);
   
@@ -67,19 +63,14 @@ extern void *rb_thread_call_without_gvl(void *(*func)(void *), void *data1,
   if (!sval) rb_raise(eLunaError, #name " is not supported."); \
 }
 
-#ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
-  #define CallFunction(name, func, rv, ...) \
-  { \
-    struct tbr_##name##_params params = { \
-      func, {__VA_ARGS__}, CKR_FUNCTION_FAILED \
-    }; \
-    rb_thread_call_without_gvl(tbf_##name, &params, RUBY_UBF_PROCESS, NULL); \
-    rv = params.retval; \
-  }
-#else
-  #define CallFunction(name, func, rv, ...) \
-    rv = func(__VA_ARGS__)
-#endif
+#define CallFunction(name, func, rv, ...) \
+{ \
+  struct tbr_##name##_params params = { \
+    func, {__VA_ARGS__}, CKR_FUNCTION_FAILED \
+  }; \
+  rb_thread_call_without_gvl(tbf_##name, &params, RUBY_UBF_PROCESS, NULL); \
+  rv = params.retval; \
+}
 
 #include "cryptoki_v2.h"
 
@@ -102,69 +93,65 @@ pkcs11_luna_raise(VALUE self, CK_RV rv)
   rb_raise(eLunaError, "method vendor_raise_on_return_value should never return");
 }
 
-#ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
+struct tbr_CA_GetFunctionList_params {
+  CK_CA_GetFunctionList func;
+  struct { CK_SFNT_CA_FUNCTION_LIST_PTR_PTR ppSfntFunctionList; } params;
+  CK_RV retval;
+};
 
-  struct tbr_CA_GetFunctionList_params {
-    CK_CA_GetFunctionList func;
-    struct { CK_SFNT_CA_FUNCTION_LIST_PTR_PTR ppSfntFunctionList; } params;
-    CK_RV retval;
-  };
- 
-  void * tbf_CA_GetFunctionList( void *data ){
-    struct tbr_CA_GetFunctionList_params *p = (struct tbr_CA_GetFunctionList_params*)data;
-    p->retval = p->func( p->params.ppSfntFunctionList );
-    return NULL;
-  }
+void * tbf_CA_GetFunctionList( void *data ){
+  struct tbr_CA_GetFunctionList_params *p = (struct tbr_CA_GetFunctionList_params*)data;
+  p->retval = p->func( p->params.ppSfntFunctionList );
+  return NULL;
+}
 
-  /*struct tbr_CA_SetApplicationID_params {
-    CK_CA_SetApplicationID func;
-    struct { CK_ULONG major; CK_ULONG minor; } params;l
-    CK_RV retval;
-  };
- 
-  void * tbf_CA_SetApplicationID( void *data ){
-    struct tbr_CA_SetApplicationID_params *p = (struct tbr_CA_SetApplicationID_params*)data;
-    p->retval = p->func( p->params.major, p->params.minor );
-    return NULL;
-  }
-  
-  struct tbr_CA_OpenApplicationID_params {
-    CK_CA_OpenApplicationID func;
-    struct { CK_SLOT_ID slot_id;	 CK_ULONG major; CK_ULONG minor; } params;
-    CK_RV retval;
-  };
- 
-  void * tbf_CA_OpenApplicationID( void *data ){
-    struct tbr_CA_OpenApplicationID_params *p = (struct tbr_CA_OpenApplicationID_params*)data;
-    p->retval = p->func( p->params.slot_id, p->params.major, p->params.minor );
-    return NULL;
-  }
-  
-  struct tbr_CA_CloseApplicationID_params {
-    CK_CA_CloseApplicationID func;
-    struct { CK_SLOT_ID slot_id; CK_ULONG major; CK_ULONG minor; } params;
-    CK_RV retval;
-  };
- 
-  void * tbf_CA_CloseApplicationID( void *data ){
-    struct tbr_CA_CloseApplicationID_params *p = (struct tbr_CA_CloseApplicationID_params*)data;
-    p->retval = p->func( p->params.slot_id, p->params.major, p->params.minor);
-    return NULL;
-  }
+/*struct tbr_CA_SetApplicationID_params {
+  CK_CA_SetApplicationID func;
+  struct { CK_ULONG major; CK_ULONG minor; } params;l
+  CK_RV retval;
+};
 
-  struct tbr_CA_LogExternal_params {
-    CK_CA_LogExternal func;
-    struct { CK_SLOT_ID slot_id; CK_SESSION_HANDLE hSession; CK_CHAR_PTR pString; CK_ULONG ulLen;} params;
-    CK_RV retval;
-  };
+void * tbf_CA_SetApplicationID( void *data ){
+  struct tbr_CA_SetApplicationID_params *p = (struct tbr_CA_SetApplicationID_params*)data;
+  p->retval = p->func( p->params.major, p->params.minor );
+  return NULL;
+}
 
-  void * tbf_CA_LogExternal( void *data ){
-    struct tbr_CA_LogExternal_params *p = (struct tbr_CA_LogExternal_params*)data;
-    p->retval = p->func( p->params.slot_id, p->params.hSession, p->params.pString, p->params.ulLen);
-    return NULL;
-  }*/
-  
-#endif
+struct tbr_CA_OpenApplicationID_params {
+  CK_CA_OpenApplicationID func;
+  struct { CK_SLOT_ID slot_id;	 CK_ULONG major; CK_ULONG minor; } params;
+  CK_RV retval;
+};
+
+void * tbf_CA_OpenApplicationID( void *data ){
+  struct tbr_CA_OpenApplicationID_params *p = (struct tbr_CA_OpenApplicationID_params*)data;
+  p->retval = p->func( p->params.slot_id, p->params.major, p->params.minor );
+  return NULL;
+}
+
+struct tbr_CA_CloseApplicationID_params {
+  CK_CA_CloseApplicationID func;
+  struct { CK_SLOT_ID slot_id; CK_ULONG major; CK_ULONG minor; } params;
+  CK_RV retval;
+};
+
+void * tbf_CA_CloseApplicationID( void *data ){
+  struct tbr_CA_CloseApplicationID_params *p = (struct tbr_CA_CloseApplicationID_params*)data;
+  p->retval = p->func( p->params.slot_id, p->params.major, p->params.minor);
+  return NULL;
+}
+
+struct tbr_CA_LogExternal_params {
+  CK_CA_LogExternal func;
+  struct { CK_SLOT_ID slot_id; CK_SESSION_HANDLE hSession; CK_CHAR_PTR pString; CK_ULONG ulLen;} params;
+  CK_RV retval;
+};
+
+void * tbf_CA_LogExternal( void *data ){
+  struct tbr_CA_LogExternal_params *p = (struct tbr_CA_LogExternal_params*)data;
+  p->retval = p->func( p->params.slot_id, p->params.hSession, p->params.pString, p->params.ulLen);
+  return NULL;
+}*/
 
 
 

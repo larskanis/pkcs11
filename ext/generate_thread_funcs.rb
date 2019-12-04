@@ -26,11 +26,9 @@ fd_decl.puts <<-EOT
   #ifndef #{options.decl.gsub(/[^\w]/, "_").upcase}
   #define #{options.decl.gsub(/[^\w]/, "_").upcase}
   #include "pk11.h"
-  #ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
 EOT
 fd_impl.puts <<-EOT
   #include #{File.basename(options.decl).inspect}
-  #ifdef HAVE_RB_THREAD_CALL_WITHOUT_GVL
 EOT
 ARGV.each do |file_h|
   c_src = IO.read(file_h)
@@ -61,11 +59,7 @@ ARGV.each do |file_h|
     EOT
   end
 end
-fd_impl.puts <<-EOT
-  #endif
-EOT
 fd_decl.puts <<-EOT
-  #endif
   #endif
 EOT
 end

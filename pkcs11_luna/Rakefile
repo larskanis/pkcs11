@@ -47,6 +47,7 @@ hoe = Hoe.spec 'pkcs11_luna' do
   spec_extras[:extensions] = 'ext/extconf.rb'
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
   spec_extras[:files] += GENERATED_FILES
+  spec_extras[:required_ruby_version] = '>= 2.2.0'
 end
 
 Rake::ExtensionTask.new('pkcs11_luna_ext', hoe.spec) do |ext|

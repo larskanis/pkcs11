@@ -1,26 +1,10 @@
 #ifndef RUBY_PK11_H
 #define RUBY_PK11_H
 #include <ruby.h>
+#include <ruby/thread.h>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
   #define compile_for_windows
-#endif
-
-#if !defined(RARRAY_LEN)
-# define RARRAY_LEN(ary) (RARRAY(ary)->len)
-#endif
-#if !defined(RSTRING_LEN)
-# define RSTRING_LEN(str) (RSTRING(str)->len)
-#endif
-#if !defined(RSTRING_PTR)
-# define RSTRING_PTR(str) (RSTRING(str)->ptr)
-#endif
-
-#ifndef HAVE_RB_STR_SET_LEN
-#define rb_str_set_len(str, length) do { \
-  RSTRING(str)->ptr[length] = 0; \
-  RSTRING(str)->len = length; \
-} while(0)
 #endif
 
 void Init_pkcs11_ext();
