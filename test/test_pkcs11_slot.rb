@@ -71,7 +71,7 @@ class TestPkcs11Slot < Minitest::Test
 
   def test_session2
     flags = CKF_SERIAL_SESSION #| CKF_RW_SESSION
-    session = slot.open(flags)
+    _session = slot.open(flags)
     slot.close_all_sessions
   end
 end

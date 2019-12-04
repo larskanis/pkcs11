@@ -57,7 +57,7 @@ class TestPkcs11Session < Minitest::Test
   end
 
   def test_create_data_object
-    obj = session.create_object(
+    _obj = session.create_object(
       :CLASS=>CKO_DATA,
       :TOKEN=>false,
       :APPLICATION=>'My Application',
