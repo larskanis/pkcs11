@@ -78,7 +78,7 @@ Application-supplied synchronization primitives (CreateMutex, DestroyMutex, Lock
 
 == Compiling for Windows
 
-The pkcs11 source gem can be built on Windows (with help of the RubyInstaller's DevKit[http://rubyinstaller.org/add-ons/devkit/] ) .
+The pkcs11 source gem can be built on Windows (with help of the RubyInstaller's DevKit[http://rubyinstaller.org/add-ons/devkit] ) .
 Use
 
     $ gem install pkcs11 --platform=ruby
