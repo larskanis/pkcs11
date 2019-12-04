@@ -1,8 +1,8 @@
 = PKCS #11/Ruby Interface for Safenet Protect Server HSM
 
-* Homepage: http://github.com/larskanis/pkcs11
-* API documentation: http://pkcs11.rubyforge.org/pkcs11/
-* Safenet[http://www.safenet-inc.com] - Protect Server HSM
+home :: http://github.com/larskanis/pkcs11
+API documentation: http://pkcs11.rubyforge.org/pkcs11/
+Safenet Protect Server HSM : http://www.safenet-inc.com
 
 This ruby gem is an add-on to ruby-pkcs11[http://github.com/larskanis/pkcs11] .
 It allowes to use Protect Server specific extensions, which are beyond the PKCS#11 standard.

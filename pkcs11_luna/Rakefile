@@ -34,10 +34,9 @@ end
 hoe = Hoe.spec 'pkcs11_luna' do
   developer('SafeNet', 'support@safenet-inc.com')
   extra_deps << ['pkcs11', "= #{pkcs11_version}"]
-  extra_dev_deps << ['yard', '>= 0.6']
-  extra_dev_deps << ['rake-compiler', '>= 0.7']
+  extra_dev_deps << ['yard', '~> 0.6']
+  extra_dev_deps << ['rake-compiler', '~> 0.7']
 
-  self.urls = ['http://github.com/larskanis/pkcs11']
   self.summary = 'SafeNet-Luna extensions for PKCS#11-Ruby'
   self.description = 'This module allows Ruby programs to use vendor extensions for SafeNet Luna.'
   self.version = pkcs11_version
@@ -48,7 +47,6 @@ hoe = Hoe.spec 'pkcs11_luna' do
   spec_extras[:extensions] = 'ext/extconf.rb'
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
   spec_extras[:files] += GENERATED_FILES
-  spec_extras[:has_rdoc] = 'yard'
 end
 
 Rake::ExtensionTask.new('pkcs11_luna_ext', hoe.spec) do |ext|
