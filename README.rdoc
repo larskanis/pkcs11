@@ -69,8 +69,7 @@ This can be used by vendor specific packages:
 
 === Threading
 
-The pkcs11 binding fully supports native, background Ruby threads.
-This of course only applies to Rubinius and Ruby 1.9 or higher since earlier versions of Ruby do not support native threads.
+The pkcs11 binding fully supports background Ruby threads while calls to PKCS#11 functions.
 
 According to the standard, calling the Cryptoki library from multiple threads simultaneously, requires to open it with flag PKCS11::CKF_OS_LOCKING_OK.
 Application-supplied synchronization primitives (CreateMutex, DestroyMutex, LockMutex, UnlockMutex) are not supported.
