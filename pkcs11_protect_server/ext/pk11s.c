@@ -1,4 +1,5 @@
 #include <ruby.h>
+#include <ruby/encoding.h>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
   #define _WINDOWS
