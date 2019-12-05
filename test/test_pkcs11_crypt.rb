@@ -168,7 +168,7 @@ class TestPkcs11Crypt < Minitest::Test
 
   def test_generate_key_pair
     pub_key, priv_key = session.generate_key_pair(:RSA_PKCS_KEY_PAIR_GEN,
-      {ENCRYPT: true, VERIFY: true, WRAP: true, MODULUS_BITS: 768, PUBLIC_EXPONENT: [3].pack("N"), TOKEN: false},
+      {ENCRYPT: true, VERIFY: true, WRAP: true, MODULUS_BITS: 768, PUBLIC_EXPONENT: [65537].pack("N"), TOKEN: false},
       {PRIVATE: true, SUBJECT: 'test', ID: [123].pack("n"),
        SENSITIVE: true, DECRYPT: true, SIGN: true, UNWRAP: true, TOKEN: false, LOCAL: true})
 
