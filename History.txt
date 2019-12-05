@@ -1,3 +1,13 @@
+=== 0.3.0 / 2019-12-05
+
+* Change hash style in documentation and tests.
+  It was kind of {:LABEL => value} and is now {LABEL: value}
+* Implement proper String encoding support.
+  Now strings retrieved as attribute values and from struct members
+  are tagged with binary, ASCII or UTF8 encoding.
+* Remove compatibility to rubies < 2.2.
+* Add support for TruffleRuby
+
 === 0.2.7 / 2018-01-05
 
 * Add vendor extension for Safenet Luna called pkcs11_luna.
