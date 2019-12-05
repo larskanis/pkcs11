@@ -11,15 +11,30 @@ class TestPkcs11Structs < Minitest::Test
   def teardown
   end
 
-  def test_STRING_ACCESSOR
+  def test_STRING_ACCESSOR_ASCII
     s = CK_DATE.new
     assert_equal "\0\0", s.day
+    assert_equal Encoding::ASCII, s.day.encoding
     assert_equal "\0\0\0\0", s.year
     s.day = "12345"
     assert_equal "12", s.day
     s.day = "9"
     assert_equal "9\0", s.day
     assert_raises(TypeError){ s.day = nil }
+  end
+
+  def test_STRING_ACCESSOR_UTF8
+    s = CK_INFO.new
+    s.manufacturerID = 'Müller'
+    assert_equal "Müller", s.manufacturerID.split("\0",2).first
+    assert_equal Encoding::UTF_8, s.manufacturerID.encoding
+  end
+
+  def test_STRING_ACCESSOR_BINARY
+    s = CK_DES_CBC_ENCRYPT_DATA_PARAMS.new
+    s.iv = "somedata"
+    assert_equal "somedata", s.iv
+    assert_equal Encoding::BINARY, s.iv.encoding
   end
 
   def test_ULONG_ACCESSOR
@@ -42,13 +57,24 @@ class TestPkcs11Structs < Minitest::Test
     assert_raises(ArgumentError){ s.bIsExport = nil }
   end
 
-  def test_STRING_PTR_ACCESSOR
-    s = CK_WTLS_MASTER_KEY_DERIVE_PARAMS.new
-    assert_nil s.pVersion
-    s.pVersion = "1.2.3"
-    assert_equal "1.2.3", s.pVersion
-    s.pVersion = nil
-    assert_nil s.pVersion
+  def test_STRING_PTR_ACCESSOR_UTF8
+    s = CK_PBE_PARAMS.new
+    assert_nil s.pPassword
+    s.pPassword = "secret"
+    assert_equal "secret", s.pPassword
+    assert_equal Encoding::UTF_8, s.pPassword.encoding
+    s.pPassword = nil
+    assert_nil s.pPassword
+  end
+
+  def test_STRING_PTR_ACCESSOR_BINARY
+    s = CK_DES_CBC_ENCRYPT_DATA_PARAMS.new
+    assert_nil s.pData
+    s.pData = "some data"
+    assert_equal "some data", s.pData
+    assert_equal Encoding::BINARY, s.pData.encoding
+    s.pData = nil
+    assert_nil s.pData
   end
 
   def test_STRUCT_ACCESSOR

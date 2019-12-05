@@ -1464,6 +1464,13 @@ ck_attr_value(VALUE self)
   if (attr->ulValueLen == sizeof(CK_ULONG))
       return ULONG2NUM(*(CK_ULONG_PTR)(attr->pValue));
     break;
+  case CKA_LABEL:
+  case CKA_APPLICATION:
+  case CKA_URL:
+  case CKA_CHAR_SETS:
+  case CKA_ENCODING_METHODS:
+  case CKA_MIME_TYPES:
+    return rb_utf8_str_new(attr->pValue, attr->ulValueLen);
   }
   return rb_str_new(attr->pValue, attr->ulValueLen);
 }

@@ -59,6 +59,9 @@ class TestPkcs11Object < Minitest::Test
 
   def test_accessor
     assert_equal 'value', object[:VALUE], "Value should be readable"
+    assert_equal Encoding::BINARY, object[:VALUE].encoding
+    assert_equal 'My Application', object[:APPLICATION]
+    assert_equal Encoding::UTF_8, object[:APPLICATION].encoding
     assert_equal CKO_DATA, object[:CLASS], "Class should be readable"
     assert_equal ['value', CKO_DATA], object[:VALUE, :CLASS], "multiple values should be readable"
     assert_equal ['value', CKO_DATA], object[[:VALUE, :CLASS]], "multiple values should be readable"
@@ -80,15 +83,15 @@ class TestPkcs11Object < Minitest::Test
   end
 
   def test_set_attributes
-    object.attributes = {VALUE:  'value4', PKCS11::CKA_APPLICATION => 'app4'}
+    object.attributes = {VALUE:  'value4', PKCS11::CKA_APPLICATION => 'Äpp4'}
     assert_equal 'value4', object[:VALUE], "Value should have changed"
-    assert_equal 'app4', object[:APPLICATION], "App should have changed"
+    assert_equal 'Äpp4', object[:APPLICATION], "App should have changed"
 
-    object[:VALUE, PKCS11::CKA_APPLICATION] = 'value5', 'app5'
+    object[:VALUE, PKCS11::CKA_APPLICATION] = 'value5', 'äpp5'
     assert_equal 'value5', object[:VALUE], "Value should have changed"
-    assert_equal 'app5', object[:APPLICATION], "App should have changed"
+    assert_equal 'äpp5', object[:APPLICATION], "App should have changed"
     assert_raises(ArgumentError) do
-      object[:VALUE, PKCS11::CKA_APPLICATION, :CLASS] = 'value5', 'app5'
+      object[:VALUE, PKCS11::CKA_APPLICATION, :CLASS] = 'value5', 'äpp5'
     end
 
     object[] = []

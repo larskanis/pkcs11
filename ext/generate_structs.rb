@@ -111,20 +111,26 @@ class StructParser
       end
       # find string attributes belonging together
       struct.attrs.select{|attr| ['CK_BYTE_PTR', 'CK_VOID_PTR', 'CK_UTF8CHAR_PTR', 'CK_CHAR_PTR'].include?(attr.type) }.each do |attr|
+        enco = case attr.type
+          when 'CK_UTF8CHAR_PTR' then 'utf8'
+          when 'CK_CHAR_PTR' then 'usascii'
+          when 'CK_BYTE_PTR', 'CK_VOID_PTR' then 'ascii8bit'
+          else raise "unexpected type #{attr.type.inspect}"
+        end
         if len_attr=struct.attr_by_sign("CK_ULONG #{attr.name.gsub(/^p([A-Z])/){ "ul"+$1 }}Len")
-          fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name});"
+          fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name}, #{enco});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-          fd_doc.puts"# @return [String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [#{enco.upcase}-String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
           len_attr.mark = true
         elsif attr.name=='pData' && (len_attr = struct.attr_by_sign("CK_ULONG length") || struct.attr_by_sign("CK_ULONG ulLen"))
-          fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name});"
+          fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(#{struct.name}, #{attr.name}, #{len_attr.name}, #{enco});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-          fd_doc.puts"# @return [String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [#{enco.upcase}-String, nil] accessor for #{attr.name} and #{len_attr.name}\nattr_accessor :#{attr.name}"
           len_attr.mark = true
         else
-          fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_ACCESSOR(#{struct.name}, #{attr.name});"
+          fd_impl.puts "PKCS11_IMPLEMENT_STRING_PTR_ACCESSOR(#{struct.name}, #{attr.name}, #{enco});"
           fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-          fd_doc.puts"# @return [String, nil] accessor for #{attr.name}\nattr_accessor :#{attr.name}"
+          fd_doc.puts"# @return [#{enco.upcase}-String, nil] accessor for #{attr.name}\nattr_accessor :#{attr.name}"
         end
         attr.mark = true
       end
@@ -133,11 +139,16 @@ class StructParser
       struct.attrs.reject{|a| a.mark }.each do |attr|
         if attr.qual
           # Attributes with qualifier
+          enco = case attr.type
+            when 'CK_BYTE' then 'ascii8bit'
+            when 'CK_UTF8CHAR' then 'utf8'
+            when 'CK_CHAR' then 'usascii'
+          end
           case attr.type
           when 'CK_BYTE', 'CK_UTF8CHAR', 'CK_CHAR'
-            fd_impl.puts "PKCS11_IMPLEMENT_STRING_ACCESSOR(#{struct.name}, #{attr.name});"
+            fd_impl.puts "PKCS11_IMPLEMENT_STRING_ACCESSOR(#{struct.name}, #{attr.name}, #{enco});"
             fd_def.puts "PKCS11_DEFINE_MEMBER(#{struct.name}, #{attr.name});"
-            fd_doc.puts"# @return [String] accessor for #{attr.name} (max #{attr.qual} bytes)\nattr_accessor :#{attr.name}"
+            fd_doc.puts"# @return [#{enco.upcase}-String] accessor for #{attr.name} (max #{attr.qual} bytes)\nattr_accessor :#{attr.name}"
           else
             fd_impl.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"
             fd_def.puts "/* unimplemented attr #{attr.type} #{attr.name} #{attr.qual} */"

@@ -2,6 +2,7 @@
 #define RUBY_PK11_H
 #include <ruby.h>
 #include <ruby/thread.h>
+#include <ruby/encoding.h>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__CYGWIN__)
   #define compile_for_windows

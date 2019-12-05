@@ -95,7 +95,6 @@ If everything works, there should be some files kind of pkcs11-VERSION-ARCH-ming
 
 == ToDo
 
-* encoding support for Ruby 1.9+
 * support for proprietary extensions of other vendors
 
 == Development Status

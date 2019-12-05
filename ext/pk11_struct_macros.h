@@ -19,10 +19,10 @@ pkcs11_num2ulong(VALUE val)
 }
 
 static VALUE
-get_string(VALUE obj, off_t offset, size_t size)
+get_string(VALUE obj, off_t offset, size_t size, rb_encoding *enc)
 {
   char *ptr = (char*)DATA_PTR(obj);
-  return rb_str_new(ptr+offset, size);
+  return rb_enc_str_new(ptr+offset, size, enc);
 }
 
 static VALUE
@@ -126,12 +126,12 @@ set_bool(VALUE obj, VALUE value, off_t offset)
 }
 
 static VALUE
-get_string_ptr(VALUE obj, const char *name, off_t offset)
+get_string_ptr(VALUE obj, const char *name, off_t offset, rb_encoding *enc)
 {
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
   if (!p) return Qnil;
-  return rb_str_new2(p);
+  return rb_enc_str_new_cstr(p, enc);
 }
 
 static VALUE
@@ -151,14 +151,14 @@ set_string_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
 }
 
 static VALUE
-get_string_ptr_len(VALUE obj, const char *name, off_t offset, off_t offset_len)
+get_string_ptr_len(VALUE obj, const char *name, off_t offset, off_t offset_len, rb_encoding *enc)
 {
   unsigned long l;
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
   if (!p) return Qnil;
   l = *(unsigned long*)(ptr+offset_len);
-  return rb_str_new(p, l);
+  return rb_enc_str_new(p, l, enc);
 }
 
 static VALUE
@@ -290,9 +290,9 @@ static VALUE c##s;\
 static VALUE a##s##_members;\
 PKCS11_IMPLEMENT_ALLOCATOR(s);
 
-#define PKCS11_IMPLEMENT_STRING_ACCESSOR(s, f) \
+#define PKCS11_IMPLEMENT_STRING_ACCESSOR(s, f, enco) \
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_string(o, OFFSET_OF(s, f), SIZE_OF(s, f)); \
+  return get_string(o, OFFSET_OF(s, f), SIZE_OF(s, f), rb_##enco##_encoding()); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_string(o, v, OFFSET_OF(s, f), SIZE_OF(s, f)); \
@@ -338,17 +338,17 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_bool(o, v, OFFSET_OF(s, f)); \
 }
 
-#define PKCS11_IMPLEMENT_STRING_PTR_ACCESSOR(s, f) \
+#define PKCS11_IMPLEMENT_STRING_PTR_ACCESSOR(s, f, enco) \
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_string_ptr(o, #f, OFFSET_OF(s, f)); \
+  return get_string_ptr(o, #f, OFFSET_OF(s, f), rb_##enco##_encoding()); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_string_ptr(o, v, #f, OFFSET_OF(s, f)); \
 }
 
-#define PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(s, f, l) \
+#define PKCS11_IMPLEMENT_STRING_PTR_LEN_ACCESSOR(s, f, l, enco) \
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_string_ptr_len(o, #f, OFFSET_OF(s, f), OFFSET_OF(s, l)); \
+  return get_string_ptr_len(o, #f, OFFSET_OF(s, f), OFFSET_OF(s, l), rb_##enco##_encoding()); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_string_ptr_len(o, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l)); \
