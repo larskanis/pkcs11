@@ -1532,8 +1532,8 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
     m->ulParameterLen = RSTRING_LEN(value);
     break;
   case T_DATA:
-    m->pParameter = DATA_PTR(value);
     m->ulParameterLen = NUM2LONG(rb_const_get(rb_funcall(value, rb_intern("class"), 0), rb_intern("SIZEOF_STRUCT")));
+    m->pParameter = DATA_PTR(value);
     break;
   default:
     rb_raise(rb_eArgError, "invalid argument");
