@@ -95,7 +95,7 @@ class TestPkcs11LunaCrypt < Minitest::Test
     destroy_object(@session, priv_label)
     
     pub_attr = {ENCRYPT: true, VERIFY: true,
-      MODULUS_BITS: 2048, TOKEN: true, WRAP: true, LABEL: pub_label}
+      MODULUS_BITS: 2048, TOKEN: true, WRAP: true, LABEL: pub_label, PUBLIC_EXPONENT: [0x01, 0x00, 0x01].pack('C*')}
     priv_attr = {DECRYPT: true, SIGN: true, SENSITIVE: true, PRIVATE: true,
           TOKEN: true, UNWRAP: true, LABEL: priv_label}
     
