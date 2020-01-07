@@ -42,7 +42,7 @@ class ConstantParser < PKCS11::ConstantParser
         next if constants_hash[const_name].nil?
         const_group_def = constants_hash[const_name][0]
         const_value = constants_hash[const_name][1]
-        fd_const.puts "#{const_group_def}(#{const_name}); /* #{const_value} */"
+        fd_const.puts "#{const_group_def}(#{const_name}); // #{const_value} "
         constants_hash[const_name] = nil
       end
     end

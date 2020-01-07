@@ -76,7 +76,7 @@ class TestPkcs11Luna < Minitest::Test
     pkcs11 = @pk
     slot = Slot.new(pkcs11, @slot)
     
-    assert_raises(Luna::CKR_OPERATION_NOT_ALLOWED, CKR_USER_TYPE_INVALID) {
+    assert_raises(Luna::CKR_OPERATION_NOT_ALLOWED, CKR_DATA_LEN_RANGE, CKR_USER_TYPE_INVALID) {
       slot.init_token("anypin", "new_label")
     }   
   end
