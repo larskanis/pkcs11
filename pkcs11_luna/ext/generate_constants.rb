@@ -13,20 +13,20 @@ class ConstantParser < PKCS11::ConstantParser
     ConstTemplate.new(/#define\s+(CKO_[A-Z_0-9]+)\s+(.+)/, 'PKCS11_DEFINE_OBJECT_CLASS'),
     ConstTemplate.new(/#define\s+(CKR_[A-Z_0-9]+)\s+([A-Za-z0-9_\(\)+ ]+)/, 'PKCS11_DEFINE_RETURN_VALUE'),
   ]
-  
+
   ['CKD', 'CKU', 'CKF', 'CKDHP', 'CKES', 'CKMS', 'CAF', 'CKCAO', 'CKHSC'].each do |prefix|
       ConstGroups << ConstTemplate.new(/#define\s+(#{prefix}_[A-Z_0-9]+)\s+([A-Za-z0-9_]+)/, 'PKCS11_DEFINE_CONST')
   end
 
-  IgnoreConstants = %w[]  
-  
+  IgnoreConstants = %w[]
+
   def start!
-    
+
     constants_hash = {}
     constants = []
-    
+
     options.files.each do |file_h|
-      c_src = IO.read(file_h)
+      c_src = File.binread(file_h)
       ConstGroups.each do |const_group|
         c_src.scan(const_group.regexp) do
           const_name, const_value = $1, $2
@@ -36,7 +36,7 @@ class ConstantParser < PKCS11::ConstantParser
         end
       end
     end
-    
+
     File.open(options.const, "w") do |fd_const|
       constants.each do |const_name|
         next if constants_hash[const_name].nil?

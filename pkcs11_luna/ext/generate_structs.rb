@@ -30,7 +30,7 @@ class StructParser < PKCS11::StructParser
 
   ULONG_TYPES = %w[CK_EC_DH_PRIMITIVE CK_EC_ENC_SCHEME CK_EC_MAC_SCHEME CK_KDF_PRF_ENCODING_SCHEME CK_RV]
   ULONG_PTR_TYPES = %w[]
-  
+
 
   def struct_module
     'PKCS11::Luna'
@@ -41,7 +41,7 @@ class StructParser < PKCS11::StructParser
   def parse_files(files)
     structs = []
     files.each do |file_h|
-      c_src = IO.read(file_h)
+      c_src = File.binread(file_h)
       c_src.scan(/struct\s+([A-Z_0-9]+)\s*\{(.*?)\}\s*([A-Z_0-9]+)\s*;/m) do |struct|
         struct_text = $2
         struct = PKCS11::StructParser::CStruct.new( $3, [] )
