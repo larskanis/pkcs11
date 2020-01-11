@@ -1,3 +1,7 @@
+=== 0.3.2 / 2020-01-11
+
+* pkcs11_luna: Workaround invalid UTF-8 encoding in cryptoki_v2.h of some Luna Client versions.
+
 === 0.3.1 / 2020-01-07
 
 * Fix compilation issue with newer Luna client library. #11
