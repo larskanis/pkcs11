@@ -7,26 +7,28 @@ require 'rake/extensiontask'
 require 'rbconfig'
 
 LUNA_INCLUDE_DIR = ENV['LUNA_INCLUDE_DIR'] || '/usr/safenet/lunaclient/samples/include'
-RUBY_PKCS11_EXT_DIR = File.expand_path('../ext')
+RUBY_PKCS11_DIR = File.expand_path('..')
 
 
-GENERATED_FILES = [
-  'ext/pk11l_struct_impl.inc',
-  'ext/pk11l_struct_def.inc',
-  'ext/pk11l_const_def.inc',
-  'ext/pk11l_struct.doc',
+SHARED_FILES = [
   'ext/pk11_struct_macros.h',
   'ext/pk11_const_macros.h',
   'ext/pk11_version.h',
+  'ext/generate_structs.rb',
+  'ext/generate_constants.rb',
+]
+GENERATED_FILES = [
+  "ext/std_structs.rb"
 ]
 
+CLEAN.include SHARED_FILES
 CLEAN.include GENERATED_FILES
 CLEAN.include 'lib/pkcs11_luna_ext.so'
 CLEAN.include 'tmp'
 CLEAN.include 'examples/output'
 
 def pkcs11_version
-  file = File.join(RUBY_PKCS11_EXT_DIR, 'pk11_version.h')
+  file = File.join(RUBY_PKCS11_DIR, 'ext/pk11_version.h')
   version_re = /VERSION += +([\"\'])([\d][\d\w\.]+)\1/
   File.read_utf(file)[version_re, 2]
 end
@@ -46,7 +48,7 @@ hoe = Hoe.spec 'pkcs11_luna' do
   self.extra_rdoc_files << self.readme_file << 'ext/pk11l.c'
   spec_extras[:extensions] = 'ext/extconf.rb'
   spec_extras[:files] = File.read_utf("Manifest.txt").split(/\r?\n\r?/)
-  spec_extras[:files] += GENERATED_FILES
+  spec_extras[:files] += SHARED_FILES + GENERATED_FILES
   spec_extras[:required_ruby_version] = '>= 2.2.0'
 end
 
@@ -58,29 +60,20 @@ Rake::ExtensionTask.new('pkcs11_luna_ext', hoe.spec) do |ext|
   ext.config_options << "--with-luna-dir-include=\"#{LUNA_INCLUDE_DIR}\""
 end
 
-def copy_from_base_task(filename)
-  file File.join('ext', filename) => File.join(RUBY_PKCS11_EXT_DIR, filename) do |t|
+# Add shared file from base pkcs11 gem
+SHARED_FILES.each do |filename|
+  file filename => File.join(RUBY_PKCS11_DIR, filename) do |t|
     cp t.prerequisites.first, t.name, verbose: true
   end
+  file 'ext/extconf.rb' => filename
 end
 
-copy_from_base_task 'pk11_struct_macros.h'
-copy_from_base_task 'pk11_const_macros.h'
-copy_from_base_task 'pk11_version.h'
+file "ext/std_structs.rb" do |t|
+  require "pkcs11"
+  std_structs = PKCS11.constants.select{|c| PKCS11.const_get(c).respond_to?(:ancestors) && !(PKCS11.const_get(c).ancestors & [PKCS11::CStruct, PKCS11::CK_ATTRIBUTE]).empty? }
 
-HEADER_FILES = "#{LUNA_INCLUDE_DIR}/RSA/pkcs11t.h #{LUNA_INCLUDE_DIR}/cryptoki_v2.h"
-
-file 'ext/extconf.rb' => ['ext/pk11l_struct_def.inc', 'ext/pk11l_const_def.inc', 'ext/pk11_struct_macros.h', 'ext/pk11_const_macros.h', 'ext/pk11_version.h']
-file 'ext/pk11l_struct_def.inc' => 'ext/generate_structs.rb' do
-  sh "#{RbConfig::CONFIG['ruby_install_name']} -I../lib ext/generate_structs.rb --def ext/pk11l_struct_def.inc --impl ext/pk11l_struct_impl.inc --doc ext/pk11l_struct.doc #{HEADER_FILES}"
+  File.write t.name, "PKCS11_STD_STRUCTS = #{std_structs.inspect}"
 end
-file 'ext/pk11l_struct_impl.inc' => 'ext/pk11l_struct_def.inc'
-file 'ext/pk11l_struct.doc' => 'ext/pk11l_struct_def.inc'
-
-file 'ext/pk11l_const_def.inc' => 'ext/generate_constants.rb' do
-  sh "#{RbConfig::CONFIG['ruby_install_name']} -I../lib ext/generate_constants.rb --const ext/pk11l_const_def.inc #{HEADER_FILES}"
-end
-file 'ext/pk11l.c' => ['ext/pk11l_struct_def.inc', 'ext/pk11l_struct_impl.inc', 'ext/pk11l_const_def.inc']
 
 task doc_files:  'ext/pk11l_struct.doc'
 

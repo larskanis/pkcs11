@@ -2,7 +2,7 @@
 # Quick and dirty parser for PKCS#11 constants and
 # generator for Ruby wrapper classes.
 
-require File.expand_path(File.join(File.dirname(__FILE__), '../../ext/generate_constants'))
+require_relative "generate_constants"
 
 module PKCS11
 module Luna
