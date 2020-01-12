@@ -1,5 +1,7 @@
-=== 0.3.2 / 2020-01-11
+=== 0.3.2 / 2020-01-12
 
+* pkcs11_protect_server, pkcs11_luna: Move parsing of vendor header files to gem installation.
+  This fixes possible compile errors, if the version of vendor header files differ between gem build and gem install.
 * pkcs11_luna: Workaround invalid UTF-8 encoding in cryptoki_v2.h of some Luna Client versions.
 
 === 0.3.1 / 2020-01-07
