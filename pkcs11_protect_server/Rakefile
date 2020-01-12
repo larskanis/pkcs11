@@ -8,6 +8,7 @@ require 'rbconfig'
 
 PROTECT_SERVER_SDK_DIR = ENV['PROTECT_SERVER_SDK_DIR'] || '/opt/ETcpsdk'
 RUBY_PKCS11_DIR = File.expand_path('..')
+$: << File.join(RUBY_PKCS11_DIR, "lib")
 
 SHARED_FILES = [
   'ext/pk11_struct_macros.h',

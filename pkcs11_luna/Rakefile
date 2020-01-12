@@ -8,7 +8,7 @@ require 'rbconfig'
 
 LUNA_INCLUDE_DIR = ENV['LUNA_INCLUDE_DIR'] || '/usr/safenet/lunaclient/samples/include'
 RUBY_PKCS11_DIR = File.expand_path('..')
-
+$: << File.join(RUBY_PKCS11_DIR, "lib")
 
 SHARED_FILES = [
   'ext/pk11_struct_macros.h',
