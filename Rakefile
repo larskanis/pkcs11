@@ -24,6 +24,12 @@ Hoe.plugin :bundler
 # Build a Manifest file to satisfy hoe.
 IO.write("Manifest.txt", `git ls-files`)
 
+# Ensure pkg is rebuilt
+task :remove_pkg do
+  rm_rf 'pkg'
+end
+task :gem => [:remove_pkg]
+
 hoe = Hoe.spec 'pkcs11' do
   developer('Ryosuke Kutsuna', 'ryosuke@deer-n-horse.jp')
   developer('GOTOU Yuuzou', 'gotoyuzo@notwork.org')

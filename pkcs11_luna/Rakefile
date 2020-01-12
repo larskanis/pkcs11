@@ -33,6 +33,12 @@ def pkcs11_version
   File.read_utf(file)[version_re, 2]
 end
 
+# Ensure pkg is rebuilt
+task :remove_pkg do
+  rm_rf 'pkg'
+end
+task :gem => [:remove_pkg]
+
 hoe = Hoe.spec 'pkcs11_luna' do
   developer('SafeNet', 'support@safenet-inc.com')
   extra_deps << ['pkcs11', "= #{pkcs11_version}"]
