@@ -4,8 +4,8 @@ Manifest.txt
 README_PROTECT_SERVER.rdoc
 Rakefile
 ext/extconf.rb
-ext/generate_constants.rb
-ext/generate_structs.rb
+ext/generate_protect_server_constants.rb
+ext/generate_protect_server_structs.rb
 ext/pk11s.c
 lib/pkcs11_protect_server.rb
 lib/pkcs11_protect_server/extensions.rb

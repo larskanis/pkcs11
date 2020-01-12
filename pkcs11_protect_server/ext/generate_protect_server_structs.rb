@@ -2,9 +2,8 @@
 # Quick and dirty parser for PKCS#11 structs and
 # generator for Ruby wrapper classes.
 
-require 'rubygems'
-require 'pkcs11'
-require File.expand_path(File.join(File.dirname(__FILE__), '../../ext/generate_structs'))
+require_relative "generate_structs"
+require_relative "std_structs"
 
 module PKCS11
 module ProtectServer
@@ -61,7 +60,7 @@ class StructParser < PKCS11::StructParser
   def start!
     @structs = parse_files(options.files)
     @structs_by_name = @structs.inject({}){|sum, v| sum[v.name]=v; sum }
-    @std_structs_by_name = PKCS11.constants.select{|c| PKCS11.const_get(c).respond_to?(:ancestors) && !(PKCS11.const_get(c).ancestors & [PKCS11::CStruct, PKCS11::CK_ATTRIBUTE]).empty? }.inject({}){|sum, v| sum[v.to_s]=true; sum }
+    @std_structs_by_name = PKCS11_STD_STRUCTS.inject({}){|sum, v| sum[v.to_s]=true; sum }
 
     write_files
   end
