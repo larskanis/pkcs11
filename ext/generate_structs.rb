@@ -15,7 +15,7 @@ class StructParser
   def self.run(argv)
     s = self.new
     options = Struct.new(:verbose, :def, :impl, :doc, :files).new
-    OptionParser.new(argv) do |opts|
+    OptionParser.new do |opts|
       opts.banner = "Usage: #{$0} [options] <header-file.h>*"
 
       opts.on("-v", "--[no-]verbose", "Run verbosely", &options.method(:verbose=))
@@ -26,7 +26,7 @@ class StructParser
         puts opts
         exit
       end
-    end.parse!
+    end.parse!(argv)
     options.files = argv
     s.options = options
     s.start!

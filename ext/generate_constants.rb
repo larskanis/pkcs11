@@ -12,7 +12,7 @@ class ConstantParser
   def self.run(argv)
     s = self.new
     options = Struct.new(:verbose, :const, :files).new
-    OptionParser.new(argv) do |opts|
+    OptionParser.new do |opts|
       opts.banner = "Usage: #{$0} [options] <header-file.h>*"
 
       opts.on("-v", "--[no-]verbose", "Run verbosely", &options.method(:verbose=))
@@ -21,7 +21,7 @@ class ConstantParser
         puts opts
         exit
       end
-    end.parse!
+    end.parse!(argv)
     options.files = argv
     s.options = options
     s.start!
