@@ -6,7 +6,7 @@
 /**************************************************/
 
 #define PKCS11_DEFINE_CONST(constant) \
-  rb_define_const(MODULE_FOR_CONSTS, #constant, INT2NUM(constant))
+  rb_define_const(MODULE_FOR_CONSTS, #constant, LONG2NUM(constant))
 
 #define PKCS11_DEFINE_CONST_GROUP(group, name, value) \
   do { \
