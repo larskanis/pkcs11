@@ -1501,11 +1501,11 @@ cCK_MECHANISM_initialize(int argc, VALUE *argv, VALUE self)
 }
 
 /* rb_define_method(cCK_MECHANISM, "mechanism", cCK_MECHANISM_get_mechanism, 0); */
-/* rb_define_method(cCK_MECHANISM, "mechanism=", cCK_MECHANISM_set_mechanism, 0); */
+/* rb_define_method(cCK_MECHANISM, "mechanism=", cCK_MECHANISM_set_mechanism, 1); */
 PKCS11_IMPLEMENT_ULONG_ACCESSOR(CK_MECHANISM, mechanism);
 
 /* rb_define_method(cCK_MECHANISM, "pParameter", cCK_MECHANISM_get_pParameter, 0); */
-/* rb_define_method(cCK_MECHANISM, "pParameter=", cCK_MECHANISM_set_pParameter, 0); */
+/* rb_define_method(cCK_MECHANISM, "pParameter=", cCK_MECHANISM_set_pParameter, 1); */
 /* @see PKCS11::CK_MECHANISM#initialize */
 static VALUE
 cCK_MECHANISM_get_pParameter(VALUE self)
