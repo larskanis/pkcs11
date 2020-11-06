@@ -170,14 +170,15 @@ Init_pkcs11_const(VALUE cPKCS11, VALUE ePKCS11Error)
   PKCS11_DEFINE_CONST(CKZ_DATA_SPECIFIED);
   PKCS11_DEFINE_CONST(CKZ_SALT_SPECIFIED);
 
-  vOBJECT_CLASSES = rb_hash_new();
-  vATTRIBUTES = rb_hash_new();
-  vMECHANISMS = rb_hash_new();
-  vRETURN_VALUES = rb_hash_new();
-  rb_define_const(cPKCS11, "OBJECT_CLASSES", vOBJECT_CLASSES);
-  rb_define_const(cPKCS11, "ATTRIBUTES", vATTRIBUTES);
-  rb_define_const(cPKCS11, "MECHANISMS", vMECHANISMS);
-  rb_define_const(cPKCS11, "RETURN_VALUES", vRETURN_VALUES);
+#define DEFINE_GLOBAL_HASH(h) \
+  rb_global_variable(&v##h); \
+  v##h = rb_hash_new(); \
+  rb_define_const(cPKCS11, #h, v##h);
+
+  DEFINE_GLOBAL_HASH(OBJECT_CLASSES)
+  DEFINE_GLOBAL_HASH(ATTRIBUTES)
+  DEFINE_GLOBAL_HASH(MECHANISMS)
+  DEFINE_GLOBAL_HASH(RETURN_VALUES)
 
   #include "pk11_const_def.inc"
 

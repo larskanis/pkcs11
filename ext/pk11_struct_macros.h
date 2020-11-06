@@ -416,6 +416,7 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 #define PKCS11_DEFINE_STRUCT(s) \
   do { \
     c##s = rb_define_class_under(MODULE_FOR_STRUCTS, #s, BASECLASS_FOR_STRUCTS); \
+    rb_global_variable(&a##s##_members); \
     a##s##_members = rb_ary_new(); \
     rb_define_alloc_func(c##s, s##_s_alloc); \
     rb_define_const(c##s, "SIZEOF_STRUCT", ULONG2NUM(sizeof(s))); \
