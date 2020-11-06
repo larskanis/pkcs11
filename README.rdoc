@@ -1,9 +1,10 @@
 = PKCS #11/Ruby Interface
-{<img src="https://travis-ci.org/larskanis/pkcs11.svg?branch=master" alt="Build Status" />}[https://travis-ci.org/larskanis/pkcs11]
-{<img src="https://ci.appveyor.com/api/projects/status/8m7ugl1ogijw1c8c?svg=true" alt="Build Status" />}[https://ci.appveyor.com/project/larskanis/pkcs11]
 
 home :: http://github.com/larskanis/pkcs11
 API documentation :: http://rubydoc.info/gems/pkcs11/frames
+
+{<img src="https://travis-ci.org/larskanis/pkcs11.svg?branch=master" alt="Build Status" />}[https://travis-ci.org/larskanis/pkcs11]
+{<img src="https://ci.appveyor.com/api/projects/status/8m7ugl1ogijw1c8c?svg=true" alt="Build Status" />}[https://ci.appveyor.com/project/larskanis/pkcs11]
 
 This module allows Ruby programs to interface with "RSA Security Inc.
 PKCS #11 Cryptographic Token Interface (Cryptoki)".
