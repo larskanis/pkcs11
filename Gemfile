@@ -11,6 +11,6 @@ gem "rake-compiler-dock", "~>0.6.2", :group => [:development, :test]
 gem "minitest", "~>5.7", :group => [:development, :test]
 gem "hoe-bundler", "~>1.0", :group => [:development, :test]
 gem "rdoc", ">=4.0", "<7", :group => [:development, :test]
-gem "hoe", "~>3.20", :group => [:development, :test]
+gem "hoe", "~>3.22", :group => [:development, :test]
 
 # vim: syntax=ruby
