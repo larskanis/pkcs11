@@ -17,6 +17,7 @@
     old = rb_hash_aref(group, rvalue); \
     if (!NIL_P(old)) rb_warning("%s is equal to %s", RSTRING_PTR(old), name); \
     rb_hash_aset(group, rvalue, str); \
+    RB_GC_GUARD(str); \
   } while(0)
 
 #define PKCS11_DEFINE_OBJECT_CLASS(constant) \
