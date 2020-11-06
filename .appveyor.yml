@@ -18,10 +18,14 @@ install:
   - ps: |
       if ($env:ruby_version -like "*x64*") {
         $(new-object net.webclient).DownloadFile('http://ftp.mozilla.org/pub/firefox/releases/68.3.0esr/win64/en-US/Firefox%20Setup%2068.3.0esr.exe', 'C:/firefox-setup.exe')
-        cmd /c "C:/firefox-setup.exe" -ms
         $env:SOFTOKN_PATH = 'C:/Program Files/Mozilla Firefox/softokn3.dll'
         $env:PATH = 'C:/Program Files/Mozilla Firefox;' + $env:PATH
+      } else {
+        $(new-object net.webclient).DownloadFile('http://ftp.mozilla.org/pub/firefox/releases/68.3.0esr/win32/en-US/Firefox%20Setup%2068.3.0esr.exe', 'C:/firefox-setup.exe')
+        $env:SOFTOKN_PATH = 'C:/Program Files (x86)/Mozilla Firefox/softokn3.dll'
+        $env:PATH = 'C:/Program Files (x86)/Mozilla Firefox;' + $env:PATH
       }
+      cmd /c "C:/firefox-setup.exe" -ms
 
 build: off
 
