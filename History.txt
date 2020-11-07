@@ -1,3 +1,8 @@
+=== 0.3.3 / 2020-11-07
+
+* Fix possible segfault on GC pressure at startup
+* Move CI from http://travis-ci.org to https://travis-ci.com
+
 === 0.3.2 / 2020-01-12
 
 * pkcs11_protect_server, pkcs11_luna: Move parsing of vendor header files to gem installation.
