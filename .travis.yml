@@ -1,8 +1,8 @@
 language: ruby
 sudo: false
 rvm:
-  - "2.2"
   - "2.5.7"
+  - "3.1.2"
   - "ruby-head"
   - truffleruby
 matrix:

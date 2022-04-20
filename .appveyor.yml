@@ -10,11 +10,9 @@ install:
   - gem --version
   - bundle install
 
-  # When running ruby-x86, we make use of the softokn3.dll that is part of the
-  # pre-installed firefox. The test helper will find it automatically.
-  # When running ruby-x64, we equally need a 64 bit softokn3.dll to test against.
+  # We need a 32 or 64 bit softokn3.dll to test against.
   # However it is not part of any installed software on Appveyor,
-  # so we download and install a 64 bit firefox version and use it's softokn3.dll.
+  # so we download and install a 32 or 64 bit firefox version and use it's softokn3.dll.
   - ps: |
       if ($env:ruby_version -like "*x64*") {
         $(new-object net.webclient).DownloadFile('http://ftp.mozilla.org/pub/firefox/releases/68.3.0esr/win64/en-US/Firefox%20Setup%2068.3.0esr.exe', 'C:/firefox-setup.exe')
@@ -38,7 +36,5 @@ environment:
       RUBY_DLL_PATH: "C:/Program Files/Mozilla Firefox"
     - ruby_version: "25"
       RUBY_DLL_PATH: "C:/Program Files (x86)/Mozilla Firefox"
-    - ruby_version: "24-x64"
+    - ruby_version: "31-x64"
       RUBY_DLL_PATH: "C:/Program Files/Mozilla Firefox"
-    - ruby_version: "22"
-    - ruby_version: "23-x64"
