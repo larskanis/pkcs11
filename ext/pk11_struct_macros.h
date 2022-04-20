@@ -86,7 +86,7 @@ set_ulong_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
     *ptr = NULL_PTR;
     return value;
   }
-  new_obj = Data_Make_Struct(rb_cData, CK_ULONG, 0, -1, *ptr);
+  new_obj = Data_Make_Struct(rb_cObject, CK_ULONG, 0, -1, *ptr);
   rb_iv_set(obj, name, new_obj);
   **ptr = NUM2ULONG(value);
   return value;
