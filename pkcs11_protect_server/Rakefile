@@ -21,6 +21,12 @@ GENERATED_FILES = [
   "ext/std_structs.rb"
 ]
 
+CLEAN.include [
+    'ext/pk11s_struct_impl.inc',
+    'ext/pk11s_struct_def.inc',
+    'ext/pk11s_const_def.inc',
+    'ext/pk11s_struct.doc',
+  ]
 CLEAN.include SHARED_FILES
 CLEAN.include GENERATED_FILES
 CLEAN.include 'lib/pkcs11_protect_server_ext.so'
@@ -37,6 +43,7 @@ task :remove_pkg do
   rm_rf 'pkg'
 end
 task :gem => [:remove_pkg]
+task :compile => GENERATED_FILES
 
 hoe = Hoe.spec 'pkcs11_protect_server' do
   developer('Lars Kanis', 'kanis@comcard.de')

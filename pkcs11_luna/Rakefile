@@ -21,6 +21,12 @@ GENERATED_FILES = [
   "ext/std_structs.rb"
 ]
 
+CLEAN.include [
+    'ext/pk11l_struct_impl.inc',
+    'ext/pk11l_struct_def.inc',
+    'ext/pk11l_const_def.inc',
+    'ext/pk11l_struct.doc',
+  ]
 CLEAN.include SHARED_FILES
 CLEAN.include GENERATED_FILES
 CLEAN.include 'lib/pkcs11_luna_ext.so'
@@ -38,6 +44,7 @@ task :remove_pkg do
   rm_rf 'pkg'
 end
 task :gem => [:remove_pkg]
+task :compile => GENERATED_FILES
 
 hoe = Hoe.spec 'pkcs11_luna' do
   developer('SafeNet', 'support@safenet-inc.com')
