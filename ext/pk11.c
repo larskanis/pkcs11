@@ -1553,7 +1553,7 @@ cCK_MECHANISM_set_pParameter(VALUE self, VALUE value)
 
 
 void
-Init_pkcs11_ext()
+Init_pkcs11_ext(void)
 {
   mPKCS11 = rb_define_module("PKCS11");
   sNEW = rb_intern("new");
