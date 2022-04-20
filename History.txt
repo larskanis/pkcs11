@@ -1,3 +1,7 @@
+=== 0.3.4 / 2022-04-20
+
+* Fix compatibility with ruby-3.2
+
 === 0.3.3 / 2020-11-07
 
 * Fix possible segfault on GC pressure at startup
