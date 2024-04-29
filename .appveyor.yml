@@ -10,7 +10,7 @@ install:
         cmd /c ruby-setup.exe /verysilent /currentuser /dir=C:/Ruby$env:ruby_version
       }
   - ridk version
-  - ridk exec sh -c "pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-gcc"
+  - ridk exec sh -c "pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-gcc ${MINGW_PACKAGE_PREFIX}-libyaml"
   - gem --version
   - bundle install
 
