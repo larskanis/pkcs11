@@ -58,7 +58,7 @@ class TestPkcs11Crypt < Minitest::Test
     assert_equal 16, cryptogram.length, 'The cryptogram should contain some data'
     refute_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
 
-    cryptogram2 = ''
+    cryptogram2 = String.new
     cryptogram2 << session.encrypt( {DES3_CBC_PAD: "\0"*8}, secret_key ) do |cipher|
       cryptogram2 << cipher.update(plaintext1[0, 8])
       cryptogram2 << cipher.update(plaintext1[8..-1])
