@@ -39,6 +39,7 @@ static VALUE aCK_MECHANISM_members;
 
 VALUE pkcs11_return_value_to_class(CK_RV, VALUE);
 
+NORETURN()
 static void
 pkcs11_raise(VALUE self, CK_RV rv)
 {
