@@ -19,7 +19,7 @@ class ConstantParser < PKCS11::ConstantParser
   def start!
     File.open(options.const, "w") do |fd_const|
       options.files.each do |file_h|
-        c_src = IO.read(file_h)
+        c_src = File.read(file_h)
         ConstGroups.each do |const_group|
           c_src.scan(const_group.regexp) do
             const_name, const_value = $1, $2

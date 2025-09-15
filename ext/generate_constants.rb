@@ -26,7 +26,7 @@ class ConstantParser
     s.options = options
     s.start!
   end
-  
+
   ConstTemplate = Struct.new :regexp, :def
   ConstGroups = [
     ConstTemplate.new(/#define\s+(CKM_[A-Z_0-9]+)\s+(\w+)/, 'PKCS11_DEFINE_MECHANISM'),
@@ -38,11 +38,11 @@ class ConstantParser
   def start!
     File.open(options.const, "w") do |fd_const|
       options.files.each do |file_h|
-        c_src = IO.read(file_h)
+        c_src = File.read(file_h)
         ConstGroups.each do |const_group|
           c_src.scan(const_group.regexp) do
             const_name, const_value = $1, $2
-            
+
             fd_const.puts "#{const_group.def}(#{const_name}); /* #{const_value} */"
           end
         end

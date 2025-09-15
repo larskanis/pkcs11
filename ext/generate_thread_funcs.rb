@@ -31,7 +31,7 @@ fd_impl.puts <<-EOT
   #include #{File.basename(options.decl).inspect}
 EOT
 ARGV.each do |file_h|
-  c_src = IO.read(file_h)
+  c_src = File.read(file_h)
   c_src.scan(/CK_PKCS11_FUNCTION_INFO\((.+?)\).*?\((.*?)\);/m) do
     func_name, func_param_list = $1, $2
     func_params = []

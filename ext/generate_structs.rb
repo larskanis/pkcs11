@@ -56,7 +56,7 @@ class StructParser
   def parse_files(files)
     structs = []
     files.each do |file_h|
-      c_src = IO.read(file_h)
+      c_src = File.read(file_h)
       c_src.scan(/struct\s+([A-Z_0-9]+)\s*\{(.*?)\}/m) do |struct|
         struct_text = $2
         struct = CStruct.new( $1, [] )
