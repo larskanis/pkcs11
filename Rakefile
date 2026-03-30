@@ -37,7 +37,7 @@ hoe = Hoe.spec 'pkcs11' do
   extra_dev_deps << ['yard', '~> 0.9.36']
   extra_dev_deps << ['rake-compiler', '~> 1.0']
   extra_dev_deps << ['rake-compiler-dock', '~> 1.2']
-  extra_dev_deps << ['minitest', '~> 5.7']
+  extra_dev_deps << ['minitest', '>= 5.7', '< 7.0.a']
   extra_dev_deps << ['hoe-bundler', '~> 1.0']
 
   self.summary = 'PKCS#11 binding for Ruby'
