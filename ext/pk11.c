@@ -170,15 +170,15 @@ pkcs11_load_library(VALUE self, VALUE path)
   TypedData_Get_Struct(self, pkcs11_ctx, &pkcs11_ctx_type, ctx);
 #ifdef compile_for_windows
   if((ctx->module = LoadLibrary(so_path)) == NULL) {
-    char error_text[999] = "LoadLibrary() error";
+    char error_text[999] = "";
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
-    rb_raise(ePKCS11Error, "%s", error_text);
+    rb_raise(ePKCS11Error, "LoadLibrary(): %s", error_text);
   }
 #else
   if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
-    rb_raise(ePKCS11Error, "%s", dlerror());
+    rb_raise(ePKCS11Error, "dlopen(): %s", dlerror());
   }
 #endif
 
@@ -203,15 +203,15 @@ pkcs11_C_GetFunctionList(VALUE self)
 #ifdef compile_for_windows
   func = (CK_C_GetFunctionList)GetProcAddress(ctx->module, "C_GetFunctionList");
   if(!func){
-    char error_text[999] = "GetProcAddress() error";
+    char error_text[999] = "";
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
-    rb_raise(ePKCS11Error, "%s", error_text);
+    rb_raise(ePKCS11Error, "GetProcAddress(): %s", error_text);
   }
 #else
   func = (CK_C_GetFunctionList)dlsym(ctx->module, "C_GetFunctionList");
-  if(!func) rb_raise(ePKCS11Error, "%s", dlerror());
+  if(!func) rb_raise(ePKCS11Error, "dlsym(): %s", dlerror());
 #endif
   CallFunction(C_GetFunctionList, func, rv, &(ctx->functions));
   if (rv != CKR_OK) pkcs11_raise(self,rv);
