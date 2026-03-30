@@ -9,8 +9,9 @@ gem "yard", "~>0.9.36", :group => [:development, :test]
 gem "rake-compiler", "~>1.0", :group => [:development, :test]
 gem "rake-compiler-dock", "~>1.2", :group => [:development, :test]
 gem "minitest", ">=5.7", :group => [:development, :test]
+gem "hoe", "~>4.0", :group => [:development, :test]
 gem "hoe-bundler", "~>1.0", :group => [:development, :test]
+gem "win32-registry", "~>0.1", :group => [:development, :test]
 gem "rdoc", ">=6.0", "<8", :group => [:development, :test]
-gem "hoe", "~>4.6", :group => [:development, :test]
 
 # vim: syntax=ruby

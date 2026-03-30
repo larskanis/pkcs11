@@ -33,7 +33,7 @@ install:
 build: off
 
 test_script:
-  - bundle _2.4.22_ exec rake compile test gem
+  - bundle _2.4.22_ exec rake compile test
 
 environment:
   matrix:

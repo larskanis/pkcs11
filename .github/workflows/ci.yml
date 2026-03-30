@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 3" # At 05:00 on Wednesday # https://crontab.guru/#0_5_*_*_3
+
+jobs:
+  job_test_gem:
+    name: Test in source tree
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+            ruby: "head"
+          - os: windows
+            ruby: "3.2"
+          - os: ubuntu
+            ruby: "head"
+          - os: ubuntu
+            ruby: "4.0"
+          - os: ubuntu
+            ruby: "3.0"
+          - os: ubuntu
+            ruby: "truffleruby"
+          - os: macos
+            ruby: "head"
+
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby-pkgs@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}      # passed to ruby/setup-ruby
+          apt-get: "libnss3" # Ubuntu
+          brew: "nss"     # macOS
+          mingw: "nss"   # Windows mingw / mswin /ucrt
+
+      - name: Print tool versions
+        run: |
+          ruby -v
+          gcc -v
+          gem env
+
+      - name: Bundle install
+        run: bundle install
+
+      - name: Compile extension
+        run: bundle exec rake compile
+
+      - name: Run tests
+        run: bundle exec rake test
+
+      - name: Build gem
+        run: bundle exec rake gem
+
+      - name: Print compile logs if failed
+        if: ${{ failure() && matrix.os != 'windows' }}
+        run: find . -name '*.log' -print0 | xargs -0 cat
