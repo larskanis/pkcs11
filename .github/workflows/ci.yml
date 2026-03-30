@@ -39,7 +39,23 @@ jobs:
           ruby-version: ${{ matrix.ruby }}      # passed to ruby/setup-ruby
           apt-get: "libnss3" # Ubuntu
           brew: "nss"     # macOS
-          mingw: "nss"   # Windows mingw / mswin /ucrt
+          mingw: ""   # Windows mingw / mswin /ucrt
+
+      - name: Download firefox on Windows
+        if: ${{ matrix.os == 'windows' }}
+        run: |
+          remove-item "C:/Program Files/Mozilla Firefox" -recurse
+          $(new-object net.webclient).DownloadFile('http://ftp.mozilla.org/pub/firefox/releases/68.3.0esr/win64/en-US/Firefox%20Setup%2068.3.0esr.exe', 'C:/firefox-setup.exe')
+          "SOFTOKN_PATH=C:/Program Files/Mozilla Firefox/softokn3.dll" >> $env:GITHUB_ENV
+          "RUBY_DLL_PATH=C:/Program Files/Mozilla Firefox" >> $env:GITHUB_ENV
+          "C:/Program Files/Mozilla Firefox" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Install firefox on Windows
+        if: ${{ matrix.os == 'windows' }}
+        shell: cmd
+        run: |
+          "C:/firefox-setup.exe" -ms
+          dir "C:/Program Files/Mozilla Firefox"
 
       - name: Print tool versions
         run: |
