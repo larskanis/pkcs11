@@ -38,7 +38,9 @@ hoe = Hoe.spec 'pkcs11' do
   extra_dev_deps << ['rake-compiler', '~> 1.0']
   extra_dev_deps << ['rake-compiler-dock', '~> 1.2']
   extra_dev_deps << ['minitest', '>= 5.7', '< 7.0.a']
+  extra_dev_deps << ['hoe', '~> 4.0']
   extra_dev_deps << ['hoe-bundler', '~> 1.0']
+  extra_dev_deps << ['win32-registry', '~> 0.1']
 
   self.summary = 'PKCS#11 binding for Ruby'
   self.description = 'This module allows Ruby programs to interface with "RSA Security Inc. PKCS #11 Cryptographic Token Interface (Cryptoki)".'

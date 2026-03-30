@@ -77,7 +77,7 @@ get_ulong_ptr(VALUE obj, off_t offset)
 }
 
 static VALUE
-set_ulong_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
+set_ulong_ptr(VALUE obj, VALUE value, const char *name, off_t offset, const rb_data_type_t *objtype)
 {
   VALUE new_obj;
   CK_ULONG_PTR *ptr = (CK_ULONG_PTR *)((char*)DATA_PTR(obj) + offset);
@@ -86,7 +86,7 @@ set_ulong_ptr(VALUE obj, VALUE value, const char *name, off_t offset)
     *ptr = NULL_PTR;
     return value;
   }
-  new_obj = Data_Make_Struct(rb_cObject, CK_ULONG, 0, -1, *ptr);
+  new_obj = TypedData_Make_Struct(rb_cObject, CK_ULONG, objtype, *ptr);
   rb_iv_set(obj, name, new_obj);
   **ptr = NUM2ULONG(value);
   return value;
@@ -180,10 +180,10 @@ set_string_ptr_len(VALUE obj, VALUE value, const char *name, off_t offset, off_t
 }
 
 static VALUE
-get_struct_inline(VALUE obj, VALUE klass, const char *name, off_t offset)
+get_struct_inline(VALUE obj, VALUE klass, const char *name, off_t offset, const rb_data_type_t *objtype)
 {
   char *ptr = (char*)DATA_PTR(obj) + offset;
-  VALUE inline_obj = Data_Wrap_Struct(klass, 0, 0, ptr);
+  VALUE inline_obj = TypedData_Wrap_Struct(klass, objtype, ptr);
   rb_iv_set(inline_obj, name, obj);
   return inline_obj;
 }
@@ -199,7 +199,7 @@ set_struct_inline(VALUE obj, VALUE klass, const char *struct_name, VALUE value, 
 }
 
 static VALUE
-get_struct_ptr(VALUE obj, VALUE klass, const char *name, off_t offset, int sizeofstruct)
+get_struct_ptr(VALUE obj, VALUE klass, const char *name, off_t offset, int sizeofstruct, const rb_data_type_t *objtype)
 {
   char *ptr = (char*)DATA_PTR(obj);
   char *p = *(char**)(ptr+offset);
@@ -208,7 +208,7 @@ get_struct_ptr(VALUE obj, VALUE klass, const char *name, off_t offset, int sizeo
   if (!p) return Qnil;
   mem = xmalloc(sizeofstruct);
   memcpy(mem, p, sizeofstruct);
-  new_obj = Data_Wrap_Struct(klass, 0, -1, mem);
+  new_obj = TypedData_Wrap_Struct(klass, objtype, mem);
   return new_obj;
 }
 
@@ -229,7 +229,7 @@ set_struct_ptr(VALUE obj, VALUE klass, const char *struct_name, VALUE value, con
 }
 
 static VALUE
-get_struct_ptr_array(VALUE obj, VALUE klass, off_t offset, off_t offset_len, int sizeofstruct)
+get_struct_ptr_array(VALUE obj, VALUE klass, off_t offset, off_t offset_len, int sizeofstruct, const rb_data_type_t *objtype)
 {
   unsigned long i;
   char *ptr = DATA_PTR(obj);
@@ -240,7 +240,7 @@ get_struct_ptr_array(VALUE obj, VALUE klass, off_t offset, off_t offset_len, int
     VALUE new_obj;
     void *mem = xmalloc(sizeofstruct);
     memcpy(mem, p + sizeofstruct * i, sizeofstruct);
-    new_obj = Data_Wrap_Struct(klass, 0, -1, mem);
+    new_obj = TypedData_Wrap_Struct(klass, objtype, mem);
     rb_ary_push(ary, new_obj);
   }
   return ary;
@@ -315,11 +315,18 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 }
 
 #define PKCS11_IMPLEMENT_ULONG_PTR_ACCESSOR(s, f) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, RUBY_DEFAULT_FREE, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
+\
 static VALUE c##s##_get_##f(VALUE o){ \
   return get_ulong_ptr(o, OFFSET_OF(s, f)); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
-  return set_ulong_ptr(o, v, #f, OFFSET_OF(s, f)); \
+  return set_ulong_ptr(o, v, #f, OFFSET_OF(s, f), &struct_##s##_##f##_obj_type); \
 }
 
 #define PKCS11_IMPLEMENT_HANDLE_ACCESSOR(s, f) \
@@ -355,8 +362,15 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 }
 
 #define PKCS11_IMPLEMENT_STRUCT_ACCESSOR(s, k, f) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, 0, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
+\
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_struct_inline(o, c##k, #f, OFFSET_OF(s, f)); \
+  return get_struct_inline(o, c##k, #f, OFFSET_OF(s, f), &struct_##s##_##f##_obj_type); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_struct_inline(o, c##k, #k, v, #f, OFFSET_OF(s, f), sizeof(k)); \
@@ -373,17 +387,29 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 }
 
 #define PKCS11_IMPLEMENT_STRUCT_PTR_ACCESSOR(s, k, f) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, RUBY_DEFAULT_FREE, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_struct_ptr(o, c##k, #f, OFFSET_OF(s, f), sizeof(k)); \
+  return get_struct_ptr(o, c##k, #f, OFFSET_OF(s, f), sizeof(k), &struct_##s##_##f##_obj_type); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_struct_ptr(o, c##k, #k, v, #f, OFFSET_OF(s, f)); \
 }
 
 #define PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ACCESSOR(s, k, f) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, RUBY_DEFAULT_FREE, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
 static VALUE c##s##_get_##f(VALUE o){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
-  return get_struct_ptr(o, klass, #f, OFFSET_OF(s, f), sizeof(k)); \
+  return get_struct_ptr(o, klass, #f, OFFSET_OF(s, f), sizeof(k), &struct_##s##_##f##_obj_type); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
@@ -391,17 +417,29 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 }
 
 #define PKCS11_IMPLEMENT_STRUCT_PTR_ARRAY_ACCESSOR(s, k, f, l) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, RUBY_DEFAULT_FREE, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
 static VALUE c##s##_get_##f(VALUE o){ \
-  return get_struct_ptr_array(o, c##k, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
+  return get_struct_ptr_array(o, c##k, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k), &struct_##s##_##f##_obj_type); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   return set_struct_ptr_array(o, c##k, #k, v, #f, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
 }
 
 #define PKCS11_IMPLEMENT_PKCS11_STRUCT_PTR_ARRAY_ACCESSOR(s, k, f, l) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, RUBY_DEFAULT_FREE, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
 static VALUE c##s##_get_##f(VALUE o){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
-  return get_struct_ptr_array(o, klass, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k)); \
+  return get_struct_ptr_array(o, klass, OFFSET_OF(s, f), OFFSET_OF(s, l), sizeof(k), &struct_##s##_##f##_obj_type); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \

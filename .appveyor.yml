@@ -12,8 +12,8 @@ install:
   - ridk version
   - ridk exec sh -c "pacman -S --noconfirm --needed ${MINGW_PACKAGE_PREFIX}-gcc ${MINGW_PACKAGE_PREFIX}-libyaml"
   - gem --version
-  - gem inst "bundler:2.4.22"
-  - bundle _2.4.22_ install
+  - gem inst "bundler:4.0.9"
+  - bundle _4.0.9_ install
 
   # We need a 32 or 64 bit softokn3.dll to test against.
   # However it is not part of any installed software on Appveyor,
@@ -33,13 +33,11 @@ install:
 build: off
 
 test_script:
-  - bundle _2.4.22_ exec rake compile test gem
+  - bundle _4.0.9_ exec rake compile test
 
 environment:
   matrix:
     - ruby_version: head-x64
       RUBY_DLL_PATH: "C:/Program Files/Mozilla Firefox"
-    - ruby_version: "26"
+    - ruby_version: "33"
       RUBY_DLL_PATH: "C:/Program Files (x86)/Mozilla Firefox"
-    - ruby_version: "31-x64"
-      RUBY_DLL_PATH: "C:/Program Files/Mozilla Firefox"

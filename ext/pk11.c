@@ -54,24 +54,6 @@ typedef struct {
   CK_FUNCTION_LIST_PTR functions;
 } pkcs11_ctx;
 
-#define GetFunction(obj, name, sval) \
-{ \
-  pkcs11_ctx *ctx; \
-  Data_Get_Struct(obj, pkcs11_ctx, ctx); \
-  if (!ctx->functions) rb_raise(ePKCS11Error, "no function list"); \
-  sval = (CK_##name)ctx->functions->name; \
-  if (!sval) rb_raise(ePKCS11Error, #name " is not supported."); \
-}
-
-#define CallFunction(name, func, rv, ...) \
-{ \
-  struct tbr_##name##_params params = { \
-    func, {__VA_ARGS__}, CKR_FUNCTION_FAILED \
-  }; \
-  rb_thread_call_without_gvl(tbf_##name, &params, RUBY_UBF_PROCESS, NULL); \
-  rv = params.retval; \
-}
-
 static void
 pkcs11_ctx_unload_library(pkcs11_ctx *ctx)
 {
@@ -85,11 +67,43 @@ pkcs11_ctx_unload_library(pkcs11_ctx *ctx)
 }
 
 static void
-pkcs11_ctx_free(pkcs11_ctx *ctx)
+pkcs11_ctx_free(void *_ptr)
 {
+  pkcs11_ctx *ctx = (pkcs11_ctx *)_ptr;
   if(ctx->functions) ctx->functions->C_Finalize(NULL_PTR);
   pkcs11_ctx_unload_library(ctx);
   free(ctx);
+}
+
+static size_t
+pkcs11_ctx_memsize(const void *)
+{
+  return sizeof(pkcs11_ctx);
+}
+
+static const rb_data_type_t pkcs11_ctx_type = {
+    "PKCS11::Library",
+    {0, pkcs11_ctx_free, pkcs11_ctx_memsize,},
+    0, 0,
+    RUBY_TYPED_FREE_IMMEDIATELY,
+};
+
+#define GetFunction(obj, name, sval) \
+{ \
+  pkcs11_ctx *ctx; \
+  TypedData_Get_Struct(obj, pkcs11_ctx, &pkcs11_ctx_type, ctx); \
+  if (!ctx->functions) rb_raise(ePKCS11Error, "no function list"); \
+  sval = (CK_##name)ctx->functions->name; \
+  if (!sval) rb_raise(ePKCS11Error, #name " is not supported."); \
+}
+
+#define CallFunction(name, func, rv, ...) \
+{ \
+  struct tbr_##name##_params params = { \
+    func, {__VA_ARGS__}, CKR_FUNCTION_FAILED \
+  }; \
+  rb_thread_call_without_gvl(tbf_##name, &params, RUBY_UBF_PROCESS, NULL); \
+  rv = params.retval; \
 }
 
 /* rb_define_method(cPKCS11, "C_Finalize", pkcs11_C_Finalize, 0); */
@@ -120,7 +134,7 @@ pkcs11_unload_library(VALUE self)
 {
   pkcs11_ctx *ctx;
 
-  Data_Get_Struct(self, pkcs11_ctx, ctx);
+  TypedData_Get_Struct(self, pkcs11_ctx, &pkcs11_ctx_type, ctx);
   pkcs11_ctx_unload_library(ctx);
 
   return self;
@@ -131,7 +145,7 @@ pkcs11_s_alloc(VALUE self)
 {
   VALUE obj;
   pkcs11_ctx *ctx;
-  obj = Data_Make_Struct(self, pkcs11_ctx, 0, pkcs11_ctx_free, ctx);
+  obj = TypedData_Make_Struct(self, pkcs11_ctx, &pkcs11_ctx_type, ctx);
   return obj;
 }
 
@@ -153,18 +167,18 @@ pkcs11_load_library(VALUE self, VALUE path)
   pkcs11_ctx *ctx;
 
   so_path = StringValueCStr(path);
-  Data_Get_Struct(self, pkcs11_ctx, ctx);
+  TypedData_Get_Struct(self, pkcs11_ctx, &pkcs11_ctx_type, ctx);
 #ifdef compile_for_windows
   if((ctx->module = LoadLibrary(so_path)) == NULL) {
-    char error_text[999] = "LoadLibrary() error";
+    char error_text[999] = "";
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
-    rb_raise(ePKCS11Error, "%s", error_text);
+    rb_raise(ePKCS11Error, "LoadLibrary(): %s", error_text);
   }
 #else
   if((ctx->module = dlopen(so_path, RTLD_NOW)) == NULL) {
-    rb_raise(ePKCS11Error, "%s", dlerror());
+    rb_raise(ePKCS11Error, "dlopen(): %s", dlerror());
   }
 #endif
 
@@ -185,19 +199,19 @@ pkcs11_C_GetFunctionList(VALUE self)
   CK_RV rv;
   CK_C_GetFunctionList func;
 
-  Data_Get_Struct(self, pkcs11_ctx, ctx);
+  TypedData_Get_Struct(self, pkcs11_ctx, &pkcs11_ctx_type, ctx);
 #ifdef compile_for_windows
   func = (CK_C_GetFunctionList)GetProcAddress(ctx->module, "C_GetFunctionList");
   if(!func){
-    char error_text[999] = "GetProcAddress() error";
+    char error_text[999] = "";
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_MAX_WIDTH_MASK,
                 NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR)&error_text, sizeof(error_text), NULL);
-    rb_raise(ePKCS11Error, "%s", error_text);
+    rb_raise(ePKCS11Error, "GetProcAddress(): %s", error_text);
   }
 #else
   func = (CK_C_GetFunctionList)dlsym(ctx->module, "C_GetFunctionList");
-  if(!func) rb_raise(ePKCS11Error, "%s", dlerror());
+  if(!func) rb_raise(ePKCS11Error, "dlsym(): %s", dlerror());
 #endif
   CallFunction(C_GetFunctionList, func, rv, &(ctx->functions));
   if (rv != CKR_OK) pkcs11_raise(self,rv);
@@ -1328,18 +1342,32 @@ pkcs11_vendor_class_CK_ATTRIBUTE(VALUE self)
 ///////////////////////////////////////
 
 static void
-ck_attr_free(CK_ATTRIBUTE *attr)
+ck_attr_free(void *_ptr)
 {
+  CK_ATTRIBUTE *attr = (CK_ATTRIBUTE *)_ptr;
   if (attr->pValue) free(attr->pValue);
   free(attr);
 }
+
+static size_t
+ck_attr_memsize(const void *)
+{
+  return sizeof(CK_ATTRIBUTE);
+}
+
+static const rb_data_type_t ck_attr_obj_type = {
+    "PKCS11::CK_ATTRIBUTE",
+    {0, ck_attr_free, ck_attr_memsize,},
+    0, 0,
+    RUBY_TYPED_FREE_IMMEDIATELY,
+};
 
 static VALUE
 ck_attr_s_alloc(VALUE self)
 {
   VALUE obj;
   CK_ATTRIBUTE *attr;
-  obj = Data_Make_Struct(self, CK_ATTRIBUTE, 0, ck_attr_free, attr);
+  obj = TypedData_Make_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
   return obj;
 }
 
@@ -1350,7 +1378,7 @@ ck_attr_initialize(int argc, VALUE *argv, VALUE self)
   CK_ATTRIBUTE *attr;
 
   rb_scan_args(argc, argv, "02", &type, &value);
-  Data_Get_Struct(self, CK_ATTRIBUTE, attr);
+  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
   if (argc == 0) return self;
   attr->type = NUM2HANDLE(type);
   attr->pValue = NULL;
@@ -1393,7 +1421,7 @@ static VALUE
 ck_attr_type(VALUE self)
 {
   CK_ATTRIBUTE *attr;
-  Data_Get_Struct(self, CK_ATTRIBUTE, attr);
+  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
   return ULONG2NUM(attr->type);
 }
 
@@ -1406,7 +1434,7 @@ static VALUE
 ck_attr_value(VALUE self)
 {
   CK_ATTRIBUTE *attr;
-  Data_Get_Struct(self, CK_ATTRIBUTE, attr);
+  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
   if (attr->ulValueLen == 0) return Qnil;
   switch(attr->type){
   case CKA_ALWAYS_AUTHENTICATE:

@@ -16,10 +16,15 @@ def find_softokn
       if firefox_path
         ENV['Path'] = ENV['Path'] + ";" + firefox_path
         so_path = File.join(firefox_path, lLIBSOFTOKEN3_SO)
+      else
+        so_path = lLIBSOFTOKEN3_SO
       end
     end
   else
-    lLIBSOFTOKEN3_SO = "libsoftokn3.so"
+    lLIBSOFTOKEN3_SO = case RUBY_PLATFORM
+      when /darwin/ then "libsoftokn3.dylib"
+      else "libsoftokn3.so"
+    end
     lLIBNSS_PATHS = %w(
       /usr/lib64
       /usr/lib
@@ -27,11 +32,14 @@ def find_softokn
       /usr/lib/nss
       /usr/lib/i386-linux-gnu/nss
       /usr/lib/x86_64-linux-gnu/nss
+      /usr/lib/x86_64-linux-gnu/
+      /opt/homebrew/opt/nss/lib/
+      /usr/local/opt/nss/lib/
     )
     unless so_path = ENV['SOFTOKN_PATH']
       paths = lLIBNSS_PATHS.collect{|path| File.join(path, lLIBSOFTOKEN3_SO) }
       so_path = paths.find do |path|
-        File.exist?(path) && open_softokn(path).close rescue false
+        File.exist?(path) && (open_softokn(path).close rescue false)
       end
     end
   end
