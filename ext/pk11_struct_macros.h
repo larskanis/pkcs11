@@ -273,9 +273,15 @@ set_struct_ptr_array(VALUE obj, VALUE klass, const char *struct_name, VALUE valu
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
 
 #define PKCS11_IMPLEMENT_ALLOCATOR(s) \
+static const rb_data_type_t struct_##s##_obj_type = { \
+    "PKCS11::" #s, \
+    {0, RUBY_DEFAULT_FREE, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
 static VALUE s##_s_alloc(VALUE self){ \
   s *info; \
-  VALUE obj = Data_Make_Struct(self, s, 0, -1, info); \
+  VALUE obj = TypedData_Make_Struct(self, s, &struct_##s##_obj_type, info); \
   return obj; \
 } \
 static VALUE c##s##_to_s(VALUE self){ \
