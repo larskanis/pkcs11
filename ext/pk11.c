@@ -76,7 +76,7 @@ pkcs11_ctx_free(void *_ptr)
 }
 
 static size_t
-pkcs11_ctx_memsize(const void *)
+pkcs11_ctx_memsize(const void *_ptr)
 {
   return sizeof(pkcs11_ctx);
 }
@@ -1350,7 +1350,7 @@ ck_attr_free(void *_ptr)
 }
 
 static size_t
-ck_attr_memsize(const void *)
+ck_attr_memsize(const void *_ptr)
 {
   return sizeof(CK_ATTRIBUTE);
 }
