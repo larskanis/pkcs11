@@ -16,8 +16,6 @@ def find_softokn
       if firefox_path
         ENV['Path'] = ENV['Path'] + ";" + firefox_path
         so_path = File.join(firefox_path, lLIBSOFTOKEN3_SO)
-      else
-        so_path = lLIBSOFTOKEN3_SO
       end
     end
   else
