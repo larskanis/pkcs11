@@ -374,7 +374,6 @@ static const rb_data_type_t struct_##s##_##f##_obj_type = { \
     0, 0, \
     RUBY_TYPED_FREE_IMMEDIATELY, \
 }; \
-\
 static VALUE c##s##_get_##f(VALUE o){ \
   return get_struct_inline(o, c##k, #f, OFFSET_OF(s, f), &struct_##s##_##f##_obj_type); \
 } \
@@ -383,9 +382,15 @@ static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
 }
 
 #define PKCS11_IMPLEMENT_PKCS11_STRUCT_ACCESSOR(s, k, f) \
+static const rb_data_type_t struct_##s##_##f##_obj_type = { \
+    "PKCS11::" #s "." #f, \
+    {0, 0, 0,}, \
+    0, 0, \
+    RUBY_TYPED_FREE_IMMEDIATELY, \
+}; \
 static VALUE c##s##_get_##f(VALUE o){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
-  return get_struct_inline(o, klass, #f, OFFSET_OF(s, f)); \
+  return get_struct_inline(o, klass, #f, OFFSET_OF(s, f), &struct_##s##_##f##_obj_type); \
 } \
 static VALUE c##s##_set_##f(VALUE o, VALUE v){ \
   VALUE klass = rb_const_get(rb_const_get(rb_cObject, rb_intern("PKCS11")), rb_intern(#k)); \
