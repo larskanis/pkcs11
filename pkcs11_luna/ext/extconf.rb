@@ -2,6 +2,7 @@ require "mkmf"
 require "rubygems"
 
 inc, lib = dir_config('luna-dir', '/usr/safenet/lunaclient/samples')
+inc = inc.split(":", 2).first
 puts "using Luna Client include:#{inc}"
 
 require_relative "generate_luna_constants"

@@ -76,12 +76,12 @@ pkcs11_ctx_free(void *_ptr)
 }
 
 static size_t
-pkcs11_ctx_memsize(const void *)
+pkcs11_ctx_memsize(const void *_ptr)
 {
   return sizeof(pkcs11_ctx);
 }
 
-static const rb_data_type_t pkcs11_ctx_type = {
+const rb_data_type_t pkcs11_ctx_type = {
     "PKCS11::Library",
     {0, pkcs11_ctx_free, pkcs11_ctx_memsize,},
     0, 0,
@@ -1350,7 +1350,7 @@ ck_attr_free(void *_ptr)
 }
 
 static size_t
-ck_attr_memsize(const void *)
+ck_attr_memsize(const void *_ptr)
 {
   return sizeof(CK_ATTRIBUTE);
 }
@@ -1378,7 +1378,8 @@ ck_attr_initialize(int argc, VALUE *argv, VALUE self)
   CK_ATTRIBUTE *attr;
 
   rb_scan_args(argc, argv, "02", &type, &value);
-  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
+  if(!RB_TYPE_P(self, RUBY_T_DATA)) rb_check_typeddata(self, &ck_attr_obj_type);
+  attr = (CK_ATTRIBUTE*)DATA_PTR(self);
   if (argc == 0) return self;
   attr->type = NUM2HANDLE(type);
   attr->pValue = NULL;
@@ -1421,7 +1422,8 @@ static VALUE
 ck_attr_type(VALUE self)
 {
   CK_ATTRIBUTE *attr;
-  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
+  if(!RB_TYPE_P(self, RUBY_T_DATA)) rb_check_typeddata(self, &ck_attr_obj_type);
+  attr = (CK_ATTRIBUTE*)DATA_PTR(self);
   return ULONG2NUM(attr->type);
 }
 
@@ -1434,7 +1436,8 @@ static VALUE
 ck_attr_value(VALUE self)
 {
   CK_ATTRIBUTE *attr;
-  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
+  if(!RB_TYPE_P(self, RUBY_T_DATA)) rb_check_typeddata(self, &ck_attr_obj_type);
+  attr = (CK_ATTRIBUTE*)DATA_PTR(self);
   if (attr->ulValueLen == 0) return Qnil;
   switch(attr->type){
   case CKA_ALWAYS_AUTHENTICATE:
@@ -1587,6 +1590,10 @@ Init_pkcs11_ext(void)
   mPKCS11 = rb_define_module("PKCS11");
   sNEW = rb_intern("new");
   cPKCS11 = rb_define_class_under(mPKCS11, "Library", rb_cObject);
+
+  /* Expose the pointer of the pkcs11_ctx type struct.
+   * Because on Windows it's not possible to link directly into pkcs11_ext.so from pkcs11_luna_ext.so */
+  rb_define_const( cPKCS11, "PKCS11_CTX_TYPE", RB_ULL2NUM((unsigned long long)&pkcs11_ctx_type) );
 
 /* Document-method: PKCS11.open
  *

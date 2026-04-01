@@ -18,6 +18,8 @@
   #include <dlfcn.h>
 #endif
 
+#include "cryptoki_v2.h"
+
 
 ///////////////////////////////////////
 
@@ -55,11 +57,37 @@ static VALUE vRETURN_VALUES;
 
 #define PKCS11_DEFINE_METHOD(name, args) \
   rb_define_method(cPKCS11, #name, pkcs11_luna_##name, args);
-  
+
+typedef struct {
+  void *module;
+  CK_FUNCTION_LIST_PTR functions;
+  CK_SFNT_CA_FUNCTION_LIST_PTR sfnt_functions;
+} pkcs11_luna_ctx;
+
+static void
+pkcs11_luna_ctx_free(void *_ptr)
+{
+  pkcs11_luna_ctx *ctx = (pkcs11_luna_ctx *)_ptr;
+  free(ctx);
+}
+
+static size_t
+pkcs11_luna_ctx_memsize(const void *_ptr)
+{
+  return sizeof(pkcs11_luna_ctx);
+}
+
+static rb_data_type_t pkcs11_luna_ctx_type = {
+    "PKCS11::Luna::Library",
+    {0, pkcs11_luna_ctx_free, pkcs11_luna_ctx_memsize,},
+    0, 0,
+    RUBY_TYPED_FREE_IMMEDIATELY,
+};
+
 #define GetFunction(obj, name, sval) \
 { \
   pkcs11_luna_ctx *ctx; \
-  Data_Get_Struct(obj, pkcs11_luna_ctx, ctx); \
+  TypedData_Get_Struct(obj, pkcs11_luna_ctx, &pkcs11_luna_ctx_type, ctx); \
   if (!ctx->sfnt_functions) rb_raise(eLunaError, "no function list"); \
   sval = (CK_##name)ctx->sfnt_functions->name; \
   if (!sval) rb_raise(eLunaError, #name " is not supported."); \
@@ -74,19 +102,11 @@ static VALUE vRETURN_VALUES;
   rv = params.retval; \
 }
 
-#include "cryptoki_v2.h"
-
 #include "pk11_struct_macros.h"
 #include "pk11_const_macros.h"
 #include "pk11_version.h"
 
 #include "pk11l_struct_impl.inc"
-
-typedef struct {
-  void *module;
-  CK_FUNCTION_LIST_PTR functions;
-  CK_SFNT_CA_FUNCTION_LIST_PTR sfnt_functions;
-} pkcs11_luna_ctx;
 
 static void
 pkcs11_luna_raise(VALUE self, CK_RV rv)
@@ -157,12 +177,6 @@ void * tbf_CA_LogExternal( void *data ){
 
 
 
-static void
-pkcs11_luna_ctx_free(pkcs11_luna_ctx *ctx)
-{
-  free(ctx);
-}
-
 //NOTE: Code commented out as it was decided to only support standard pkcs11 initially.l
 
 /*static VALUE
@@ -173,7 +187,7 @@ pkcs11_luna_CA_SetApplicationID(VALUE self, VALUE major, VALUE minor)
 
   GetFunction(self, CA_SetApplicationID, func);
   CallFunction(CA_SetApplicationID, func, rv, NUM2ULONG(major), NUM2ULONG(minor));
-  if(rv != CKR_OK) 
+  if(rv != CKR_OK)
   	pkcs11_luna_raise(self,rv);
   return self;
 }
@@ -232,7 +246,7 @@ pkcs11_luna_CA_GetFunctionList(VALUE self)
   CK_RV rv;
   CK_CA_GetFunctionList func;
 
-  Data_Get_Struct(self, pkcs11_luna_ctx, ctx);
+  TypedData_Get_Struct(self, pkcs11_luna_ctx, &pkcs11_luna_ctx_type, ctx);
 #ifdef compile_for_windows
   func = (CK_CA_GetFunctionList)GetProcAddress(ctx->module, "CA_GetFunctionList");
   if(!func){
@@ -247,7 +261,7 @@ pkcs11_luna_CA_GetFunctionList(VALUE self)
   if(!func) rb_raise(eLunaError, "%sHERE", dlerror());
 #endif
   CallFunction(CA_GetFunctionList, func, rv, &(ctx->sfnt_functions));
-  if (rv != CKR_OK) 
+  if (rv != CKR_OK)
    	pkcs11_luna_raise(self, rv);
 
   return self;
@@ -258,7 +272,7 @@ pkcs11_luna_s_alloc(VALUE self)
 {
   VALUE obj;
   pkcs11_luna_ctx *ctx;
-  obj = Data_Make_Struct(self, pkcs11_luna_ctx, 0, pkcs11_luna_ctx_free, ctx);
+  obj = TypedData_Make_Struct(self, pkcs11_luna_ctx, &pkcs11_luna_ctx_type, ctx);
   return obj;
 }
 
@@ -290,23 +304,26 @@ Init_pkcs11_luna_ext()
    *
    * Module to provide functionality for SafeNet's Luna HSMs  */
   mLuna = rb_define_module_under(mPKCS11, "Luna");
-  
+
   /* Document-class: PKCS11::Luna::Library
    *
    * Derived class for Luna Library  */
   cLibrary = rb_const_get(mPKCS11, rb_intern("Library"));
-  
+
   cPKCS11 = rb_define_class_under(mLuna, "Library", cLibrary);
-  
+
+  /* fetch parent struct for correct type checks of pkcs11_luna_ctx_type */
+  pkcs11_luna_ctx_type.parent = (const rb_data_type_t*)RB_NUM2ULL( rb_const_get( cPKCS11, rb_intern("PKCS11_CTX_TYPE") ));
+
   rb_define_alloc_func(cPKCS11, pkcs11_luna_s_alloc);
   rb_define_method(cPKCS11, "initialize", pkcs11_luna_initialize, -1);
-  
+
   PKCS11_DEFINE_METHOD(CA_GetFunctionList, 0);
   //PKCS11_DEFINE_METHOD(CA_LogExternal, 3);
   //PKCS11_DEFINE_METHOD(CA_SetApplicationID, 2);
   //PKCS11_DEFINE_METHOD(CA_OpenApplicationID, 3);
   //PKCS11_DEFINE_METHOD(CA_CloseApplicationID, 3);
-  
+
 
   /* Library version */
   rb_define_const( mLuna, "VERSION", rb_str_new2(VERSION) );
