@@ -12,6 +12,7 @@ class TestPkcs11Crypt < Minitest::Test
   attr_reader :rsa_priv_key
   attr_reader :rsa_pub_key
   attr_reader :secret_key
+  attr_reader :secret_key_aes
 
   def setup
     $pkcs11 ||= open_softokn
@@ -30,12 +31,19 @@ class TestPkcs11Crypt < Minitest::Test
       ENCRYPT: true, WRAP: true, DECRYPT: true, UNWRAP: true, TOKEN: false,
       VALUE: '0123456789abcdef',
       LABEL: 'test_secret_key')
+
+    @secret_key_aes = session.create_object(
+      CLASS: CKO_SECRET_KEY,
+      KEY_TYPE: CKK_AES,
+      ENCRYPT: true, WRAP: true, DECRYPT: true, UNWRAP: true, TOKEN: false,
+      VALUE: '123456789abcdef0',
+      LABEL: 'test_secret_aes')
   end
 
   def teardown
-    @secret_key.destroy
+    @secret_key&.destroy
 #     @session.logout
-    @session.close
+    @session&.close
   end
 
   def pk
@@ -66,6 +74,22 @@ class TestPkcs11Crypt < Minitest::Test
     assert_equal cryptogram, cryptogram2, "Encrypt with and w/o block should be lead to the same result"
 
     plaintext2 = session.decrypt( {DES3_CBC_PAD: "\0"*8}, secret_key, cryptogram)
+    assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
+  end
+
+  def test_endecrypt_aes_gcm
+    skip "segfaults on Windows with softokn3.dll of Firefox-68" if RUBY_PLATFORM=~/mswin|mingw/
+    plaintext1 = "secret message"
+    mps = CK_GCM_PARAMS.new
+    mps.pIv = "i" * 12
+    mps.pAAD = ""
+    mps.ulIvBits = 96
+    mps.ulTagBits = 128
+    cryptogram = session.encrypt( CK_MECHANISM.new(CKM_AES_GCM, mps), secret_key_aes, plaintext1)
+    assert_equal 30, cryptogram.length, 'The cryptogram should contain some data'
+    refute_equal cryptogram, plaintext1, 'The cryptogram should be different to plaintext'
+
+    plaintext2 = session.decrypt( CK_MECHANISM.new(CKM_AES_GCM, mps), secret_key_aes, cryptogram)
     assert_equal plaintext1, plaintext2, 'Decrypted plaintext should be the same'
   end
 

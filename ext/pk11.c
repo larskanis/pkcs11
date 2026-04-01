@@ -847,6 +847,9 @@ common_crypt_update(VALUE self, VALUE session, VALUE data, VALUE size, crypt_upd
   }else{
     sz = NUM2ULONG(size);
   }
+
+  /* softokn3 with CKM_AES_GCM requests 16 bytes less then needed. */
+  sz += 16;
   buf = rb_str_new(0, sz);
 
   CallFunction(C_EncryptUpdate, func, rv, NUM2HANDLE(session),
