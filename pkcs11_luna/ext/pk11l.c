@@ -108,10 +108,11 @@ static rb_data_type_t pkcs11_luna_ctx_type = {
 
 #include "pk11l_struct_impl.inc"
 
+NORETURN()
 static void
-pkcs11_luna_raise(VALUE self, CK_RV rv)
+pkcs11_raise(VALUE self, CK_RV rv, const char * const func)
 {
-  rb_funcall(self, rb_intern("vendor_raise_on_return_value"), 1, ULONG2NUM(rv));
+  rb_funcall(self, rb_intern("vendor_raise_on_return_value"), 2, ULONG2NUM(rv), rb_str_new_cstr(func));
   rb_raise(eLunaError, "method vendor_raise_on_return_value should never return");
 }
 
