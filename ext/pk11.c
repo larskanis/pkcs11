@@ -1378,7 +1378,8 @@ ck_attr_initialize(int argc, VALUE *argv, VALUE self)
   CK_ATTRIBUTE *attr;
 
   rb_scan_args(argc, argv, "02", &type, &value);
-  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
+  if(!RB_TYPE_P(self, RUBY_T_DATA)) rb_check_typeddata(self, &ck_attr_obj_type);
+  attr = (CK_ATTRIBUTE*)DATA_PTR(self);
   if (argc == 0) return self;
   attr->type = NUM2HANDLE(type);
   attr->pValue = NULL;
@@ -1421,7 +1422,8 @@ static VALUE
 ck_attr_type(VALUE self)
 {
   CK_ATTRIBUTE *attr;
-  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
+  if(!RB_TYPE_P(self, RUBY_T_DATA)) rb_check_typeddata(self, &ck_attr_obj_type);
+  attr = (CK_ATTRIBUTE*)DATA_PTR(self);
   return ULONG2NUM(attr->type);
 }
 
@@ -1434,7 +1436,8 @@ static VALUE
 ck_attr_value(VALUE self)
 {
   CK_ATTRIBUTE *attr;
-  TypedData_Get_Struct(self, CK_ATTRIBUTE, &ck_attr_obj_type, attr);
+  if(!RB_TYPE_P(self, RUBY_T_DATA)) rb_check_typeddata(self, &ck_attr_obj_type);
+  attr = (CK_ATTRIBUTE*)DATA_PTR(self);
   if (attr->ulValueLen == 0) return Qnil;
   switch(attr->type){
   case CKA_ALWAYS_AUTHENTICATE:
