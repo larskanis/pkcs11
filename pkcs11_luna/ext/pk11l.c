@@ -110,7 +110,7 @@ static rb_data_type_t pkcs11_luna_ctx_type = {
 
 NORETURN()
 static void
-pkcs11_raise(VALUE self, CK_RV rv, const char * const func)
+pkcs11_luna_raise(VALUE self, CK_RV rv, const char * const func)
 {
   rb_funcall(self, rb_intern("vendor_raise_on_return_value"), 2, ULONG2NUM(rv), rb_str_new_cstr(func));
   rb_raise(eLunaError, "method vendor_raise_on_return_value should never return");
@@ -189,7 +189,7 @@ pkcs11_luna_CA_SetApplicationID(VALUE self, VALUE major, VALUE minor)
   GetFunction(self, CA_SetApplicationID, func);
   CallFunction(CA_SetApplicationID, func, rv, NUM2ULONG(major), NUM2ULONG(minor));
   if(rv != CKR_OK)
-  	pkcs11_luna_raise(self,rv);
+  	pkcs11_luna_raise(self, rv, "CA_SetApplicationID");
   return self;
 }
 
@@ -202,7 +202,7 @@ pkcs11_luna_CA_OpenApplicationID(VALUE self, VALUE slot_id, VALUE major, VALUE m
   GetFunction(self, CA_OpenApplicationID, func);
   CallFunction(CA_OpenApplicationID, func, rv, NUM2ULONG(slot_id), NUM2ULONG(major), NUM2ULONG(minor));
   if(rv != CKR_OK)
-  	pkcs11_luna_raise(self,rv);
+  	pkcs11_luna_raise(self, rv, "CA_OpenApplicationID");
   return self;
 }
 
@@ -215,7 +215,7 @@ pkcs11_luna_CA_CloseApplicationID(VALUE self, VALUE slot_id, VALUE major, VALUE 
   GetFunction(self, CA_CloseApplicationID, func);
   CallFunction(CA_CloseApplicationID, func, rv, NUM2ULONG(slot_id), NUM2ULONG(major), NUM2ULONG(minor));
   if(rv != CKR_OK)
-  	pkcs11_luna_raise(self,rv);
+  	pkcs11_luna_raise(self, rv, "CA_CloseApplicationID");
   return self;
 }*/
 
@@ -227,7 +227,7 @@ pkcs11_luna_CA_LogExternal(VALUE self, VALUE slot_id, VALUE session, VALUE messa
   GetFunction(self, CA_LogExternal, func);
   CallFunction(CA_LogExternal, func, rv, NUM2HANDLE(slot_id), NUM2HANDLE(session),
 			(CK_CHAR_PTR)RSTRING_PTR(message), RSTRING_LEN(message));
-  if(rv != CKR_OK) pkcs11_luna_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_luna_raise(self, rv, "CA_LogExternal");
 
   return self;
 }*/
@@ -263,7 +263,7 @@ pkcs11_luna_CA_GetFunctionList(VALUE self)
 #endif
   CallFunction(CA_GetFunctionList, func, rv, &(ctx->sfnt_functions));
   if (rv != CKR_OK)
-   	pkcs11_luna_raise(self, rv);
+   	pkcs11_luna_raise(self, rv, "CA_GetFunctionList");
 
   return self;
 }
