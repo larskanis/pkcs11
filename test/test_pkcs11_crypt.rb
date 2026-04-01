@@ -41,9 +41,9 @@ class TestPkcs11Crypt < Minitest::Test
   end
 
   def teardown
-    @secret_key.destroy
+    @secret_key&.destroy
 #     @session.logout
-    @session.close
+    @session&.close
   end
 
   def pk
