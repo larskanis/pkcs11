@@ -78,6 +78,7 @@ class TestPkcs11Crypt < Minitest::Test
   end
 
   def test_endecrypt_aes_gcm
+    skip "segfaults on Windows with softokn3.dll of Firefox-68" if RUBY_PLATFORM=~/mswin|mingw/
     plaintext1 = "secret message"
     mps = CK_GCM_PARAMS.new
     mps.pIv = "i" * 12
