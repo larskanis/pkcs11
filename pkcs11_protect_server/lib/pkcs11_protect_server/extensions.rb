@@ -106,9 +106,9 @@ module ProtectServer
       MechanismParameters[mech] || super
     end
 
-    def vendor_raise_on_return_value(rv)
+    def vendor_raise_on_return_value(rv, func)
       if ex=ProtectServer::RETURN_VALUES[rv]
-        raise(ex, rv.to_s)
+        raise(ex, "#{func} returned #{rv}")
       end
       super
     end

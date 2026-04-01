@@ -41,9 +41,9 @@ VALUE pkcs11_return_value_to_class(CK_RV, VALUE);
 
 NORETURN()
 static void
-pkcs11_raise(VALUE self, CK_RV rv)
+pkcs11_raise(VALUE self, CK_RV rv, const char * const func)
 {
-  rb_funcall(self, rb_intern("vendor_raise_on_return_value"), 1, ULONG2NUM(rv));
+  rb_funcall(self, rb_intern("vendor_raise_on_return_value"), 2, ULONG2NUM(rv), rb_str_new_cstr(func));
   rb_raise(ePKCS11Error, "method vendor_raise_on_return_value should never return");
 }
 
@@ -119,7 +119,7 @@ pkcs11_C_Finalize(VALUE self)
 
   GetFunction(self, C_Finalize, func);
   CallFunction(C_Finalize, func, rv, NULL_PTR);
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_Finalize");
 
   return self;
 }
@@ -214,7 +214,7 @@ pkcs11_C_GetFunctionList(VALUE self)
   if(!func) rb_raise(ePKCS11Error, "dlsym(): %s", dlerror());
 #endif
   CallFunction(C_GetFunctionList, func, rv, &(ctx->functions));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetFunctionList");
 
   return self;
 }
@@ -240,7 +240,7 @@ pkcs11_C_Initialize(int argc, VALUE *argv, VALUE self)
   }
   GetFunction(self, C_Initialize, func);
   CallFunction(C_Initialize, func, rv, args);
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_Initialize");
 
   return self;
 }
@@ -270,7 +270,7 @@ pkcs11_C_GetInfo(VALUE self)
   GetFunction(self, C_GetInfo, func);
   info = pkcs11_new_struct(cCK_INFO);
   CallFunction(C_GetInfo, func, rv, (CK_INFO_PTR)DATA_PTR(info));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetInfo");
 
   return info;
 }
@@ -287,12 +287,12 @@ pkcs11_C_GetSlotList(VALUE self, VALUE presented)
 
   GetFunction(self, C_GetSlotList, func);
   CallFunction(C_GetSlotList, func, rv, CK_FALSE, NULL_PTR, &ulSlotCount);
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetSlotList 1st call");
   pSlotList = (CK_SLOT_ID_PTR)malloc(ulSlotCount*sizeof(CK_SLOT_ID));
   CallFunction(C_GetSlotList, func, rv, RTEST(presented) ? CK_TRUE : CK_FALSE, pSlotList, &ulSlotCount);
   if (rv != CKR_OK) {
     free(pSlotList);
-    pkcs11_raise(self,rv);
+    pkcs11_raise(self, rv, "C_GetSlotList 2nd call");
   }
   for (i = 0; i < ulSlotCount; i++)
     rb_ary_push(ary, HANDLE2NUM(pSlotList[i]));
@@ -311,7 +311,7 @@ pkcs11_C_GetSlotInfo(VALUE self, VALUE slot_id)
   GetFunction(self, C_GetSlotInfo, func);
   info = pkcs11_new_struct(cCK_SLOT_INFO);
   CallFunction(C_GetSlotInfo, func, rv, NUM2HANDLE(slot_id), DATA_PTR(info));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetSlotInfo");
 
   return info;
 }
@@ -326,7 +326,7 @@ pkcs11_C_GetTokenInfo(VALUE self, VALUE slot_id)
   GetFunction(self, C_GetTokenInfo, func);
   info = pkcs11_new_struct(cCK_TOKEN_INFO);
   CallFunction(C_GetTokenInfo, func, rv, NUM2HANDLE(slot_id), DATA_PTR(info));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetTokenInfo");
 
   return info;
 }
@@ -344,7 +344,7 @@ pkcs11_C_GetMechanismList(VALUE self, VALUE slot_id)
   ary = rb_ary_new();
   GetFunction(self, C_GetMechanismList, func);
   CallFunction(C_GetMechanismList, func, rv, NUM2HANDLE(slot_id), NULL_PTR, &count);
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetMechanismList 1st call");
   if (count == 0) return ary;
 
   types = (CK_MECHANISM_TYPE_PTR)malloc(sizeof(CK_MECHANISM_TYPE)*count);
@@ -352,7 +352,7 @@ pkcs11_C_GetMechanismList(VALUE self, VALUE slot_id)
   CallFunction(C_GetMechanismList, func, rv, NUM2HANDLE(slot_id), types, &count);
   if (rv != CKR_OK){
     free(types);
-    pkcs11_raise(self,rv);
+    pkcs11_raise(self, rv, "C_GetMechanismList 2nd call");
   }
   for (i = 0; i < count; i++)
     rb_ary_push(ary, HANDLE2NUM(*(types+i)));
@@ -371,7 +371,7 @@ pkcs11_C_GetMechanismInfo(VALUE self, VALUE slot_id, VALUE type)
   info = pkcs11_new_struct(cCK_MECHANISM_INFO);
   GetFunction(self, C_GetMechanismInfo, func);
   CallFunction(C_GetMechanismInfo, func, rv, NUM2HANDLE(slot_id), NUM2HANDLE(type), DATA_PTR(info));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetMechanismInfo");
 
   return info;
 }
@@ -388,7 +388,7 @@ pkcs11_C_InitToken(VALUE self, VALUE slot_id, VALUE pin, VALUE label)
   CallFunction(C_InitToken, func, rv, NUM2HANDLE(slot_id),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(pin), RSTRING_LEN(pin),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(label));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_InitToken");
 
   return self;
 }
@@ -403,7 +403,7 @@ pkcs11_C_InitPIN(VALUE self, VALUE session, VALUE pin)
   GetFunction(self, C_InitPIN, func);
   CallFunction(C_InitPIN, func, rv, NUM2HANDLE(session),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(pin), RSTRING_LEN(pin));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_InitPIN");
 
   return self;
 }
@@ -417,7 +417,7 @@ pkcs11_C_OpenSession(VALUE self, VALUE slot_id, VALUE flags)
 
   GetFunction(self, C_OpenSession, func);
   CallFunction(C_OpenSession, func, rv, NUM2HANDLE(slot_id), NUM2ULONG(flags), 0, 0, &handle);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_OpenSession");
 
   return HANDLE2NUM(handle);
 }
@@ -432,7 +432,7 @@ pkcs11_C_Login(VALUE self, VALUE session, VALUE user_type, VALUE pin)
   GetFunction(self, C_Login, func);
   CallFunction(C_Login, func, rv, NUM2HANDLE(session), NUM2ULONG(user_type),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(pin), RSTRING_LEN(pin));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_Login");
 
   return self;
 }
@@ -445,7 +445,7 @@ pkcs11_C_Logout(VALUE self, VALUE session)
 
   GetFunction(self, C_Logout, func);
   CallFunction(C_Logout, func, rv, NUM2HANDLE(session));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_Logout");
 
   return self;
 }
@@ -458,7 +458,7 @@ pkcs11_C_CloseSession(VALUE self, VALUE session)
 
   GetFunction(self, C_CloseSession, func);
   CallFunction(C_CloseSession, func, rv, NUM2HANDLE(session));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_CloseSession");
 
   return self;
 }
@@ -471,7 +471,7 @@ pkcs11_C_CloseAllSessions(VALUE self, VALUE slot_id)
 
   GetFunction(self, C_CloseAllSessions, func);
   CallFunction(C_CloseAllSessions, func, rv, NUM2HANDLE(slot_id));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_CloseAllSessions");
 
   return self;
 }
@@ -486,7 +486,7 @@ pkcs11_C_GetSessionInfo(VALUE self, VALUE session)
   info = pkcs11_new_struct(cCK_SESSION_INFO);
   GetFunction(self, C_GetSessionInfo, func);
   CallFunction(C_GetSessionInfo, func, rv, NUM2HANDLE(session), DATA_PTR(info));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetSessionInfo");
 
   return info;
 }
@@ -501,10 +501,10 @@ pkcs11_C_GetOperationState(VALUE self, VALUE session)
 
   GetFunction(self, C_GetOperationState, func);
   CallFunction(C_GetOperationState, func, rv, NUM2HANDLE(session), NULL_PTR, &size);
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetOperationState 1st call");
   state = rb_str_new(0, size);
   CallFunction(C_GetOperationState, func, rv, NUM2HANDLE(session), (CK_BYTE_PTR)RSTRING_PTR(state), &size);
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_GetOperationState 2nd call");
   rb_str_set_len(state, size);
 
   return state;
@@ -521,7 +521,7 @@ pkcs11_C_SetOperationState(VALUE self, VALUE session, VALUE state, VALUE enc_key
   CallFunction(C_SetOperationState, func, rv, NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(state), RSTRING_LEN(state),
             NUM2HANDLE(enc_key), NUM2HANDLE(auth_key));
-  if (rv != CKR_OK) pkcs11_raise(self,rv);
+  if (rv != CKR_OK) pkcs11_raise(self, rv, "C_SetOperationState");
 
   return self;
 }
@@ -538,7 +538,7 @@ pkcs11_C_SetPIN(VALUE self, VALUE session, VALUE old_pin, VALUE new_pin)
   CallFunction(C_SetPIN, func, rv, NUM2HANDLE(session),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(old_pin), RSTRING_LEN(old_pin),
             (CK_UTF8CHAR_PTR)RSTRING_PTR(new_pin), RSTRING_LEN(new_pin));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_SetPIN");
 
   return self;
 }
@@ -577,7 +577,7 @@ pkcs11_C_CreateObject(VALUE self, VALUE session, VALUE template)
   GetFunction(self, C_CreateObject, func);
   CallFunction(C_CreateObject, func, rv, NUM2HANDLE(session), tmp, RARRAY_LEN(template), &handle);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_CreateObject");
 
   return HANDLE2NUM(handle);
 }
@@ -594,7 +594,7 @@ pkcs11_C_CopyObject(VALUE self, VALUE session, VALUE object, VALUE template)
   GetFunction(self, C_CopyObject, func);
   CallFunction(C_CopyObject, func, rv, NUM2HANDLE(session), NUM2HANDLE(object), tmp, RARRAY_LEN(template), &handle);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_CopyObject");
 
   return HANDLE2NUM(handle);
 }
@@ -607,7 +607,7 @@ pkcs11_C_DestroyObject(VALUE self, VALUE session, VALUE handle)
 
   GetFunction(self, C_DestroyObject, func);
   CallFunction(C_DestroyObject, func, rv, NUM2HANDLE(session), NUM2HANDLE(handle));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_DestroyObject");
 
   return self;
 }
@@ -621,7 +621,7 @@ pkcs11_C_GetObjectSize(VALUE self, VALUE session, VALUE handle)
 
   GetFunction(self, C_GetObjectSize, func);
   CallFunction(C_GetObjectSize, func, rv, NUM2HANDLE(session), NUM2HANDLE(handle), &size);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_GetObjectSize");
 
   return ULONG2NUM(size);
 }
@@ -641,7 +641,7 @@ pkcs11_C_FindObjectsInit(VALUE self, VALUE session, VALUE template)
   GetFunction(self, C_FindObjectsInit, func);
   CallFunction(C_FindObjectsInit, func, rv, NUM2HANDLE(session), tmp, tmp_size);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_FindObjectsInit");
 
   return self;
 }
@@ -654,7 +654,7 @@ pkcs11_C_FindObjectsFinal(VALUE self, VALUE session)
 
   GetFunction(self, C_FindObjectsFinal, func);
   CallFunction(C_FindObjectsFinal, func, rv, NUM2HANDLE(session));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_FindObjectsFinal");
 
   return self;
 }
@@ -675,7 +675,7 @@ pkcs11_C_FindObjects(VALUE self, VALUE session, VALUE max_count)
   CallFunction(C_FindObjects, func, rv, NUM2HANDLE(session), handles, NUM2ULONG(max_count), &count);
   if(rv != CKR_OK){
     free(handles);
-    pkcs11_raise(self,rv);
+    pkcs11_raise(self, rv, "C_FindObjects");
   }
   ary = rb_ary_new();
   for(i = 0; i < count; i++)
@@ -703,7 +703,7 @@ pkcs11_C_GetAttributeValue(VALUE self, VALUE session, VALUE handle, VALUE templa
   CallFunction(C_GetAttributeValue, func, rv, NUM2HANDLE(session), NUM2HANDLE(handle), tmp, template_size);
   if(rv != CKR_OK){
     free(tmp);
-    pkcs11_raise(self,rv);
+    pkcs11_raise(self, rv, "C_GetAttributeValue 1st call");
   }
 
   for (i = 0; i < template_size; i++){
@@ -718,7 +718,7 @@ pkcs11_C_GetAttributeValue(VALUE self, VALUE session, VALUE handle, VALUE templa
       if (attr->pValue) free(attr->pValue);
     }
     free(tmp);
-    pkcs11_raise(self,rv);
+    pkcs11_raise(self, rv, "C_GetAttributeValue 2nd call");
   }
   ary = rb_ary_new();
   for (i = 0; i < template_size; i++){
@@ -747,7 +747,7 @@ pkcs11_C_SetAttributeValue(VALUE self, VALUE session, VALUE handle, VALUE templa
   GetFunction(self, C_SetAttributeValue, func);
   CallFunction(C_SetAttributeValue, func, rv, NUM2HANDLE(session), NUM2HANDLE(handle), tmp, template_size);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_SetAttributeValue");
 
   return self;
 }
@@ -761,7 +761,7 @@ pkcs11_C_SeedRandom(VALUE self, VALUE session, VALUE seed)
   GetFunction(self, C_SeedRandom, func);
   CallFunction(C_SeedRandom, func, rv, NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(seed), RSTRING_LEN(seed));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_SeedRandom");
 
   return self;
 }
@@ -776,7 +776,7 @@ pkcs11_C_GenerateRandom(VALUE self, VALUE session, VALUE size)
 
   GetFunction(self, C_GenerateRandom, func);
   CallFunction(C_GenerateRandom, func, rv, NUM2HANDLE(session), (CK_BYTE_PTR)RSTRING_PTR(buf), sz);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_GenerateRandom");
 
   return buf;
 }
@@ -791,7 +791,7 @@ pkcs11_C_WaitForSlotEvent(VALUE self, VALUE flags)
   GetFunction(self, C_WaitForSlotEvent, func);
   CallFunction(C_WaitForSlotEvent, func, rv, NUM2ULONG(flags), &slot_id, NULL_PTR);
   if(rv == CKR_NO_EVENT) return Qnil;
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_WaitForSlotEvent");
 
   return HANDLE2NUM(slot_id);
 }
@@ -826,7 +826,7 @@ common_init(VALUE self, VALUE session, VALUE mechanism, VALUE key, init_func fun
   m = DATA_PTR(mechanism);
   /* Use the function signature of any of the various C_*Init functions. */
   CallFunction(C_EncryptInit, func, rv, NUM2HANDLE(session), m, NUM2HANDLE(key));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_EncryptInit");
 
   return Qnil;
 }
@@ -843,7 +843,7 @@ common_crypt_update(VALUE self, VALUE session, VALUE data, VALUE size, crypt_upd
     CallFunction(C_EncryptUpdate, func, rv, NUM2HANDLE(session),
               (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data),
               NULL_PTR, &sz);
-    if(rv != CKR_OK) pkcs11_raise(self,rv);
+    if(rv != CKR_OK) pkcs11_raise(self, rv, "C_EncryptUpdate 1st call");
   }else{
     sz = NUM2ULONG(size);
   }
@@ -852,7 +852,7 @@ common_crypt_update(VALUE self, VALUE session, VALUE data, VALUE size, crypt_upd
   CallFunction(C_EncryptUpdate, func, rv, NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data),
             (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_EncryptUpdate 2nd call");
   rb_str_set_len(buf, sz);
 
   return buf;
@@ -867,14 +867,14 @@ common_crypt_final(VALUE self, VALUE session, VALUE size, crypt_final_func func)
 
   if (NIL_P(size)){
     CallFunction(C_EncryptFinal, func, rv, NUM2HANDLE(session), NULL_PTR, &sz);
-    if(rv != CKR_OK) pkcs11_raise(self,rv);
+    if(rv != CKR_OK) pkcs11_raise(self, rv, "C_EncryptFinal 1st call");
   }else{
     sz = NUM2ULONG(size);
   }
   buf = rb_str_new(0, sz);
 
   CallFunction(C_EncryptFinal, func, rv, NUM2HANDLE(session), (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_EncryptFinal 2nd call");
   rb_str_set_len(buf, sz);
 
   return buf;
@@ -888,7 +888,7 @@ common_sign_update(VALUE self, VALUE session, VALUE data, sign_update_func func)
   StringValue(data);
   CallFunction(C_SignUpdate, func, rv, NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_SignUpdate");
 
   return Qnil;
 }
@@ -904,7 +904,7 @@ common_verify(VALUE self, VALUE session, VALUE data, VALUE sig, verify_func func
   CallFunction(C_Verify, func, rv, NUM2HANDLE(session),
             (CK_BYTE_PTR)RSTRING_PTR(data), RSTRING_LEN(data),
             (CK_BYTE_PTR)RSTRING_PTR(sig), RSTRING_LEN(sig));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_Verify");
 
   return Qnil;
 }
@@ -1104,7 +1104,7 @@ pkcs11_C_DigestInit(VALUE self, VALUE session, VALUE mechanism)
       rb_raise(rb_eArgError, "2nd arg must be a PKCS11::CK_MECHANISM");
   m = DATA_PTR(mechanism);
   CallFunction(C_DigestInit, func, rv, NUM2HANDLE(session), m);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_DigestInit");
 
   return self;
 }
@@ -1134,7 +1134,7 @@ pkcs11_C_DigestKey(VALUE self, VALUE session, VALUE handle)
 
   GetFunction(self, C_DigestKey, func);
   CallFunction(C_DigestKey, func, rv, NUM2HANDLE(session), NUM2HANDLE(handle));
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_DigestKey");
 
   return self;
 }
@@ -1194,7 +1194,7 @@ pkcs11_C_GenerateKey(VALUE self, VALUE session, VALUE mechanism, VALUE template)
   tmp = pkcs11_attr_ary2buf(template);
   CallFunction(C_GenerateKey, func, rv, NUM2HANDLE(session), m, tmp, RARRAY_LEN(template), &handle);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_GenerateKey");
 
   return HANDLE2NUM(handle);
 }
@@ -1222,7 +1222,7 @@ pkcs11_C_GenerateKeyPair(VALUE self, VALUE session, VALUE mechanism, VALUE pubke
             &pubkey_handle, &privkey_handle);
   free(pubkey_tmp);
   free(privkey_tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_GenerateKeyPair");
   ary = rb_ary_new();
   rb_ary_push(ary, HANDLE2NUM(pubkey_handle));
   rb_ary_push(ary, HANDLE2NUM(privkey_handle));
@@ -1247,7 +1247,7 @@ pkcs11_C_WrapKey(VALUE self, VALUE session, VALUE mechanism, VALUE wrapping, VAL
     CallFunction(C_WrapKey, func, rv, NUM2HANDLE(session), m,
               NUM2HANDLE(wrapping), NUM2HANDLE(wrapped),
               (CK_BYTE_PTR)NULL_PTR, &sz);
-    if(rv != CKR_OK) pkcs11_raise(self,rv);
+    if(rv != CKR_OK) pkcs11_raise(self, rv, "C_WrapKey 1st call");
   }else{
     sz = NUM2ULONG(size);
   }
@@ -1256,7 +1256,7 @@ pkcs11_C_WrapKey(VALUE self, VALUE session, VALUE mechanism, VALUE wrapping, VAL
   CallFunction(C_WrapKey, func, rv, NUM2HANDLE(session), m,
             NUM2HANDLE(wrapping), NUM2HANDLE(wrapped),
             (CK_BYTE_PTR)RSTRING_PTR(buf), &sz);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_WrapKey 2nd call");
   rb_str_set_len(buf, sz);
 
   return buf;
@@ -1280,7 +1280,7 @@ pkcs11_C_UnwrapKey(VALUE self, VALUE session, VALUE mechanism, VALUE wrapping, V
             (CK_BYTE_PTR)RSTRING_PTR(wrapped), RSTRING_LEN(wrapped),
             tmp, RARRAY_LEN(template), &h);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_UnwrapKey");
 
   return HANDLE2NUM(h);
 }
@@ -1302,7 +1302,7 @@ pkcs11_C_DeriveKey(VALUE self, VALUE session, VALUE mechanism, VALUE base, VALUE
   CallFunction(C_DeriveKey, func, rv, NUM2HANDLE(session), m, NUM2HANDLE(base),
             tmp, RARRAY_LEN(template), &h);
   free(tmp);
-  if(rv != CKR_OK) pkcs11_raise(self,rv);
+  if(rv != CKR_OK) pkcs11_raise(self, rv, "C_DeriveKey");
 
   return HANDLE2NUM(h);
 }
@@ -1315,12 +1315,12 @@ pkcs11_C_DeriveKey(VALUE self, VALUE session, VALUE mechanism, VALUE base, VALUE
  * @param [Integer] rv return value of the latest operation
  */
 static VALUE
-pkcs11_vendor_raise_on_return_value(VALUE self, VALUE rv_value)
+pkcs11_vendor_raise_on_return_value(VALUE self, VALUE rv_value, VALUE func)
 {
   VALUE class;
   CK_RV rv = NUM2ULONG(rv_value);
   class = pkcs11_return_value_to_class(rv, ePKCS11Error);
-  rb_raise(class, "%lu", rv);
+  rb_raise(class, "%s returned %lu", StringValuePtr(func), rv);
 
   return Qnil;
 }
@@ -1683,7 +1683,7 @@ Init_pkcs11_ext(void)
   PKCS11_DEFINE_METHOD(C_WaitForSlotEvent, 1);
   PKCS11_DEFINE_METHOD(C_Finalize, 0);
   PKCS11_DEFINE_METHOD(unload_library, 0);
-  PKCS11_DEFINE_METHOD(vendor_raise_on_return_value, 1);
+  PKCS11_DEFINE_METHOD(vendor_raise_on_return_value, 2);
   PKCS11_DEFINE_METHOD(vendor_class_CK_ATTRIBUTE, 0);
 
   ///////////////////////////////////////
