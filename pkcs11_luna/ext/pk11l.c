@@ -77,7 +77,7 @@ pkcs11_luna_ctx_memsize(const void *_ptr)
   return sizeof(pkcs11_luna_ctx);
 }
 
-static const rb_data_type_t pkcs11_ctx_type = {
+static rb_data_type_t pkcs11_luna_ctx_type = {
     "PKCS11::Luna::Library",
     {0, pkcs11_luna_ctx_free, pkcs11_luna_ctx_memsize,},
     0, 0,
@@ -87,7 +87,7 @@ static const rb_data_type_t pkcs11_ctx_type = {
 #define GetFunction(obj, name, sval) \
 { \
   pkcs11_luna_ctx *ctx; \
-  TypedData_Get_Struct(obj, pkcs11_luna_ctx, &pkcs11_ctx_type, ctx); \
+  TypedData_Get_Struct(obj, pkcs11_luna_ctx, &pkcs11_luna_ctx_type, ctx); \
   if (!ctx->sfnt_functions) rb_raise(eLunaError, "no function list"); \
   sval = (CK_##name)ctx->sfnt_functions->name; \
   if (!sval) rb_raise(eLunaError, #name " is not supported."); \
@@ -246,7 +246,7 @@ pkcs11_luna_CA_GetFunctionList(VALUE self)
   CK_RV rv;
   CK_CA_GetFunctionList func;
 
-  TypedData_Get_Struct(self, pkcs11_luna_ctx, &pkcs11_ctx_type, ctx);
+  TypedData_Get_Struct(self, pkcs11_luna_ctx, &pkcs11_luna_ctx_type, ctx);
 #ifdef compile_for_windows
   func = (CK_CA_GetFunctionList)GetProcAddress(ctx->module, "CA_GetFunctionList");
   if(!func){
@@ -272,7 +272,7 @@ pkcs11_luna_s_alloc(VALUE self)
 {
   VALUE obj;
   pkcs11_luna_ctx *ctx;
-  obj = TypedData_Make_Struct(self, pkcs11_luna_ctx, &pkcs11_ctx_type, ctx);
+  obj = TypedData_Make_Struct(self, pkcs11_luna_ctx, &pkcs11_luna_ctx_type, ctx);
   return obj;
 }
 
@@ -311,6 +311,9 @@ Init_pkcs11_luna_ext()
   cLibrary = rb_const_get(mPKCS11, rb_intern("Library"));
 
   cPKCS11 = rb_define_class_under(mLuna, "Library", cLibrary);
+
+  /* fetch parent struct for correct type checks of pkcs11_luna_ctx_type */
+  pkcs11_luna_ctx_type.parent = (const rb_data_type_t*)RB_NUM2ULL( rb_const_get( cPKCS11, rb_intern("PKCS11_CTX_TYPE") ));
 
   rb_define_alloc_func(cPKCS11, pkcs11_luna_s_alloc);
   rb_define_method(cPKCS11, "initialize", pkcs11_luna_initialize, -1);

@@ -81,7 +81,7 @@ pkcs11_ctx_memsize(const void *_ptr)
   return sizeof(pkcs11_ctx);
 }
 
-static const rb_data_type_t pkcs11_ctx_type = {
+const rb_data_type_t pkcs11_ctx_type = {
     "PKCS11::Library",
     {0, pkcs11_ctx_free, pkcs11_ctx_memsize,},
     0, 0,
@@ -1587,6 +1587,10 @@ Init_pkcs11_ext(void)
   mPKCS11 = rb_define_module("PKCS11");
   sNEW = rb_intern("new");
   cPKCS11 = rb_define_class_under(mPKCS11, "Library", rb_cObject);
+
+  /* Expose the pointer of the pkcs11_ctx type struct.
+   * Because on Windows it's not possible to link directly into pkcs11_ext.so from pkcs11_luna_ext.so */
+  rb_define_const( cPKCS11, "PKCS11_CTX_TYPE", RB_ULL2NUM((unsigned long long)&pkcs11_ctx_type) );
 
 /* Document-method: PKCS11.open
  *
