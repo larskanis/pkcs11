@@ -1,3 +1,11 @@
+=== 0.4.0 / 2026-04-01
+
+* Require ruby version 2.6.0 or newer
+* Use Ruby's typed data API, because the untyped API is deprecated. #15, #16
+* Raise more detailed error messages in case of failures. #18
+* Add extra buffer size of 16 bytes to C_EncryptUpdate, because older softokn3 with CKM_AES_GCM requests 16 bytes too less
+* Replace IO.read with File.read to avoid security issues.
+
 === 0.3.4 / 2022-04-20
 
 * Fix compatibility with ruby-3.2
