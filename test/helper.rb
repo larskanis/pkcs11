@@ -31,6 +31,7 @@ def find_softokn
       /usr/lib/i386-linux-gnu/nss
       /usr/lib/x86_64-linux-gnu/nss
       /usr/lib/x86_64-linux-gnu/
+      /usr/lib/aarch64-linux-gnu/
       /opt/homebrew/opt/nss/lib/
       /usr/local/opt/nss/lib/
     )
