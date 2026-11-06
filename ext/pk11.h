@@ -12,8 +12,7 @@ void Init_pkcs11_ext();
 void Init_pkcs11_const(VALUE, VALUE);
 
 #ifdef compile_for_windows
-#pragma pack(push, cryptoki, 1)
-#ifdef __MINGW32_VERSION
+#ifdef __MINGW32__
   /* avoid warning about ignored ‘dllimport’ attribute on mingw32*/
   #define CK_IMPORT_SPEC __declspec()
 #else
@@ -56,11 +55,20 @@ returnType (CK_CALL_SPEC CK_PTR name)
 
 #endif
 
+#ifdef compile_for_windows
+#pragma pack(push, cryptoki, 1)
+#endif
+
 #include "pkcs11.h"
 #include "otp-pkcs11.h"     /* for PKCS #11 v2.20 Amendment 1 */
 #include "ct-kip.h"         /* for PKCS #11 v2.20 Amendment 2 */
 #include "pkcs-11v2-20a3.h" /* for PKCS #11 v2.20 Amendment 3 */
 
 #include "pk11_thread_funcs.h"
+
+#ifdef compile_for_windows
+#pragma pack(pop, cryptoki)
+#endif
+
 
 #endif
