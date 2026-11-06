@@ -12,8 +12,7 @@ void Init_pkcs11_ext();
 void Init_pkcs11_const(VALUE, VALUE);
 
 #ifdef compile_for_windows
-#pragma pack(push, cryptoki, 1)
-#ifdef __MINGW32_VERSION
+#ifdef __MINGW32__
   /* avoid warning about ignored ‘dllimport’ attribute on mingw32*/
   #define CK_IMPORT_SPEC __declspec()
 #else
