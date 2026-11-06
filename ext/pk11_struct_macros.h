@@ -1,6 +1,8 @@
 #ifndef PK11_STRUCT_MACROS_INCLUDED
 #define PK11_STRUCT_MACROS_INCLUDED
 
+#include <stddef.h>
+
 /**************************************************/
 /* struct/attribute implementation                */
 /**************************************************/
@@ -269,7 +271,7 @@ set_struct_ptr_array(VALUE obj, VALUE klass, const char *struct_name, VALUE valu
 }
 
 
-#define OFFSET_OF(s, f) ((off_t)((char*)&(((s*)0)->f) - (char*)0))
+#define OFFSET_OF(s, f) offsetof(s, f)
 #define SIZE_OF(s, f) (sizeof(((s*)0)->f))
 
 #define PKCS11_IMPLEMENT_ALLOCATOR(s) \
